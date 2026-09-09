@@ -7,7 +7,6 @@ import java.util.List;
  * Represents a recipe in our dinner tracker.
 */
 public class Recipe {
-
     private final String name;
     private final List<FoodItem> ingridients;
     private final List<String> steps;
