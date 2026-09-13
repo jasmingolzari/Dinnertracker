@@ -1,17 +1,19 @@
 package no.ntnu.it1901.gr2631.dinnertracker.ui;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import no.ntnu.it1901.gr2631.dinnertracker.core.FoodItem;
 import no.ntnu.it1901.gr2631.dinnertracker.core.Recipe;
+import no.ntnu.it1901.gr2631.dinnertracker.persistence.RecipeFileHandler;
 
 public class RecipeController {
 
@@ -52,7 +54,6 @@ public class RecipeController {
         String amount = foodItemAmountField.getText();
 
         if (!isValidFoodItemName(foodName)) {
-            //visFeilmelding logikk
             showAlertMessage("Ugyldig navn på matvare. Kun bokstaver er tillat.");
             return;
         }
@@ -61,7 +62,6 @@ public class RecipeController {
         foodItems.add(newFoodItem); 
         ingredientsList.getItems().add(foodName + "-" + amount); 
 
-        // Tøm feltene 
         foodItemField.clear();
         foodItemAmountField.clear();
     }
@@ -79,9 +79,6 @@ public class RecipeController {
         return true; 
     }
 
-    
-
-    // Impelementer visFeilmelding 
     private void showAlertMessage(String message){
         Alert alert = new Alert(Alert.AlertType.ERROR); 
         alert.setTitle("Ugyldig input");
@@ -98,12 +95,6 @@ public class RecipeController {
             stepsList.getItems().add(step);
             stepsField.clear();
         }
-    }
-
-    @FXML
-    private void backToHomePage(ActionEvent event) {
-        // Logikk for å skifte tilbake til hovedvisningen
-
     }
 
     @FXML
@@ -126,6 +117,48 @@ public class RecipeController {
             return; 
         }
 
-        Recipe newRecipe = new Recipe(recipeName, foodItems, steps);
+        Recipe newRecipe = new Recipe(recipeName, new ArrayList<>(foodItems), steps);
+
+        StringBuilder builder = new StringBuilder(); 
+        for (char c : recipeName.toLowerCase().toCharArray()) {
+            if (Character.isLetterOrDigit(c)) {
+                builder.append(c); 
+            } else {
+                builder.append("_");
+            }
+        }
+
+        String safeFileName = builder.toString() + ".json";
+        Path filePath = Path.of(System.getProperty("user.home"), "dinnertracker", safeFileName);
+
+        RecipeFileHandler fileHandler = new RecipeFileHandler(); 
+        try {
+            fileHandler.saveRecipe(newRecipe, filePath);
+
+            showAddedRecipeMessage("Oppskrift lagt til");
+            clearForm();
+
+
+        } catch (IOException e) {
+            showAlertMessage("Klarte ikke å lagre oppskriften: " + e.getMessage());
+        }
+    }
+    
+    private void showAddedRecipeMessage(String message){
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Suksess");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void clearForm(){
+        nameField.clear();
+        foodItemField.clear();
+        foodItemAmountField.clear();
+        stepsField.clear();
+        ingredientsList.getItems().clear();
+        stepsList.getItems().clear();
+        foodItems.clear();
     }
 }
