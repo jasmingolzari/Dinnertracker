@@ -57,7 +57,7 @@
                               <Rectangle2D />
                            </viewport>
                         </ImageView>
-                        <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="127.0" text="Oppskrifter">
+                        <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="127.0" text="Oppskrifter" onAction="openRecipe">
                            <VBox.margin>
                               <Insets top="10.0" />
                            </VBox.margin>
