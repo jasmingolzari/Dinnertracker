@@ -79,9 +79,48 @@ The project uses:
 - **JavaFX 21.0.2**
 - **FXML**
 - **JUnit**
+- **JaCoCo**
 
 Java and JavaFX versions, as well as the project dependencies, are
 configured in the Maven `pom.xml` files.
+
+## Coverage with JaCoCo
+ 
+The project uses JaCoCo to measure test coverage and enforce a minimum threshold during the Maven verification phase.
+ 
+### Commands
+ 
+```bash
+mvn verify
+mvn jacoco:report
+```
+ 
+### What this does
+ 
+- Runs the test suite and collects coverage data.
+- Generates an HTML coverage report for local inspection.
+- Generates an XML report for CI and tooling integration.
+- Fails the build if the configured coverage threshold is not met.
+ 
+### Report locations
+ 
+After running `mvn verify`, the reports are available in:
+ 
+- `dinnertracker/core/target/site/jacoco/index.html`
+- `dinnertracker/persistence/target/site/jacoco/index.html`
+- `dinnertracker/ui/target/site/jacoco/index.html`
+- `dinnertracker/target/site/jacoco-aggregate/index.html`
+ 
+The aggregated report in the root module gives the combined coverage across all modules.
+ 
+### Coverage threshold
+ 
+The current minimum enforced coverage is:
+ 
+- 80% line coverage
+- 70% branch coverage
+ 
+If the project falls below these values, `mvn verify` will fail.
 
 ## Running the project
 
