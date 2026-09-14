@@ -10,11 +10,11 @@ import javafx.scene.Node;
 import javafx.event.ActionEvent;
 
 
-public class HomepageController {
+public class HomePageController {
     @FXML
     private void openRecipe(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
-            getClass().getResource("/fxml/recipe.fxml")
+            getClass().getResource("RecipePage.fxml")
         );
 
         Stage stage = (Stage) ((Node) event.getSource())
@@ -27,7 +27,7 @@ public class HomepageController {
      @FXML
     private void openFridge(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
-            getClass().getResource("/fxml/fridge.fxml")
+            getClass().getResource("FridgePage.fxml")
         );
 
         Stage stage = (Stage) ((Node) event.getSource())
