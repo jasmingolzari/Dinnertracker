@@ -13,7 +13,7 @@ investigating technical problems. In situations where we were unsure
 about how different parts of the project worked together, we used the
 tool to discuss possible solutions and clarify the underlying concepts.
 
-The AI tool has also been useful when working with Git and GitLab. For
+The AI tool has also been useful when working with Git and GitHub. For
 example, it has helped us understand branches, commits, merging, pull
 requests, and how to recover from problems with the local working tree.
 Rather than simply applying suggested commands, we have used the

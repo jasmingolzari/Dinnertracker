@@ -2,7 +2,7 @@
 
 ## 1. Project overview
 
-Dinnertracker is a dinner planning application designed to help users keep track of the food they have available and find both inspirational and their own recipes. 
+Dinnertracker is a dinner planning application designed to help users keep track of the food they have available and find both inspiration and their own recipes. 
 
 The application is developed as a modular Java project using JavaFX for
 the graphical user interface. The project is divided into three main
@@ -10,8 +10,7 @@ architectural layers: domain logic, user interface, and persistence.
 
 The goal of the first release is to create a small but functional
 version of the application. The initial functionality focuses on adding
-ingredients to a fridge, working with a small set of recipes, adding own recipes, and saving and
-loading ingredients using file storage.
+ingredients to a fridge, adding own recipes, and saving recipes using file storage.
 
 The long-term goal of the application is to make it easier for users to
 decide what to have for dinner by combining their available ingredients
@@ -23,10 +22,8 @@ with a collection of recipes.
 The planned functionality for Release 1 is:
 
 - Add ingredients to the user's fridge.
-- Display the ingredients currently available in the fridge.
-- Provide a small selection of dinner recipes.
 - Add own personal recipes. 
-- Save and load fridge ingredients using file storage.
+- Save recipes using JSON file storage.
 - Provide a simple JavaFX graphical user interface.
 
 The application will later be extended with functionality such as, rating recipes, adding comments and links, handling
@@ -90,8 +87,8 @@ with a graphical interface for interacting with the application.
 
 ### Persistence
 
-The persistence layer is responsible for saving and loading application
-data using files.
+The persistence layer is responsible for saving application
+data using JSON files.
 
 The separation between these layers makes it easier to develop and test
 the different parts of the application independently.
@@ -174,7 +171,7 @@ contributed to the project is available in
 
 Several features are planned for later releases. These include:
 
-- Managing and saving personal recipes.
+- Loading recipes from JSON files. 
 - Rating recipes using stars or dice rolls.
 - Adding preparation time and difficulty.
 - Adding comments and links to recipes.
@@ -182,4 +179,5 @@ Several features are planned for later releases. These include:
 - Handling food expiration dates. 
 - Allowing users to specify expiration times for certain food items.
 - Improving the recipe matching/sorting functionality.
+- Saving ingredients from fridge to file
 
