@@ -1,6 +1,7 @@
 module no.ntnu.it1901.gr2631.dinnertracker.ui {
     requires javafx.controls;
     requires javafx.fxml;
+    requires transitive javafx.graphics;
     requires no.ntnu.it1901.gr2631.dinnertracker.core;
     requires no.ntnu.it1901.gr2631.dinnertracker.persistence;
 
