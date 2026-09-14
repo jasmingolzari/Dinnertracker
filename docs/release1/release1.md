@@ -131,7 +131,7 @@ The tests can be executed using Maven with:
 
     mvn test
 
-The project is also configured with JaCoCo to report test coverage. (??? har vi gjort dette?nei)
+The project is also configured with JaCoCo to report test coverage.
 
 ## 7. Maven and dependencies
 
