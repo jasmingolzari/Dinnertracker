@@ -15,7 +15,7 @@ import no.ntnu.it1901.gr2631.dinnertracker.core.FoodItem;
 import no.ntnu.it1901.gr2631.dinnertracker.core.Recipe;
 import no.ntnu.it1901.gr2631.dinnertracker.persistence.RecipeFileHandler;
 
-public class RecipeController {
+public class RecipePageController {
 
     @FXML
     private TextField nameField;
