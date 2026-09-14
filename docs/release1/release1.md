@@ -2,7 +2,7 @@
 
 ## 1. Project overview
 
-Dinnertracker is a dinner planning application designed to help users keep track of the food they have abailable and find both inspirational and their own recipes. 
+Dinnertracker is a dinner planning application designed to help users keep track of the food they have available and find both inspirational and their own recipes. 
 
 The application is developed as a modular Java project using JavaFX for
 the graphical user interface. The project is divided into three main
