@@ -8,7 +8,7 @@ class ControllerTest {
 
     @Test
     void controllerCanBeCreated() {
-        assertDoesNotThrow(HomePageController::new);
+        assertDoesNotThrow(HomepageController::new);
         assertDoesNotThrow(RecipePageController::new);
     }
 }
