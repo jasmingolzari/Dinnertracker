@@ -75,7 +75,7 @@ dependencies.
 The project uses:
 
 - **Java 17**
-- **Maven**
+- **Apache Maven 3.9.x**
 - **JavaFX 21.0.2**
 - **FXML**
 - **JUnit**
@@ -129,7 +129,7 @@ If the project falls below these values, `mvn verify` will fail.
 To build and run Dinnertracker, you need:
 
 - Java 17 or later
-- Maven
+- Apache Maven 3.9.x
 
 ### Run tests
 
