@@ -3,26 +3,26 @@
 ## About the application
 
 Dinnertracker is a dinner planning application designed to help users
-keep track of the ingredients they have available and manage their
+keep track of the ingredients they have available in their fridge and manage their own
 dinner recipes.
 
-The application allows users to keep an overview of the food in their
-fridge and save their own recipes. The long-term goal is to make it
+The long-term goal is to make it
 easier to plan dinners based on the ingredients available to the user.
 
+Release 1 focuses on recipe functionality, including adding recipes
+with ingredients and storing recipe data. The fridge functionality is
+partly implemented in the core domain, while the graphical user
+interface for managing fridge ingredients is planned for a later release.
+
+
 The application is being developed as part of the IT1901 course at NTNU.
+
 
 ## Application screenshot
 
 ![Dinnertracker application homepage](images/dinnertrackerhome.png)
 
 *Screenshot of the Dinnertracker application - homepage.*
-
-
-
-![Dinnertracker fridge and foot items page](images/fridge.png)
-
-*Screenshot of the Dinnertracker application - fridge page.*
 
 
 
