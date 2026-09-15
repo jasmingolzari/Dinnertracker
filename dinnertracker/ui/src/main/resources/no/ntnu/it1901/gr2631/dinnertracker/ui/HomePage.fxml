@@ -37,7 +37,7 @@
                               <Image url="@../../../../../../../../../../../../../../Downloads/Kjøleskap%20åpen%20600x600.jpeg" />
                            </image>
                         </ImageView>
-                        <Button mnemonicParsing="false" prefHeight="48.0" prefWidth="202.0" text="Kjøleskap">
+                        <Button mnemonicParsing="false" prefHeight="48.0" prefWidth="202.0" text="Kjøleskap" onAction="openFridge">
                            <VBox.margin>
                               <Insets top="10.0" />
                            </VBox.margin>
