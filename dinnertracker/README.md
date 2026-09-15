@@ -1,0 +1,173 @@
+# Dinnertracker
+
+## About the application
+
+Dinnertracker is a dinner planning application designed to help users
+keep track of the ingredients they have available in their fridge and manage their own
+dinner recipes.
+
+The long-term goal is to make it
+easier to plan dinners based on the ingredients available to the user.
+
+Release 1 focuses on recipe functionality, including adding recipes
+with ingredients and storing recipe data. The fridge functionality is
+partly implemented in the core domain, while the graphical user
+interface for managing fridge ingredients is planned for a later release.
+
+
+The application is being developed as part of the IT1901 course at NTNU.
+
+
+## Application screenshot
+
+![Dinnertracker application homepage](images/dinnertrackerhome.png)
+
+*Screenshot of the Dinnertracker application - homepage.*
+
+
+
+![Dinnertracker recipes page](images/recipes.png)
+
+*Screenshot of the Dinnertracker application - recipes page.*
+
+
+## User stories
+
+### User story 1 – Adding a recipe
+
+> As a user, I want to add a recipe with a name and ingredients, so that
+> I can save my own dinner recipes.
+
+### User story 2 – Managing fridge ingredients
+
+> As a user, I want to add ingredients to my fridge, so that I can keep
+> an overview of the ingredients I have available.
+
+## Application architecture
+
+Dinnertracker is organized as a multi-module Maven project with three
+main architectural layers:
+
+- **Core** – contains the domain logic and central concepts of the
+  application, such as recipes, food items, and the fridge.
+- **Persistence** – handles saving and loading application data using
+  JSON files.
+- **UI** – contains the graphical user interface, implemented using
+  JavaFX and FXML.
+
+The modules are located in the following directories:
+
+```text
+dinnertracker/
+├── core/
+├── persistence/
+├── ui/
+├── data/
+└── pom.xml
+```
+
+The overall `pom.xml` manages the three modules, while each module has
+its own `pom.xml` containing its module-specific configuration and
+dependencies.
+
+## Technologies
+
+The project uses:
+
+- **Java 17**
+- **Apache Maven 3.9.x**
+- **JavaFX 21.0.2**
+- **FXML**
+- **JUnit**
+- **JaCoCo**
+
+Java and JavaFX versions, as well as the project dependencies, are
+configured in the Maven `pom.xml` files.
+
+## Coverage with JaCoCo
+ 
+The project uses JaCoCo to measure test coverage and enforce a minimum threshold during the Maven verification phase.
+ 
+### Commands
+ 
+```bash
+mvn verify
+mvn jacoco:report
+```
+ 
+### What this does
+ 
+- Runs the test suite and collects coverage data.
+- Generates an HTML coverage report for local inspection.
+- Generates an XML report for CI and tooling integration.
+- Fails the build if the configured coverage threshold is not met.
+ 
+### Report locations
+ 
+After running `mvn verify`, the reports are available in:
+ 
+- `dinnertracker/core/target/site/jacoco/index.html`
+- `dinnertracker/persistence/target/site/jacoco/index.html`
+- `dinnertracker/ui/target/site/jacoco/index.html`
+- `dinnertracker/target/site/jacoco-aggregate/index.html`
+ 
+The aggregated report in the root module gives the combined coverage across all modules.
+ 
+### Coverage threshold
+ 
+The current minimum enforced coverage is:
+ 
+- 80% line coverage
+- 70% branch coverage
+ 
+If the project falls below these values, `mvn verify` will fail.
+
+## Running the project
+
+### Requirements
+
+To build and run Dinnertracker, you need:
+
+- Java 17 or later
+- Apache Maven 3.9.x
+
+### Run tests
+
+From the `dinnertracker/` directory, run:
+
+```bash
+mvn test
+```
+
+This runs the automated tests for the project modules.
+
+### Run the application
+
+To start the JavaFX application, run:
+
+```bash
+mvn javafx:run
+```
+
+## Application data
+
+Application data is stored in the [`data/`](data/) directory.
+
+The project currently contains a `recipes.json` file for recipe data.
+
+## Development environment
+
+The project is configured to support development using Eclipse Che.
+
+More information about opening and running the project in Eclipse Che
+will be provided here:
+
+[Eclipse Che project](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631?new)
+
+## Project documentation
+
+Documentation for the individual releases is located in the
+[`docs/`](../docs/) directory.
+
+The documentation for Release 1 can be found
+[here](../docs/release1/release1.md).
