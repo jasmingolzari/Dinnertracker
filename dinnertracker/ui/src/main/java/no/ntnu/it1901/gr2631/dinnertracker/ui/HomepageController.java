@@ -10,7 +10,7 @@ import javafx.scene.Node;
 import javafx.event.ActionEvent;
 
 
-public class HomepageController {
+public class HomePageController {
     @FXML
     private void openRecipe(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
