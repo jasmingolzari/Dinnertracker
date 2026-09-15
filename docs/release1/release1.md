@@ -2,7 +2,8 @@
 
 ## 1. Project overview
 
-Dinnertracker is a dinner planning application designed to help users keep track of the food they have available and find both inspiration and their own recipes. 
+Dinnertracker is a dinner planning application designed to help users
+manage their ingredients and find inspiration through their own recipes.
 
 The application is developed as a modular Java project using JavaFX for
 the graphical user interface. The project is divided into three main
@@ -10,7 +11,8 @@ architectural layers: domain logic, user interface, and persistence.
 
 The goal of the first release is to create a small but functional
 version of the application. The initial functionality focuses on adding
-ingredients to a fridge, adding own recipes, and saving recipes using file storage.
+and managing recipes, implementing the domain model for food items and
+the fridge, and saving recipes using file storage.
 
 The long-term goal of the application is to make it easier for users to
 decide what to have for dinner by combining their available ingredients
@@ -21,10 +23,15 @@ with a collection of recipes.
 
 The planned functionality for Release 1 is:
 
-- Add ingredients to the user's fridge.
-- Add own personal recipes. 
+- Add own personal recipes with a name and ingredients.
 - Save recipes using JSON file storage.
-- Provide a simple JavaFX graphical user interface.
+- Provide a simple JavaFX graphical user interface for recipe
+  functionality.
+- Implement domain classes for food items and the fridge.
+- Include automated tests for the implemented functionality.
+
+The graphical user interface for managing fridge ingredients is not
+included in Release 1 and is planned for a later release.
 
 The application will later be extended with functionality such as, rating recipes, adding comments and links, handling
 food expiration dates, and potentially retrieving recipes from online sources.
@@ -52,22 +59,17 @@ The functionality is divided into smaller development tasks, including:
 As a user, I want to add ingredients to my fridge, so that I can keep
 an overview of the ingredients I have available.
 
+The domain functionality supporting this user story is implemented in
+Release 1. The graphical user interface for managing fridge ingredients
+is planned for a later release.
+
 The functionality is divided into smaller development tasks, including:
 
 - Food item domain class (#10)
 - Tests for Food item (#15)
 - Fridge domain class (#16)
-- Fridge page GUI (#32)
 
-
-
-### Perhaps future user story – Finding possible dinners
-
-As a user, I want the application to show which recipes I can make based
-on the ingredients in my fridge, so that I do not have to decide what
-to make for dinner myself.
-
-This functionality is planned for further development and possibilites, and is not the focus of Release 1.
+The planned fridge page GUI (#32) is not included in Release 1.
 
 
 ## 4. Architecture
@@ -121,8 +123,9 @@ track of responsibility and progress within the group.
 The project uses JUnit for automated testing.
 
 Tests are located in the test source directories of the relevant Maven
-modules. The tests cover functionality in the domain layer, including
-food items, recipes, and the fridge.
+modules.  The tests cover functionality in the domain and persistence
+layers, including food items, recipes, the fridge, and recipe file
+handling.
 
 The tests can be executed using Maven with:
 
@@ -171,6 +174,8 @@ contributed to the project is available in
 
 Several features are planned for later releases. These include:
 
+-Implementing the graphical user interface for managing fridge
+ingredients.
 - Loading recipes from JSON files. 
 - Rating recipes using stars or dice rolls.
 - Adding preparation time and difficulty.
