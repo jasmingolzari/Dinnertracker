@@ -164,6 +164,30 @@ will be provided here:
 
 [Eclipse Che project](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631.git)
 
+### Known issue with running JavaFX in Eclipse Che
+
+We have encountered an issue when running the JavaFX application in Eclipse Che. The project compiles successfully in the Eclipse Che environment, but running 
+
+```bash
+mvn javafx:run
+```
+
+fails when JavaFX attempts to start the graphical user interface.
+
+The error is related to the graphical environment available in the
+Eclipse Che container. In particular, JavaFX reports that it is unable
+to open the display and that the native library libXxf86vm.so.1 is
+missing.
+
+The issue has been tested and is known to occur in the Eclipse Che
+environment. The application works locally, while the same JavaFX
+startup command fails in Eclipse Che.
+
+This is therefore considered a known environment-related issue rather
+than an issue with the project's compilation. We have verified that
+Maven is able to compile the UI module in Eclipse Che before the
+JavaFX startup fails.
+
 ## Project documentation
 
 Documentation for the individual releases is located in the
