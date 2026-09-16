@@ -4,13 +4,19 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Stage;
 import no.ntnu.it1901.gr2631.dinnertracker.core.FoodItem;
 import no.ntnu.it1901.gr2631.dinnertracker.core.Recipe;
 import no.ntnu.it1901.gr2631.dinnertracker.persistence.RecipeFileHandler;
@@ -119,21 +125,11 @@ public class RecipePageController {
 
         Recipe newRecipe = new Recipe(recipeName, new ArrayList<>(foodItems), steps);
 
-        StringBuilder builder = new StringBuilder(); 
-        for (char c : recipeName.toLowerCase().toCharArray()) {
-            if (Character.isLetterOrDigit(c)) {
-                builder.append(c); 
-            } else {
-                builder.append("_");
-            }
-        }
-
-        String safeFileName = builder.toString() + ".json";
-        Path filePath = Path.of(System.getProperty("user.home"), "dinnertracker", safeFileName);
-
+ 
+        Path filePath = Path.of("..", "data", "recipes.json");
         RecipeFileHandler fileHandler = new RecipeFileHandler(); 
         try {
-            fileHandler.saveRecipe(newRecipe, filePath);
+            fileHandler.addRecipe(newRecipe, filePath);
 
             showAddedRecipeMessage("Oppskrift lagt til");
             clearForm();
@@ -142,6 +138,7 @@ public class RecipePageController {
         } catch (IOException e) {
             showAlertMessage("Klarte ikke å lagre oppskriften: " + e.getMessage());
         }
+        clearForm();
     }
     
     private void showAddedRecipeMessage(String message){
@@ -160,5 +157,19 @@ public class RecipePageController {
         ingredientsList.getItems().clear();
         stepsList.getItems().clear();
         foodItems.clear();
+    }
+
+    @FXML
+    private void backToHomePage(ActionEvent event) throws IOException {
+        Parent root;
+        root = FXMLLoader.load(
+                getClass().getResource("HomePage.fxml")
+        );
+
+        Stage stage = (Stage) ((Node) event.getSource())
+        .getScene().getWindow();
+
+        stage.setScene(new Scene(root));
+        stage.show();
     }
 }
