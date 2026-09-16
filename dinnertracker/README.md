@@ -162,7 +162,7 @@ The project is configured to support development using Eclipse Che.
 More information about opening and running the project in Eclipse Che
 will be provided here:
 
-[Eclipse Che project](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631?new)
+[Eclipse Che project](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631.git)
 
 ## Project documentation
 
