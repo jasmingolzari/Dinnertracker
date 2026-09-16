@@ -41,4 +41,37 @@ public class RecipeFileHandler {
 
         return new Recipe(name, ingridients, steps);
     }
+
+    public void addRecipe(Recipe recipe, Path path) throws IOException {
+        List<Recipe> recipes = new ArrayList<>();
+
+        if (path.toFile().exists() && path.toFile().length() > 0) {
+            JsonNode root = objectMapper.readTree(path.toFile());
+
+            for (JsonNode recipeNode : root) {
+                String name = recipeNode.get("name").asText();
+
+                List<FoodItem> ingredients = new ArrayList<>();
+                JsonNode ingredientsNode = recipeNode.get("ingridients");
+
+                for (JsonNode ingredientNode : ingredientsNode) {
+                    String foodItemName = ingredientNode.get("name").asText();
+                    ingredients.add(new FoodItem(foodItemName));
+                }
+
+                List<String> steps = new ArrayList<>();
+                JsonNode stepsNode = recipeNode.get("steps");
+
+                for (JsonNode stepNode : stepsNode) {
+                    steps.add(stepNode.asText());
+                }
+
+                recipes.add(new Recipe(name, ingredients, steps));
+            }
+        }
+
+        recipes.add(recipe);
+
+        objectMapper.writeValue(path.toFile(), recipes);
+    }
 }

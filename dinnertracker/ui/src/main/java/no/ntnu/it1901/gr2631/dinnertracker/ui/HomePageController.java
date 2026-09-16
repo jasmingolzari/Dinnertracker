@@ -12,8 +12,9 @@ import javafx.stage.Stage;
 
 
 public class HomePageController {
+
     @FXML
-    private void openRecipe(ActionEvent event) throws IOException {
+    private void openRecipePage(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
             getClass().getResource("RecipePage.fxml")
         );
@@ -26,7 +27,7 @@ public class HomePageController {
     }
 
      @FXML
-    private void openFridge(ActionEvent event) throws IOException {
+    private void openFridgePage(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
             getClass().getResource("FridgePage.fxml")
         );

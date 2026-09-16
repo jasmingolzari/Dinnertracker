@@ -14,7 +14,7 @@ public class App extends Application {
             App.class.getResource("HomePage.fxml")
         );
         stage.setScene(new Scene(root));
-        stage.setTitle("Oppskrift");
+        stage.setTitle("Dinnertracker");
         stage.show();
     }
 
