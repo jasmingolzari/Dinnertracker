@@ -157,6 +157,22 @@ The project is configured to support development using Eclipse Che.
 The Eclipse Che workspace can be opened using the link provided in the
 project's README.
 
+### Known issue
+
+During development, the group encountered an issue when attempting to
+run the JavaFX application in Eclipse Che. Maven successfully compiles
+the project, but `mvn javafx:run` fails when JavaFX attempts to initialize
+the graphical environment.
+
+The error indicates that JavaFX is unable to open the display and that
+the Eclipse Che environment is missing the native library
+`libXxf86vm.so.1`.
+
+The issue occurs in the Eclipse Che environment. The application has
+been tested locally, where the JavaFX application can be run normally.
+
+The group is aware of the issue and has documented it as an environment-
+specific limitation of the Eclipse Che setup.
 
 ## 9. AI Tools
 
