@@ -64,8 +64,6 @@ Dinnertracker uses JSON files and the Jackson library for persistence.
 It uses classes from the core module when handling recipes and food
 items.
 
-The persistence layer is separated from the UI so that file handling
-does not have to be implemented in the graphical interface.
 
 ## Module dependencies
 
