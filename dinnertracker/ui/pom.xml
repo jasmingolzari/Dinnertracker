@@ -33,6 +33,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.4.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-materialdesign2-pack</artifactId>
+            <version>12.4.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>no.ntnu.it1901.gr2631</groupId>
             <artifactId>persistence</artifactId>
             <version>${project.version}</version>
