@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TableColumn?>
@@ -23,12 +24,7 @@
          <children>
             <StackPane maxWidth="Infinity" prefHeight="48.0">
                <children>
-                  <Button mnemonicParsing="false" onAction="#backToHomePage" style="-fx-background-color: #2F6B3B; -fx-text-fill: white;" text="Tilbake" StackPane.alignment="CENTER_LEFT">
-                     <graphic>
-                        <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
-                     </graphic>
-                  </Button>
-                  <HBox alignment="CENTER" spacing="8.0">
+                  <HBox alignment="CENTER" mouseTransparent="true" spacing="8.0">
                      <children>
                         <FontIcon iconColor="#2F6B3B" iconLiteral="mdi2f-fridge-outline" iconSize="24" />
                         <Label text="Kjøleskap" textAlignment="CENTER">
@@ -38,6 +34,11 @@
                         </Label>
                      </children>
                   </HBox>
+                  <Button mnemonicParsing="false" onAction="#backToHomePage" style="-fx-background-color: #2F6B3B; -fx-text-fill: white;" text="Tilbake" StackPane.alignment="CENTER_LEFT">
+                     <graphic>
+                        <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
+                     </graphic>
+                  </Button>
                </children>
             </StackPane>
             <Label alignment="CENTER" maxWidth="Infinity" prefHeight="34.0" text="Her kan du legge til varer." textAlignment="CENTER" />
@@ -45,7 +46,8 @@
                <children>
                   <TextField fx:id="foodItemField" prefHeight="40.0" prefWidth="260.0" promptText="Vare" />
                   <Spinner fx:id="quantitySpinner" editable="true" prefHeight="40.0" prefWidth="80.0" />
-                  <Button fx:id="addFoodItemButton" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white;" text="Legg til matvare">
+                  <ComboBox fx:id="unitComboBox" prefHeight="40.0" prefWidth="70.0" promptText="Enhet" />
+                  <Button fx:id="addFoodItemButton" mnemonicParsing="false" onAction="#addFoodItem" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white;" text="Legg til matvare">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
                      </graphic>
