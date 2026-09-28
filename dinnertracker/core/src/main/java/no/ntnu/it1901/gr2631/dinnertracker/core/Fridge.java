@@ -10,7 +10,7 @@ public class Fridge {
      * @param quantity The quantity to validate.
      * @throws IllegalArgumentException if the quantity is negative.
      */
-    private static void validateQuantity(int quantity) {
+    private static void validateQuantity(double quantity) {
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantity cannot be negative.");
         }
@@ -24,7 +24,7 @@ public class Fridge {
      * If the food item already exists in the fridge, the quantity is updated.
      */
     public static void addFoodItem(FoodItem foodItem, double quantity) {
-        validateQuantity((int) quantity);
+        validateQuantity((double) quantity);
         if (foodItems.containsKey(foodItem)) {
             double currentQuantity = foodItems.get(foodItem);
             foodItems.put(foodItem, currentQuantity + quantity);
@@ -42,7 +42,7 @@ public class Fridge {
      *  or if the food item does not exist in the fridge.
      */
     public static boolean useFoodItem(FoodItem foodItem, double quantity) {
-        validateQuantity((int) quantity);
+        validateQuantity((double) quantity);
         Double currentQuantity = foodItems.get(foodItem);
         if (currentQuantity == null || currentQuantity < quantity) {
             return false;
