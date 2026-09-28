@@ -3,7 +3,7 @@ package no.ntnu.it1901.gr2631.dinnertracker.core;
 import java.util.HashMap;
 
 public class Fridge {
-    private static final HashMap<FoodItem, Integer> foodItems = new HashMap<>();
+    private static final HashMap<FoodItem, Double> foodItems = new HashMap<>();
 
     /**
      * Validate that the quantity is not negative.
@@ -23,10 +23,10 @@ public class Fridge {
      * Uses a HashMap to store the food items and their quantities. 
      * If the food item already exists in the fridge, the quantity is updated.
      */
-    public static void addFoodItem(FoodItem foodItem, int quantity) {
-        validateQuantity(quantity);
+    public static void addFoodItem(FoodItem foodItem, double quantity) {
+        validateQuantity((int) quantity);
         if (foodItems.containsKey(foodItem)) {
-            int currentQuantity = foodItems.get(foodItem);
+            double currentQuantity = foodItems.get(foodItem);
             foodItems.put(foodItem, currentQuantity + quantity);
         } else {
             foodItems.put(foodItem, quantity);
@@ -41,9 +41,9 @@ public class Fridge {
      *  false if the quantity is more than the available quantity
      *  or if the food item does not exist in the fridge.
      */
-    public static boolean useFoodItem(FoodItem foodItem, int quantity) {
-        validateQuantity(quantity);
-        Integer currentQuantity = foodItems.get(foodItem);
+    public static boolean useFoodItem(FoodItem foodItem, double quantity) {
+        validateQuantity((int) quantity);
+        Double currentQuantity = foodItems.get(foodItem);
         if (currentQuantity == null || currentQuantity < quantity) {
             return false;
         }
@@ -59,10 +59,10 @@ public class Fridge {
     /**
      * Get the quantity of a food item in the fridge.
      * @param foodItem
-     * @return int quantity of the food item in the fridge, or 0 if the food item does not exist.
+     * @return double quantity of the food item in the fridge, or 0 if the food item does not exist.
      */
-    public static int getQuantity(FoodItem foodItem) {
-        return foodItems.getOrDefault(foodItem, 0);
+    public static double getQuantity(FoodItem foodItem) {
+        return foodItems.getOrDefault(foodItem, 0.0);
     }
 
 }
