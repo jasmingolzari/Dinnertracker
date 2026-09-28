@@ -1,5 +1,6 @@
 package no.ntnu.it1901.gr2631.dinnertracker.persistence;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -32,5 +33,29 @@ public class RecipeFileHandlerTest {
         assertTrue(json.contains("Pasta med tomat"));
         assertTrue(json.contains("Pasta"));
         assertTrue(json.contains("Tomat"));
+    }
+
+    @Test
+    void testLoadRecipe() throws Exception {
+        Recipe originalRecipe = new Recipe("Pasta med tomat");
+        originalRecipe.addIngridient(new FoodItem("Pasta"));
+        originalRecipe.addIngridient(new FoodItem("Tomat"));
+        originalRecipe.addStep("Kok pastaen");
+        originalRecipe.addStep("Tilsett tomat");
+
+        Path file = tempDir.resolve("recipe.json");
+
+        RecipeFileHandler fileHandler = new RecipeFileHandler();
+        fileHandler.saveRecipe(originalRecipe, file);
+
+        Recipe loadedRecipe = fileHandler.loadRecipe(file);
+
+        assertEquals("Pasta med tomat", loadedRecipe.getName());
+        assertEquals(2, loadedRecipe.getIngridients().size());
+        assertEquals("Pasta", loadedRecipe.getIngridients().get(0).getName());
+        assertEquals("Tomat", loadedRecipe.getIngridients().get(1).getName());
+        assertEquals(2, loadedRecipe.getSteps().size());
+        assertEquals("Kok pastaen", loadedRecipe.getSteps().get(0));
+        assertEquals("Tilsett tomat", loadedRecipe.getSteps().get(1));
     }
 }

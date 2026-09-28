@@ -1,0 +1,72 @@
+schemaVersion: 2.1.0
+
+metadata:
+  name: dinnertracker
+
+projects:
+  - name: dinnertracker
+    git:
+      remotes:
+        origin: https://git.ntnu.no/IT1901-2026-groups/gr2631.git
+      checkoutFrom:
+        revision: main
+
+components:
+  - name: dinnertracker
+    container:
+      image: adrianstoica/it1901:latest
+      memoryLimit: 3Gi
+      mountSources: true
+
+      endpoints:
+        - exposure: public
+          name: 01-desktop-ui
+          protocol: https
+          targetPort: 6080
+          secure: true
+          attributes:
+            urlRewriteSupported: "true"
+
+        - exposure: public
+          name: 3000-tcp
+          protocol: http
+          targetPort: 3000
+
+        - exposure: public
+          name: 5900-tcp
+          protocol: http
+          targetPort: 5900
+
+        - exposure: public
+          name: 5901-tcp
+          protocol: http
+          targetPort: 5901
+
+        - exposure: public
+          name: 8080-tcp
+          protocol: http
+          targetPort: 8080
+
+        - exposure: public
+          name: 5500-tcp
+          protocol: http
+          targetPort: 5500
+
+commands:
+  - id: build
+    exec:
+      component: dinnertracker
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: mvn clean install
+      group:
+        kind: build
+        isDefault: true
+
+  - id: test
+    exec:
+      component: dinnertracker
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: mvn test
+      group:
+        kind: test
+        isDefault: true
