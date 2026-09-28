@@ -16,7 +16,7 @@ public class HomePageController {
     @FXML
     private void openRecipePage(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
-            getClass().getResource("RecipePage.fxml")
+            getClass().getResource("RecipeViewPage.fxml")
         );
 
         Stage stage = (Stage) ((Node) event.getSource())
