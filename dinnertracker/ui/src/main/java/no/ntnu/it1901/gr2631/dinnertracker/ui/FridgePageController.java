@@ -14,8 +14,10 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import no.ntnu.it1901.gr2631.dinnertracker.core.Amount;
 import no.ntnu.it1901.gr2631.dinnertracker.core.FoodItem;
 import no.ntnu.it1901.gr2631.dinnertracker.core.Fridge;
+import no.ntnu.it1901.gr2631.dinnertracker.core.Unit;
 
 /**
  * Controller for the fridge page.
@@ -24,6 +26,8 @@ import no.ntnu.it1901.gr2631.dinnertracker.core.Fridge;
  * errors, and navigating back to the home page.</p>
  */
 public class FridgePageController {
+
+    private final Fridge fridge = App.getFridge();
 
     @FXML
     private TextField foodItemField;
@@ -83,9 +87,10 @@ public class FridgePageController {
         try {
             String foodName = foodItemField.getText().trim();
             double quantity = quantitySpinner.getValue();
+            Unit unit = getUnit(unitComboBox.getValue());
             FoodItem foodItem = new FoodItem(foodName);
 
-            Fridge.addFoodItem(foodItem, quantity);
+            fridge.addFoodItem(foodItem, new Amount(quantity, unit));
             foodItemField.clear();
             quantitySpinner.getValueFactory().setValue(0.0);
         }
@@ -109,6 +114,15 @@ public class FridgePageController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private Unit getUnit(String symbol) {
+        for (Unit unit : Unit.values()) {
+            if (unit.getSymbol().equals(symbol)) {
+                return unit;
+            }
+        }
+        throw new IllegalArgumentException("Ugyldig måleenhet.");
     }
 
 }
