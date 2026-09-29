@@ -116,6 +116,13 @@ public class FridgePageController {
         alert.showAndWait();
     }
 
+    /**
+     * Finds the measurement unit represented by a symbol from the UI.
+     *
+     * @param symbol the unit symbol selected by the user
+     * @return the matching measurement unit
+     * @throws IllegalArgumentException if no unit matches the symbol
+     */
     private Unit getUnit(String symbol) {
         for (Unit unit : Unit.values()) {
             if (unit.getSymbol().equals(symbol)) {

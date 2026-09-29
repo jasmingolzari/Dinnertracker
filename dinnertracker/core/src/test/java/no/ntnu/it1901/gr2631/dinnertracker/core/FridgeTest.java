@@ -152,6 +152,9 @@ class FridgeTest {
         assertEquals(5.5, fridge.getQuantity(bananas), DELTA);
     }
 
+    /**
+     * Verifies that using zero quantity does not change the stored amount.
+     */
     @Test
     void testUsingZeroLeavesAmountUnchanged() {
         Fridge fridge = new Fridge();
@@ -163,6 +166,9 @@ class FridgeTest {
         assertEquals(Unit.KILOGRAM, fridge.getUnit(rice));
     }
 
+    /**
+     * Verifies that adding an existing item with another unit is rejected.
+     */
     @Test
     void testAddingWithDifferentUnitThrowsException() {
         Fridge fridge = new Fridge();
@@ -176,6 +182,9 @@ class FridgeTest {
         assertEquals(1.0, fridge.getQuantity(flour), DELTA);
     }
 
+    /**
+     * Verifies that null food items and amounts are rejected.
+     */
     @Test
     void testNullFoodItemOrAmountThrowsException() {
         Fridge fridge = new Fridge();
@@ -190,6 +199,9 @@ class FridgeTest {
         );
     }
 
+    /**
+     * Verifies that NaN and infinite quantities are rejected.
+     */
     @Test
     void testNonFiniteQuantityThrowsException() {
         Fridge fridge = new Fridge();
@@ -205,6 +217,9 @@ class FridgeTest {
         );
     }
 
+    /**
+     * Verifies that hasItem reports whether enough quantity is available.
+     */
     @Test
     void testHasItemChecksAvailableQuantity() {
         Fridge fridge = new Fridge();
@@ -217,6 +232,9 @@ class FridgeTest {
         assertFalse(fridge.hasItem(new FoodItem("Vinegar"), 1.0));
     }
 
+    /**
+     * Verifies that modifying the returned map does not modify the fridge.
+     */
     @Test
     void testGetFoodItemsReturnsCopy() {
         Fridge fridge = new Fridge();
