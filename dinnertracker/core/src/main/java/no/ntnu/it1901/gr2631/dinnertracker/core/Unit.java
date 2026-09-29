@@ -7,6 +7,7 @@ package no.ntnu.it1901.gr2631.dinnertracker.core;
  * and persistence. 
  * </p>
  */
+
 public enum Unit {
 
     LITRE("L"),
