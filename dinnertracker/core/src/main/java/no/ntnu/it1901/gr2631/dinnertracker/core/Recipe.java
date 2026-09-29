@@ -2,34 +2,37 @@ package no.ntnu.it1901.gr2631.dinnertracker.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 /** 
  * Represents a recipe in our dinner tracker.
 */
 public class Recipe {
     private final String name;
-    private final List<FoodItem> ingridients;
+    private final Map<FoodItem,Amount> ingredients;
     private final List<String> steps;
 
     /** 
      * Creates a new recipe with existing ingredients and steps.
-     * Used when loading an already complete recipe, for example from a file
-     * or a web source (this constructor may need to change to fit file reading.)
+     * Used when loading a complete recipe from file.
      * 
      * @param name the name of the recipe
-     * @param ingridients the list of food items required for the recipe
+     * @param ingridients map from food item to the amount required
      * @param steps the list of steps describing how to prepare the recipe
     */
-    public Recipe(String name,List<FoodItem> ingridients, List<String> steps) {
+    public Recipe(String name,Map<FoodItem,Amount> ingredients, List<String> steps) {
         this.name = name;
-        this.ingridients = new ArrayList<>(ingridients);
-        this.steps = new ArrayList<>(steps);
+        ingredients.forEach(this::addIngredient);
+        this.steps.addAll(steps);
+
     }
 
     /**
      * Creates a new, empty recipe with the given name.
      * Used when a user wants to build up a recipe themselves, by
      * adding ingredients and steps afterwards. 
+     * 
      * @param name
      * @throws IllegalArgumentException if the name is null or blank.
      */
@@ -38,7 +41,7 @@ public class Recipe {
             throw new IllegalArgumentException("Navnet kan ikke være tomt.");
         }
         this.name = name;
-        this.ingridients = new ArrayList<>();
+        this.ingredients = new HashMap<>();
         this.steps = new ArrayList<>();
     }
 
@@ -58,9 +61,8 @@ public class Recipe {
      * 
      * @return an unmodifiable list of the recipe's ingridients
      */
-    public List<FoodItem> getIngridients() {
-        return Collections.unmodifiableList(ingridients);
-        
+    public List<FoodItem> getIngredients() {
+        return Collections.unmodifiableList(ingredients);
     }
     
     /**
@@ -79,8 +81,14 @@ public class Recipe {
      * 
      * @param item the food item to add as an ingridient
      */
-    public void addIngridient(FoodItem item) {
-        ingridients.add(item);
+    public void addIngridient(FoodItem item, Amount amount) {
+        if (item == null) {
+            throw new IllegalArgumentException("Matvare kan ikke være null.");
+        }
+        if (amount == null) {
+            throw new IllegalArgumentException("Mengde kan ikke være null.");
+        }
+        ingredients.put(item, amount);
     }
 
     /**
@@ -93,12 +101,12 @@ public class Recipe {
     }
 
     /**
-     * Removes the ingridient at the given index from the recipe.
+     * Removes the ingredient at the given index from the recipe.
      * 
-     * @param item the item to remove from ingridients
+     * @param item the item to remove from ingredients
      */
-    public void removeIngridient(FoodItem item) {
-        ingridients.remove(item);
+    public void removeIngredient(FoodItem item) {
+        ingredients.remove(item);
     }
 
     /**
@@ -122,14 +130,17 @@ public class Recipe {
         StringBuilder sb = new StringBuilder();
         sb.append("Oppskrift: ").append(name).append("\n\n");
 
-        sb.append("Ingridienser:\n");
-        for(FoodItem item:ingridients) {
-            sb.append("- ").append(item).append("\n");
+        sb.append("Ingredienser:\n");
+        for (Map.Entry<FoodItem, Amount> entry : ingredients.entrySet()) {
+            Amount a = entry.getValue();
+            sb.append("- ").append(entry.getKey().getName()).append(": ")
+              .append(a.quantity()).append(" ")
+              .append(a.unit().getSymbol()).append("\n");
         }
 
         sb.append("\nFremgangsmåte:\n");
-        for(int i = 0; i<steps.size(); i++) {
-            sb.append(i+1).append(".").append(steps.get(i)).append("\n");
+        for (int i = 0; i < steps.size(); i++) {
+            sb.append(i + 1).append(". ").append(steps.get(i)).append("\n");
         }
 
         return sb.toString();
