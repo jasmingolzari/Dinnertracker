@@ -1,3 +1,10 @@
+---
+name: General issue
+about: Create a new issue
+title: ""
+labels: ""
+assignees: ""
+---
 ## Description
 
 <!-- Describe what should be implemented, fixed, or changed, and why it is needed. -->
