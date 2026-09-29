@@ -20,7 +20,10 @@ import javafx.stage.Stage;
 import no.ntnu.it1901.gr2631.dinnertracker.core.FoodItem;
 import no.ntnu.it1901.gr2631.dinnertracker.core.Recipe;
 import no.ntnu.it1901.gr2631.dinnertracker.persistence.RecipeFileHandler;
-
+/**
+ * 
+ * RecipePageController
+ */
 public class RecipePageController {
 
     @FXML
