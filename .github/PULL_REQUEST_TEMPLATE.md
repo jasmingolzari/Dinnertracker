@@ -43,6 +43,8 @@ Closes #
 <!-- Complete this checklist before requesting a review. -->
 
 - [ ] Code follows the project's conventions
+- [ ] Build success on mvn verify
+- [ ] Build success on mvn javafx:run
 - [ ] No unnecessary code or files are included
 - [ ] Relevant tests have been added or updated
 - [ ] Relevant documentation has been added: javadoc to the edited files and to this PR
