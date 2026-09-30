@@ -1,9 +1,8 @@
 package no.ntnu.it1901.gr2631.dinnertracker.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
@@ -24,7 +23,7 @@ class FridgeTest {
         Fridge fridge = new Fridge();
         FoodItem milk = new FoodItem("Milk");
 
-        fridge.addFoodItem(milk, 5.5, Unit.LITRE);
+        fridge.addFoodItem(milk, new Amount(5.5, Unit.LITRE));
 
         assertEquals(5.5, fridge.getQuantity(milk), DELTA);
         assertEquals(Unit.LITRE, fridge.getUnit(milk));
@@ -38,7 +37,7 @@ class FridgeTest {
         Fridge fridge = new Fridge();
         FoodItem eggs = new FoodItem("Eggs");
 
-        fridge.addFoodItem(eggs, 4.25, Unit.PIECE);
+        fridge.addFoodItem(eggs, new Amount(4.25, Unit.PIECE));
         fridge.addFoodItem(eggs, new Amount(3.75, Unit.PIECE));
 
         assertEquals(8.0, fridge.getQuantity(eggs), DELTA);
@@ -64,11 +63,10 @@ class FridgeTest {
         Fridge fridge = new Fridge();
         FoodItem bread = new FoodItem("Bread");
 
-        fridge.addFoodItem(bread, 5.5, Unit.PIECE);
+        fridge.addFoodItem(bread, new Amount(5.5, Unit.PIECE));
 
-        boolean result = fridge.useFoodItem(bread, 2.25);
+        fridge.useFoodItem(bread, new Amount(2.25, Unit.PIECE));
 
-        assertTrue(result);
         assertEquals(3.25, fridge.getQuantity(bread), DELTA);
         assertEquals(Unit.PIECE, fridge.getUnit(bread));
     }
@@ -81,11 +79,10 @@ class FridgeTest {
         Fridge fridge = new Fridge();
         FoodItem butter = new FoodItem("Butter");
 
-        fridge.addFoodItem(butter, 5.5, Unit.PIECE);
+        fridge.addFoodItem(butter, new Amount(5.5, Unit.PIECE));
 
-        boolean result = fridge.useFoodItem(butter, 5.5);
+        fridge.useFoodItem(butter, new Amount(5.5, Unit.PIECE));
 
-        assertTrue(result);
         assertEquals(0.0, fridge.getQuantity(butter), DELTA);
     }
 
@@ -97,11 +94,12 @@ class FridgeTest {
         Fridge fridge = new Fridge();
         FoodItem yogurt = new FoodItem("Yogurt");
 
-        fridge.addFoodItem(yogurt, 3.5, Unit.LITRE);
+        fridge.addFoodItem(yogurt, new Amount(3.5, Unit.LITRE));
 
-        boolean result = fridge.useFoodItem(yogurt, 5.25);
-
-        assertFalse(result);
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> fridge.useFoodItem(yogurt, new Amount(5.25, Unit.LITRE))
+        );
 
         assertEquals(3.5, fridge.getQuantity(yogurt), DELTA);
     }
@@ -114,9 +112,10 @@ class FridgeTest {
         Fridge fridge = new Fridge();
         FoodItem chicken = new FoodItem("Chicken");
 
-        boolean result = fridge.useFoodItem(chicken, 1.25);
-
-        assertFalse(result);
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> fridge.useFoodItem(chicken, new Amount(1.25, Unit.PIECE))
+        );
         assertEquals(0.0, fridge.getQuantity(chicken), DELTA);
     }
 
@@ -130,7 +129,7 @@ class FridgeTest {
 
         assertThrows(
             IllegalArgumentException.class,
-            () -> fridge.addFoodItem(apples, -1.0, Unit.PIECE)
+            () -> fridge.addFoodItem(apples, new Amount(-1.0, Unit.PIECE))
         );
     }
 
@@ -142,28 +141,14 @@ class FridgeTest {
         Fridge fridge = new Fridge();
         FoodItem bananas = new FoodItem("Bananas");
 
-        fridge.addFoodItem(bananas, 5.5, Unit.PIECE);
+        fridge.addFoodItem(bananas, new Amount(5.5, Unit.PIECE));
 
         assertThrows(
             IllegalArgumentException.class,
-            () -> fridge.useFoodItem(bananas, -1.0)
+            () -> fridge.useFoodItem(bananas, new Amount(-1.0, Unit.PIECE))
         );
 
         assertEquals(5.5, fridge.getQuantity(bananas), DELTA);
-    }
-
-    /**
-     * Verifies that using zero quantity does not change the stored amount.
-     */
-    @Test
-    void testUsingZeroLeavesAmountUnchanged() {
-        Fridge fridge = new Fridge();
-        FoodItem rice = new FoodItem("Rice");
-        fridge.addFoodItem(rice, 2.0, Unit.KILOGRAM);
-
-        assertTrue(fridge.useFoodItem(rice, 0));
-        assertEquals(2.0, fridge.getQuantity(rice), DELTA);
-        assertEquals(Unit.KILOGRAM, fridge.getUnit(rice));
     }
 
     /**
@@ -173,11 +158,11 @@ class FridgeTest {
     void testAddingWithDifferentUnitThrowsException() {
         Fridge fridge = new Fridge();
         FoodItem flour = new FoodItem("Flour");
-        fridge.addFoodItem(flour, 1.0, Unit.KILOGRAM);
+        fridge.addFoodItem(flour, new Amount(1.0, Unit.KILOGRAM));
 
         assertThrows(
             IllegalArgumentException.class,
-            () -> fridge.addFoodItem(flour, 500.0, Unit.GRAM)
+            () -> fridge.addFoodItem(flour, new Amount(500.0, Unit.GRAM))
         );
         assertEquals(1.0, fridge.getQuantity(flour), DELTA);
     }
@@ -209,11 +194,14 @@ class FridgeTest {
 
         assertThrows(
             IllegalArgumentException.class,
-            () -> fridge.addFoodItem(sugar, Double.NaN, Unit.GRAM)
+            () -> fridge.addFoodItem(sugar, new Amount(Double.NaN, Unit.GRAM))
         );
         assertThrows(
             IllegalArgumentException.class,
-            () -> fridge.useFoodItem(sugar, Double.POSITIVE_INFINITY)
+            () -> fridge.useFoodItem(
+                sugar,
+                new Amount(Double.POSITIVE_INFINITY, Unit.GRAM)
+            )
         );
     }
 
@@ -224,12 +212,23 @@ class FridgeTest {
     void testHasItemChecksAvailableQuantity() {
         Fridge fridge = new Fridge();
         FoodItem oil = new FoodItem("Oil");
-        fridge.addFoodItem(oil, 2.0, Unit.LITRE);
+        fridge.addFoodItem(oil, new Amount(2.0, Unit.LITRE));
 
-        assertTrue(fridge.hasItem(oil, 2.0));
-        assertTrue(fridge.hasItem(oil, 1.5));
-        assertFalse(fridge.hasItem(oil, 2.5));
-        assertFalse(fridge.hasItem(new FoodItem("Vinegar"), 1.0));
+        assertDoesNotThrow(
+            () -> fridge.useFoodItem(oil, new Amount(1.5, Unit.LITRE))
+        );
+        assertEquals(0.5, fridge.getQuantity(oil), DELTA);
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> fridge.useFoodItem(oil, new Amount(1.0, Unit.LITRE))
+        );
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> fridge.useFoodItem(
+                new FoodItem("Vinegar"),
+                new Amount(1.0, Unit.LITRE)
+            )
+        );
     }
 
     /**
@@ -239,7 +238,7 @@ class FridgeTest {
     void testGetFoodItemsReturnsCopy() {
         Fridge fridge = new Fridge();
         FoodItem beans = new FoodItem("Beans");
-        fridge.addFoodItem(beans, 3.0, Unit.PIECE);
+        fridge.addFoodItem(beans, new Amount(3.0, Unit.PIECE));
 
         Map<FoodItem, Amount> contents = fridge.getFoodItems();
         contents.clear();

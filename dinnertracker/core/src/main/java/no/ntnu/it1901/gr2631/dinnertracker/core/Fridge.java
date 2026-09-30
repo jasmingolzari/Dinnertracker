@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Fridge {
-    private final HashMap<FoodItem, Amount> foodItems;
+    private final Map<FoodItem, Amount> foodItems;
 
     public Fridge() {
         this.foodItems = new HashMap<>();
@@ -19,17 +19,6 @@ public class Fridge {
         if (!Double.isFinite(quantity) || quantity < 0) {
             throw new IllegalArgumentException("Quantity must be finite and non-negative.");
         }
-    }
-
-    /**
-     * Add a food item to the fridge.
-     * @param foodItem The food item to add.
-     * @param quantity The quantity to add.
-     * Uses a HashMap to store the food items and their quantities. 
-     * If the food item already exists in the fridge, the quantity is updated.
-     */
-    public void addFoodItem(FoodItem foodItem, double quantity, Unit unit) {
-        addFoodItem(foodItem, new Amount(quantity, unit));
     }
 
     /**
@@ -64,27 +53,44 @@ public class Fridge {
     /**
      * Use a food item from the fridge.
      * @param foodItem The food item to use.
-     * @param quantity The quantity to use.
-     * @return true if the food item was successfully used,
-     *  false if the quantity is more than the available quantity
-     *  or if the food item does not exist in the fridge.
+     * @param amount The amount to use.
+     * @throws IllegalArgumentException if the food item does not exist in the fridge,
+     *         or if the amount is null.
      */
-    public boolean useFoodItem(FoodItem foodItem, double quantity) {
-        validateQuantity(quantity);
+    public void useFoodItem(FoodItem foodItem, Amount amount) {
         Amount currentAmount = foodItems.get(foodItem);
-        if (currentAmount == null || currentAmount.quantity() < quantity) {
-            return false;
+        if (currentAmount == null || !hasItem(foodItem, amount)) {
+            throw new IllegalArgumentException("Du kan ikke bruke" + foodItem.getName() + ", det er ikke nok tilgjengelig i kjøleskapet.");
         }
 
-        if (currentAmount.quantity() == quantity) {
+        if (currentAmount.quantity() == amount.quantity()) {
             foodItems.remove(foodItem);
-        } else if (quantity > 0) {
+        } else if (amount.quantity() > 0) {
             foodItems.put(
                 foodItem,
-                new Amount(currentAmount.quantity() - quantity, currentAmount.unit())
+                new Amount(currentAmount.quantity() - amount.quantity(), currentAmount.unit())
             );
         }
-        return true;
+    }
+
+    /**
+     * Check whether the fridge contains enough of a food item.
+     *
+     * @param foodItem the food item to check
+     * @param quantity the required quantity
+     * @param unit the unit of the required quantity
+     * @return true if enough of the item is available
+     */
+    private boolean hasItem(FoodItem foodItem, Amount amount) {
+        validateQuantity(amount.quantity());
+        if (foodItem == null || amount == null) {
+            throw new IllegalArgumentException("Food item and amount cannot be null.");
+        }
+        if (!foodItems.containsKey(foodItem)) {
+            return false;
+        }
+        return getQuantity(foodItem) >= amount.quantity()
+            && getUnit(foodItem) == amount.unit();
     }
 
     /**
@@ -105,19 +111,6 @@ public class Fridge {
     public Unit getUnit(FoodItem foodItem) {
         Amount amount = foodItems.get(foodItem);
         return amount == null ? null : amount.unit();
-    }
-
-    /**
-     * Check whether the fridge contains enough of a food item.
-     *
-     * @param foodItem the food item to check
-     * @param quantity the required quantity
-     * @param unit the unit of the required quantity
-     * @return true if enough of the item is available
-     */
-    public boolean hasItem(FoodItem foodItem, double quantity) {
-        validateQuantity(quantity);
-        return getQuantity(foodItem) >= quantity;
     }
 
     /**
