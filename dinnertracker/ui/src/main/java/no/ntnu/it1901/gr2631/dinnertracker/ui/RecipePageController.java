@@ -44,7 +44,7 @@ public class RecipePageController {
     private TextField foodItemField;
 
     @FXML
-    private Spinner<Integer> foodItemAmountSpinner;
+    private Spinner<Double> foodItemAmountSpinner;
 
     @FXML
     private ComboBox<Unit> foodItemUnitComboBox;
@@ -84,8 +84,8 @@ public class RecipePageController {
     @FXML
     private void initialize() {
         foodItemAmountSpinner.setValueFactory(
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(
-                        1, 1000, 1
+                new SpinnerValueFactory.DoubleSpinnerValueFactory(
+                        0.1, 1000.0, 1.0, 0.1
                 )
         );
 
@@ -147,7 +147,7 @@ public class RecipePageController {
             return;
         }
 
-        int quantity = foodItemAmountSpinner.getValue();
+        double quantity = foodItemAmountSpinner.getValue();
         Unit unit = foodItemUnitComboBox.getValue();
 
         if (unit == null) {
@@ -165,7 +165,7 @@ public class RecipePageController {
         );
 
         foodItemField.clear();
-        foodItemAmountSpinner.getValueFactory().setValue(1);
+        foodItemAmountSpinner.getValueFactory().setValue(1.0);
         foodItemUnitComboBox.setValue(Unit.GRAM);
     }
 
@@ -296,7 +296,7 @@ public class RecipePageController {
 
         ingredients.clear();
 
-        foodItemAmountSpinner.getValueFactory().setValue(1);
+        foodItemAmountSpinner.getValueFactory().setValue(1.0);
         foodItemUnitComboBox.setValue(Unit.GRAM);
     }
 
