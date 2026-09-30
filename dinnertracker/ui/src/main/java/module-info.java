@@ -4,7 +4,7 @@ module no.ntnu.it1901.gr2631.dinnertracker.ui {
     requires transitive javafx.graphics;
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.ikonli.materialdesign2;
-    requires no.ntnu.it1901.gr2631.dinnertracker.core;
+    requires transitive no.ntnu.it1901.gr2631.dinnertracker.core;
     requires no.ntnu.it1901.gr2631.dinnertracker.persistence;
 
     exports no.ntnu.it1901.gr2631.dinnertracker.ui;
