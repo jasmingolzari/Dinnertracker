@@ -130,13 +130,7 @@ public class Recipe {
      */
     public void useRecipe(Recipe recipe, Fridge fridge) {
         for (Map.Entry<FoodItem, Amount> entry : recipe.getIngredients().entrySet()) {
-            FoodItem item = entry.getKey();
-            double required = entry.getValue().quantity();
-
-            if (!fridge.hasItem(item, required)) {
-                throw new IllegalArgumentException("Ikke nok " + item.getName() + " i kjøleskapet.");
-            }
-            fridge.useFoodItem(item, required);
+            fridge.useFoodItem(entry.getKey(), entry.getValue());
         }
     }
 
