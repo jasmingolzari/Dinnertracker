@@ -23,7 +23,7 @@ public class Recipe {
      * @param steps the list of steps describing how to prepare the recipe
     */
     public Recipe(String name,Map<FoodItem,Amount> ingredients, List<String> steps) {
-        this.name = name;
+        this(name);
         ingredients.forEach(this::addIngredient);
         this.steps.addAll(steps);
 
