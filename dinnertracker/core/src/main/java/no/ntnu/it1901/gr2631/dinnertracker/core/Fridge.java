@@ -17,7 +17,7 @@ public class Fridge {
      */
     private static void validateQuantity(double quantity) {
         if (!Double.isFinite(quantity) || quantity < 0) {
-            throw new IllegalArgumentException("Quantity must be finite and non-negative.");
+            throw new IllegalArgumentException("Mengden må være endelig og ikke-negativ.");
         }
     }
 
@@ -31,7 +31,7 @@ public class Fridge {
      */
     public void addFoodItem(FoodItem foodItem, Amount amount) {
         if (foodItem == null || amount == null) {
-            throw new IllegalArgumentException("Food item and amount cannot be null.");
+            throw new IllegalArgumentException("Matvare eller mengde kan ikke være null.");
         }
 
         Amount currentAmount = foodItems.get(foodItem);
@@ -41,7 +41,7 @@ public class Fridge {
         }
 
         if (currentAmount.unit() != amount.unit()) {
-            throw new IllegalArgumentException("Units must match.");
+            throw new IllegalArgumentException("Enheter for " + foodItem.getName() + " stemmer ikke overens. Forventet: " + currentAmount.unit().getSymbol() + ", men fikk: " + amount.unit().getSymbol());
         }
 
         foodItems.put(
@@ -77,14 +77,14 @@ public class Fridge {
      * Check whether the fridge contains enough of a food item.
      *
      * @param foodItem the food item to check
-     * @param quantity the required quantity
-     * @param unit the unit of the required quantity
+     * @param amount the amount to check
+     * @throws IllegalArgumentException if the food item or amount is null
      * @return true if enough of the item is available
      */
     private boolean hasItem(FoodItem foodItem, Amount amount) {
         validateQuantity(amount.quantity());
         if (foodItem == null || amount == null) {
-            throw new IllegalArgumentException("Food item and amount cannot be null.");
+            throw new IllegalArgumentException("Mat eller mengde kan ikke være null.");
         }
         if (!foodItems.containsKey(foodItem)) {
             return false;
