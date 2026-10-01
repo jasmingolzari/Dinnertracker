@@ -5,9 +5,21 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import no.ntnu.it1901.gr2631.dinnertracker.core.Fridge;
 
 
 public class App extends Application {
+    private static final Fridge FRIDGE = new Fridge();
+
+    /**
+     * Get the fridge shared by the application pages.
+     *
+     * @return the application fridge
+     */
+    public static Fridge getFridge() {
+        return FRIDGE;
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(

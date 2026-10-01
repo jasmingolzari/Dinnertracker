@@ -10,13 +10,24 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Controller for the homepage
+ * <p> Handles navigation through pages from homepage.</p>
+ * 
+ */
 
 public class HomePageController {
+
+    /**
+     * Opens recipe page when button "Oppskrifter" is clicked on.
+     * @param event the action event triggered by clicking the button.
+     * @throws IOException if recipe page FXML cannot be loaded.
+     */
 
     @FXML
     private void openRecipePage(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
-            getClass().getResource("RecipePage.fxml")
+            getClass().getResource("RecipeViewPage.fxml")
         );
 
         Stage stage = (Stage) ((Node) event.getSource())
@@ -25,6 +36,12 @@ public class HomePageController {
         stage.setScene(new Scene(root));
         stage.show();
     }
+
+    /**
+     * Opens fridge page when button "Kjøleskap" is clicked on.
+     * @param event the action event triggered by clicking the button.
+     * @throws IOException if fridge page FXML cannot be loaded. 
+     */
 
      @FXML
     private void openFridgePage(ActionEvent event) throws IOException {
