@@ -18,7 +18,7 @@
             <Font name="Arial Rounded MT Bold" size="32.0" />
          </font>
       </Label>
-      <ListView fx:id="recipesList" prefHeight="350.0" prefWidth="500.0">
+      <ListView fx:id="recipesListView" prefHeight="350.0" prefWidth="500.0">
          <VBox.margin>
             <Insets top="20.0" />
          </VBox.margin>

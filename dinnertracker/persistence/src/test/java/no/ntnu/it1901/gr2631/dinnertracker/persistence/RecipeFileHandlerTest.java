@@ -1,61 +1,159 @@
 package no.ntnu.it1901.gr2631.dinnertracker.persistence;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import no.ntnu.it1901.gr2631.dinnertracker.core.Amount;
 import no.ntnu.it1901.gr2631.dinnertracker.core.FoodItem;
 import no.ntnu.it1901.gr2631.dinnertracker.core.Recipe;
+import no.ntnu.it1901.gr2631.dinnertracker.core.Unit;
 
-public class RecipeFileHandlerTest {
+class RecipeFileHandlerTest {
+
+    private RecipeFileHandler handler;
 
     @TempDir
     Path tempDir;
 
-    @Test
-    void testSaveRecipe() throws Exception {
-        Recipe recipe = new Recipe("Pasta med tomat");
-        recipe.addIngridient(new FoodItem("Pasta"));
-        recipe.addIngridient(new FoodItem("Tomat"));
+    @BeforeEach
+    void setUp() {
+        handler = new RecipeFileHandler();
+    }
 
-        Path file = tempDir.resolve("recipe.json");
+    private Path createFile(String fileName, String content) throws IOException {
+        Path path = tempDir.resolve(fileName);
+        Files.writeString(path, content);
+        return path;
+    }
 
-        RecipeFileHandler fileHandler = new RecipeFileHandler();
-        fileHandler.saveRecipe(recipe, file);
+    private Recipe createRecipe(String name) {
+        Recipe recipe = new Recipe(name);
+        recipe.addIngredient(
+                new FoodItem("Mel"),
+                new Amount(500, Unit.GRAM));
+        recipe.addStep("Bland ingrediensene");
+        recipe.addStep("Stek i ovnen");
 
-        String json = Files.readString(file);
-
-        assertTrue(json.contains("Pasta med tomat"));
-        assertTrue(json.contains("Pasta"));
-        assertTrue(json.contains("Tomat"));
+        return recipe;
     }
 
     @Test
-    void testLoadRecipe() throws Exception {
-        Recipe originalRecipe = new Recipe("Pasta med tomat");
-        originalRecipe.addIngridient(new FoodItem("Pasta"));
-        originalRecipe.addIngridient(new FoodItem("Tomat"));
-        originalRecipe.addStep("Kok pastaen");
-        originalRecipe.addStep("Tilsett tomat");
+    void loadAllShouldReturnEmptyListWhenFileDoesNotExist() throws IOException {
+        Path path = tempDir.resolve("recipes.json");
 
-        Path file = tempDir.resolve("recipe.json");
+        List<Recipe> recipes = handler.loadAll(path);
 
-        RecipeFileHandler fileHandler = new RecipeFileHandler();
-        fileHandler.saveRecipe(originalRecipe, file);
+        assertTrue(recipes.isEmpty());
+    }
 
-        Recipe loadedRecipe = fileHandler.loadRecipe(file);
+    @Test
+    void loadAllShouldReturnEmptyListWhenFileIsEmpty() throws IOException {
+        Path path = createFile("recipes.json", "");
 
-        assertEquals("Pasta med tomat", loadedRecipe.getName());
-        assertEquals(2, loadedRecipe.getIngridients().size());
-        assertEquals("Pasta", loadedRecipe.getIngridients().get(0).getName());
-        assertEquals("Tomat", loadedRecipe.getIngridients().get(1).getName());
-        assertEquals(2, loadedRecipe.getSteps().size());
-        assertEquals("Kok pastaen", loadedRecipe.getSteps().get(0));
-        assertEquals("Tilsett tomat", loadedRecipe.getSteps().get(1));
+        List<Recipe> recipes = handler.loadAll(path);
+
+        assertTrue(recipes.isEmpty());
+    }
+
+    @Test
+    void saveAllAndLoadAllShouldPreserveRecipe() throws IOException {
+        Path path = tempDir.resolve("recipes.json");
+        Recipe recipe = createRecipe("Pannekaker");
+
+        handler.saveAll(List.of(recipe), path);
+
+        List<Recipe> recipes = handler.loadAll(path);
+
+        assertEquals(1, recipes.size());
+        assertEquals("Pannekaker", recipes.get(0).getName());
+        assertEquals(2, recipes.get(0).getSteps().size());
+        assertEquals(1, recipes.get(0).getIngredients().size());
+    }
+
+    @Test
+    void saveAllShouldOverwriteExistingRecipes() throws IOException {
+        Path path = tempDir.resolve("recipes.json");
+
+        handler.saveAll(List.of(createRecipe("Gammel oppskrift")), path);
+        handler.saveAll(List.of(createRecipe("Ny oppskrift")), path);
+
+        List<Recipe> recipes = handler.loadAll(path);
+
+        assertEquals(1, recipes.size());
+        assertEquals("Ny oppskrift", recipes.get(0).getName());
+    }
+
+    @Test
+    void addRecipeShouldKeepExistingRecipes() throws IOException {
+        Path path = tempDir.resolve("recipes.json");
+
+        handler.addRecipe(createRecipe("Pannekaker"), path);
+        handler.addRecipe(createRecipe("Pizza"), path);
+
+        List<Recipe> recipes = handler.loadAll(path);
+
+        assertEquals(2, recipes.size());
+        assertEquals("Pannekaker", recipes.get(0).getName());
+        assertEquals("Pizza", recipes.get(1).getName());
+    }
+
+    @Test
+    void loadRecipeShouldReturnRecipeWithMatchingName() throws IOException {
+        Path path = tempDir.resolve("recipes.json");
+
+        handler.saveAll(
+                List.of(
+                        createRecipe("Pannekaker"),
+                        createRecipe("Pizza")),
+                path);
+
+        Recipe recipe = handler.loadRecipe(path, "Pizza");
+
+        assertEquals("Pizza", recipe.getName());
+    }
+
+    @Test
+    void loadRecipeShouldThrowExceptionWhenRecipeDoesNotExist() throws IOException {
+        Path path = tempDir.resolve("recipes.json");
+
+        handler.saveAll(List.of(createRecipe("Pizza")), path);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> handler.loadRecipe(path, "Pannekaker"));
+    }
+
+    @Test
+    void loadAllShouldThrowExceptionForInvalidJson() throws IOException {
+        Path path = createFile("recipes.json", "Dette er ikke gyldig JSON");
+
+        assertThrows(
+                IOException.class,
+                () -> handler.loadAll(path));
+    }
+
+    @Test
+    void loadAllShouldPreserveIngredientAmountAndUnit() throws IOException {
+        Path path = tempDir.resolve("recipes.json");
+
+        Recipe recipe = createRecipe("Pannekaker");
+        handler.saveAll(List.of(recipe), path);
+
+        Recipe loaded = handler.loadAll(path).get(0);
+
+        FoodItem flour = loaded.getIngredients().keySet().iterator().next();
+        Amount amount = loaded.getIngredients().get(flour);
+
+        assertEquals("Mel", flour.getName());
+        assertEquals(500, amount.quantity());
+        assertEquals(Unit.GRAM, amount.unit());
     }
 }
