@@ -20,7 +20,7 @@ public class RecipeViewPageController {
 
     /** List view component for displaying recipe names in the UI. */
     @FXML
-    private ListView<String> recipesList;
+    private ListView<String> recipesListView;
 
     /** File handler used to load recipe data from persistent storage. */
     private RecipeFileHandler filehandler = new RecipeFileHandler();
@@ -31,9 +31,9 @@ public class RecipeViewPageController {
     @FXML 
     private void initialize() {
         try {
-            List<Recipe> recipes = filehandler.loadAll(Path.of("recipes.json"));
+            List<Recipe> recipes = filehandler.loadAll(Path.of("..", "data", "recipes.json"));
             List<String> recipeNames = recipes.stream().map(Recipe::getName).toList();
-            recipesList.getItems().setAll(recipeNames);  
+            recipesListView.getItems().setAll(recipeNames);  
         } catch (IOException e) {
             e.printStackTrace(); // TODO: Replace with method from showAlertMessage 
         }
