@@ -3,7 +3,7 @@ package no.ntnu.it1901.gr2631.dinnertracker.core;
 /**
  * Represents a food item in our dinner tracker.
  */
-public class FoodItem {
+public final class FoodItem {
 
     private final String name;
 

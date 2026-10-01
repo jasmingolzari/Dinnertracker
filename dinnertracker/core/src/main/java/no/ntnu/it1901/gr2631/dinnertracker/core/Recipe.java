@@ -9,7 +9,7 @@ import java.util.Map;
 /** 
  * Represents a recipe in our dinner tracker.
 */
-public class Recipe {
+public final class Recipe {
     private String name;
     private Map<FoodItem,Amount> ingredients;
     private List<String> steps;

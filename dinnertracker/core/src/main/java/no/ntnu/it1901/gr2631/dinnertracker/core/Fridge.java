@@ -82,10 +82,10 @@ public class Fridge {
      * @return true if enough of the item is available
      */
     private boolean hasItem(FoodItem foodItem, Amount amount) {
-        validateQuantity(amount.quantity());
         if (foodItem == null || amount == null) {
             throw new IllegalArgumentException("Mat eller mengde kan ikke være null.");
         }
+        validateQuantity(amount.quantity());
         if (!foodItems.containsKey(foodItem)) {
             return false;
         }
