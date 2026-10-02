@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ntnu-runners
 
     steps:
       - name: Check out repository
@@ -21,6 +21,15 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Set up Maven
+        uses: s4u/setup-maven@v1.13.0
+        with:
+          maven-version: '3.9.9'
+
       - name: Run Maven tests
         working-directory: dinnertracker
         run: mvn --batch-mode test
+
+      - name: Verify project checks
+        working-directory: dinnertracker
+        run: mvn --batch-mode verify
