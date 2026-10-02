@@ -21,10 +21,13 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Set up Maven
-        uses: s4u/setup-maven@v1.13.0
-        with:
-          maven-version: '3.9.9'
+      - name: Install Maven on self-hosted runner
+        run: |
+          if ! command -v mvn >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y maven
+          fi
+          mvn -version
 
       - name: Run Maven tests
         working-directory: dinnertracker
