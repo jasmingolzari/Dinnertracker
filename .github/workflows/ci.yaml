@@ -28,7 +28,7 @@ jobs:
             sudo apt-get install -y maven
           fi
           mvn -version
-
+          
       - name: Run Maven tests
         working-directory: dinnertracker
         run: mvn --batch-mode test
