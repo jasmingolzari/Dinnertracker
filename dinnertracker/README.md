@@ -4,18 +4,12 @@
 
 Dinnertracker is a dinner planning application designed to help users
 keep track of the ingredients they have available in their fridge and manage their own
-dinner recipes.
+dinner recipes. It is a dinner planning application developed as part of the IT1901 course.
 
 The long-term goal is to make it
 easier to plan dinners based on the ingredients available to the user.
 
-Release 1 focuses on recipe functionality, including adding recipes
-with ingredients and storing recipe data. The fridge functionality is
-partly implemented in the core domain, while the graphical user
-interface for managing fridge ingredients is planned for a later release.
-
-
-The application is being developed as part of the IT1901 course at NTNU.
+Release 1 focused mainly on recipe functionality, while Release 2 extends the application with fridge functionality, persistence, testing and a clearer separation between the different parts of the application.
 
 
 ## Application screenshot
@@ -30,6 +24,10 @@ The application is being developed as part of the IT1901 course at NTNU.
 
 *Screenshot of the Dinnertracker application - recipes page.*
 
+
+![Dinnertracker fridge page](images/fridge.png)
+
+*Screenshot of the Dinnertracker application - fridge page.*
 
 ## User stories
 
@@ -65,24 +63,12 @@ dinnertracker/
 ├── data/
 └── pom.xml
 ```
+This separation makes it possible to keep the application's domain logic independent from the user interface and file handling. More detailed information about the architecture can be found in [architecture.md](docs/release2/architecture.md).
 
 The overall `pom.xml` manages the three modules, while each module has
 its own `pom.xml` containing its module-specific configuration and
 dependencies.
 
-## Technologies
-
-The project uses:
-
-- **Java 17**
-- **Apache Maven 3.9.x**
-- **JavaFX 21.0.2**
-- **FXML**
-- **JUnit**
-- **JaCoCo**
-
-Java and JavaFX versions, as well as the project dependencies, are
-configured in the Maven `pom.xml` files.
 
 ## Coverage with JaCoCo
  
@@ -122,71 +108,23 @@ The current minimum enforced coverage is:
  
 If the project falls below these values, `mvn verify` will fail.
 
-## Running the project
-
-### Requirements
-
-To build and run Dinnertracker, you need:
-
-- Java 17 or later
-- Apache Maven 3.9.x
-
-### Run tests
-
-From the `dinnertracker/` directory, run:
-
-```bash
-mvn test
-```
-
-This runs the automated tests for the project modules.
-
-### Run the application
-
-To start the JavaFX application, run:
-
-```bash
-mvn javafx:run
-```
 
 ## Application data
 
-Application data is stored in the [`data/`](data/) directory.
+Application data is stored as JSON files in the [`data/`](data/) directory.
 
-The project currently contains a `recipes.json` file for recipe data.
+The project currently contains a `recipes.json` file for recipe data. The persistence module is responsible for saving and loading this data. More information about persistence can be found in [persistence.md](docs/release2/persistence.md)
+
 
 ## Development environment
 
 The project is configured to support development using Eclipse Che.
 
-More information about opening and running the project in Eclipse Che
-will be provided here:
+The project can be opened in Eclipse Che using the following link:
 
-[Eclipse Che project](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631.git)
+[Open Dinnertracker in Eclipse Che](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631)
 
-### Known issue with running JavaFX in Eclipse Che
 
-We have encountered an issue when running the JavaFX application in Eclipse Che. The project compiles successfully in the Eclipse Che environment, but running 
-
-```bash
-mvn javafx:run
-```
-
-fails when JavaFX attempts to start the graphical user interface.
-
-The error is related to the graphical environment available in the
-Eclipse Che container. In particular, JavaFX reports that it is unable
-to open the display and that the native library libXxf86vm.so.1 is
-missing.
-
-The issue has been tested and is known to occur in the Eclipse Che
-environment. The application works locally, while the same JavaFX
-startup command fails in Eclipse Che.
-
-This is therefore considered a known environment-related issue rather
-than an issue with the project's compilation. We have verified that
-Maven is able to compile the UI module in Eclipse Che before the
-JavaFX startup fails.
 
 ## Project documentation
 
@@ -195,3 +133,5 @@ Documentation for the individual releases is located in the
 
 The documentation for Release 1 can be found
 [here](../docs/release1/release1.md).
+
+The documentation for Release 2 can be found [here](../docs/release2/release2.md).
