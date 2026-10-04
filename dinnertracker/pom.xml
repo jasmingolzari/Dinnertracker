@@ -86,6 +86,9 @@
                 <configuration>
                     <targetJdk>${maven.compiler.release}</targetJdk>
                     <printFailingErrors>true</printFailingErrors>
+                    <rulesets>
+                        <ruleset>config/ruleset.xml</ruleset>
+                    </rulesets>
                 </configuration>
                 <executions>
                     <execution>
