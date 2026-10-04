@@ -1,5 +1,7 @@
 package no.gr2631.dinnertracker.core;
 
+import java.util.Locale;
+
 /** Represents a food item in our dinner tracker. */
 public final class FoodItem {
 
@@ -12,12 +14,16 @@ public final class FoodItem {
    * @throws IllegalArgumentException if the name is null or blank
    */
   public FoodItem(String name) {
-
-    if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Food item name cannot be empty.");
+    if (name == null) {
+      throw new IllegalArgumentException("Du må oppgi et navn for matvaren.");
     }
 
-    this.name = name;
+    String normalizedName = name.trim();
+    if (normalizedName.isBlank()) {
+      throw new IllegalArgumentException("Du må oppgi et navn for matvaren.");
+    }
+
+    this.name = normalizedName;
   }
 
   /**
@@ -47,7 +53,7 @@ public final class FoodItem {
     }
 
     FoodItem other = (FoodItem) obj;
-    return name.equalsIgnoreCase(other.name);
+    return name.equalsIgnoreCase(other.name.trim());
   }
 
   /**
@@ -58,6 +64,6 @@ public final class FoodItem {
    */
   @Override
   public int hashCode() {
-    return name.toLowerCase().hashCode();
+    return name.toLowerCase(Locale.ROOT).hashCode();
   }
 }
