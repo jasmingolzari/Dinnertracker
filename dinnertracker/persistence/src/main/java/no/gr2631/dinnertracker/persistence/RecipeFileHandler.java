@@ -146,7 +146,7 @@ public class RecipeFileHandler implements GenericRepository<Recipe> {
       Amount amount =
           new Amount(
               ingredientNode.get("quantity").asDouble(),
-              Unit.valueOf(ingredientNode.get("unit").asText()));
+              parseUnit(ingredientNode.get("unit").asText()));
       recipe.addIngredient(item, amount);
     }
 
@@ -154,5 +154,21 @@ public class RecipeFileHandler implements GenericRepository<Recipe> {
       recipe.addStep(stepNode.asText());
     }
     return recipe;
+  }
+
+  /**
+   * Resolves a JSON unit value to the matching {@link Unit}.
+   *
+   * @param value the serialized unit value, either as an enum name or as a symbol such as "stk"
+   * @return the matching unit enum constant
+   * @throws IllegalArgumentException if no matching unit exists
+   */
+  private Unit parseUnit(String value) {
+    for (Unit unit : Unit.values()) {
+      if (unit.name().equalsIgnoreCase(value) || unit.getSymbol().equalsIgnoreCase(value)) {
+        return unit;
+      }
+    }
+    throw new IllegalArgumentException("Unsupported unit: " + value);
   }
 }

@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 public class App extends Application {
   @Override
-  public void start(Stage stage) throws Exception {
+  public void start(Stage stage) throws Exception {    
     Parent root = FXMLLoader.load(App.class.getResource("HomePage.fxml"));
     stage.setScene(new Scene(root));
     stage.setTitle("Dinnertracker");

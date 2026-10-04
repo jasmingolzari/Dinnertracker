@@ -16,6 +16,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -72,6 +73,14 @@ public class RecipePageController {
         new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 1000.0, 1.0, 0.1));
 
     foodItemUnitComboBox.getItems().setAll(Unit.values());
+    foodItemUnitComboBox.setCellFactory(comboBox -> new ListCell<>() {
+      @Override
+      protected void updateItem(Unit unit, boolean empty) {
+        super.updateItem(unit, empty);
+        setText(empty || unit == null ? null : unit.getSymbol());
+        setStyle(empty ? "" : "-fx-cursor: hand;");
+      }
+    });
 
     foodItemUnitComboBox.setConverter(
         new StringConverter<Unit>() {

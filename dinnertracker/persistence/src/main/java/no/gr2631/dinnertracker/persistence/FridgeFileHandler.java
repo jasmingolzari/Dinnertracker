@@ -42,7 +42,13 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
     }
 
     JsonNode root = objectMapper.readTree(path.toFile());
-    for (JsonNode fridgeNode : root) {
+    JsonNode fridgesNode = root.has("fridges") ? root.get("fridges") : root;
+
+    if (fridgesNode == null || fridgesNode.isNull()) {
+      return fridgesList;
+    }
+
+    for (JsonNode fridgeNode : fridgesNode) {
       fridgesList.add(fromJson(fridgeNode));
     }
     return fridgesList;
@@ -65,12 +71,12 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
     try {
       fridgeIndex = Integer.parseInt(index);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Fridge index must be an integer: " + index, e);
+      throw new IllegalArgumentException("Kjøleskapets indeks må være et heltall: " + index, e);
     }
 
     List<Fridge> fridges = loadAll(path);
     if (fridgeIndex < 0 || fridgeIndex >= fridges.size()) {
-      throw new IllegalArgumentException("Fridge index is out of bounds: " + index);
+      throw new IllegalArgumentException("Indeks utenfor gyldig område: " + index);
     }
     return fridges.get(fridgeIndex);
   }
@@ -84,14 +90,21 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
    */
   @Override
   public void saveAll(List<Fridge> fridgesList, Path path) throws IOException {
+    ObjectNode root = objectMapper.createObjectNode();
     ArrayNode array = objectMapper.createArrayNode();
     for (Fridge fridge : fridgesList) {
       array.add(toJson(fridge));
     }
-    objectMapper.writeValue(path.toFile(), array);
+    root.set("fridges", array);
+    objectMapper.writeValue(path.toFile(), root);
   }
 
-  /** Converts a fridge to its JSON representation. */
+  /**
+   * Serializes a fridge into the JSON structure used by the persistence layer.
+   *
+   * @param fridge the fridge instance to convert
+   * @return a JSON object representing the fridge and its food items
+   */
   private ObjectNode toJson(Fridge fridge) {
     ObjectNode node = objectMapper.createObjectNode();
     // TODO add user ID to the JSON representation of the fridge
@@ -107,20 +120,51 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
     return node;
   }
 
-  /** Creates a fridge from its JSON representation. */
+  /**
+   * Deserializes a fridge from its JSON representation.
+   *
+   * <p>The JSON node may contain food items with quantity values stored as numbers and unit values
+   * as either enum names or unit symbols such as "stk" or "kg".
+   *
+   * @param fridgeNode the JSON object representing a single fridge
+   * @return the reconstructed fridge
+   */
   private Fridge fromJson(JsonNode fridgeNode) {
     Fridge fridge = new Fridge();
     JsonNode foodItemsNode = fridgeNode.get("foodItems");
+
+    if (foodItemsNode == null || foodItemsNode.isNull()) {
+      return fridge;
+    }
 
     for (JsonNode foodItemNode : foodItemsNode) {
       FoodItem item = new FoodItem(foodItemNode.get("name").asText());
       Amount amount =
           new Amount(
               foodItemNode.get("quantity").asDouble(),
-              Unit.valueOf(foodItemNode.get("unit").asText()));
+              parseUnit(foodItemNode.get("unit").asText()));
       fridge.addFoodItem(item, amount);
     }
 
     return fridge;
+  }
+
+  /**
+   * Resolves a serialized unit value to the corresponding {@link Unit} enum constant.
+   *
+   * <p>Support is included for both the enum names (for example, "PIECE") and the user-facing
+   * symbols (for example, "stk").
+   *
+   * @param value the stored unit value
+   * @return the matching unit enum constant
+   * @throws IllegalArgumentException if the value does not match any supported unit
+   */
+  private Unit parseUnit(String value) {
+    for (Unit unit : Unit.values()) {
+      if (unit.name().equalsIgnoreCase(value) || unit.getSymbol().equalsIgnoreCase(value)) {
+        return unit;
+      }
+    }
+    throw new IllegalArgumentException("Ugyldig enhet: " + value);
   }
 }
