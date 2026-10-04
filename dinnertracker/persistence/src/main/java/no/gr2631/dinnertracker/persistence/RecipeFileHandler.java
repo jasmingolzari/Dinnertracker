@@ -2,6 +2,7 @@ package no.gr2631.dinnertracker.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
@@ -20,9 +21,14 @@ import no.gr2631.dinnertracker.core.Unit;
  * and JSON is done manually, since a recipe stores its ingredients in a {@code Map<FoodItem,
  * Amount>}, which Jackson cannot handle automatically in a useful way.
  */
-public class RecipeFileHandler {
+public class RecipeFileHandler implements GenericRepository<Recipe> {
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper;
+
+  public RecipeFileHandler() {
+    this.objectMapper = new ObjectMapper();
+    this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+  }
 
   /**
    * Loads all recipes from the given file. If the file does not exist or is empty, an empty list is
@@ -33,6 +39,7 @@ public class RecipeFileHandler {
    *     not exist or is empty
    * @throws IOException if the file cannot be read or contains invalid JSON
    */
+  @Override
   public List<Recipe> loadAll(Path path) throws IOException {
     List<Recipe> recipes = new ArrayList<>();
 
@@ -57,13 +64,13 @@ public class RecipeFileHandler {
    * @throws IOException if the file cannot be read or contains invalid JSON
    * @throws IllegalArgumentException if no recipe with the given name exists in the file
    */
-  public Recipe loadRecipe(Path path, String name) throws IOException {
+  public Recipe load(Path path, String recipeName) throws IOException {
     for (Recipe recipe : loadAll(path)) {
-      if (recipe.getName().equals(name)) {
+      if (recipe.getName().equals(recipeName)) {
         return recipe;
       }
     }
-    throw new IllegalArgumentException("Fant ingen oppskrift med navn: " + name);
+    throw new IllegalArgumentException("Fant ingen oppskrift med navn: " + recipeName);
   }
 
   /**

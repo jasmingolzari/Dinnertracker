@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** Tests reading and writing recipes with {@link RecipeFileHandler}. */
 class RecipeFileHandlerTest {
 
   private RecipeFileHandler handler;
@@ -21,16 +22,19 @@ class RecipeFileHandlerTest {
   @TempDir Path tempDir;
 
   @BeforeEach
+  /** Creates a fresh file handler before each test. */
   void setUp() {
     handler = new RecipeFileHandler();
   }
 
+  /** Creates a file in the temporary test directory with the given content. */
   private Path createFile(String fileName, String content) throws IOException {
     Path path = tempDir.resolve(fileName);
     Files.writeString(path, content);
     return path;
   }
 
+  /** Creates a recipe containing one ingredient and two preparation steps. */
   private Recipe createRecipe(String name) {
     Recipe recipe = new Recipe(name);
     recipe.addIngredient(new FoodItem("Mel"), new Amount(500, Unit.GRAM));
@@ -41,6 +45,7 @@ class RecipeFileHandlerTest {
   }
 
   @Test
+  /** Verifies that loading a missing file returns an empty list. */
   void loadAllShouldReturnEmptyListWhenFileDoesNotExist() throws IOException {
     Path path = tempDir.resolve("recipes.json");
 
@@ -50,6 +55,7 @@ class RecipeFileHandlerTest {
   }
 
   @Test
+  /** Verifies that loading an empty file returns an empty list. */
   void loadAllShouldReturnEmptyListWhenFileIsEmpty() throws IOException {
     Path path = createFile("recipes.json", "");
 
@@ -59,6 +65,7 @@ class RecipeFileHandlerTest {
   }
 
   @Test
+  /** Verifies that saving and loading preserves the recipe data. */
   void saveAllAndLoadAllShouldPreserveRecipe() throws IOException {
     Path path = tempDir.resolve("recipes.json");
     Recipe recipe = createRecipe("Pannekaker");
@@ -74,6 +81,7 @@ class RecipeFileHandlerTest {
   }
 
   @Test
+  /** Verifies that saving recipes replaces existing file contents. */
   void saveAllShouldOverwriteExistingRecipes() throws IOException {
     Path path = tempDir.resolve("recipes.json");
 
@@ -87,6 +95,7 @@ class RecipeFileHandlerTest {
   }
 
   @Test
+  /** Verifies that adding recipes preserves recipes already stored in the file. */
   void addRecipeShouldKeepExistingRecipes() throws IOException {
     Path path = tempDir.resolve("recipes.json");
 
@@ -101,26 +110,29 @@ class RecipeFileHandlerTest {
   }
 
   @Test
-  void loadRecipeShouldReturnRecipeWithMatchingName() throws IOException {
+  /** Verifies that loading by name returns the matching recipe. */
+  void loadShouldReturnRecipeWithMatchingName() throws IOException {
     Path path = tempDir.resolve("recipes.json");
 
     handler.saveAll(List.of(createRecipe("Pannekaker"), createRecipe("Pizza")), path);
 
-    Recipe recipe = handler.loadRecipe(path, "Pizza");
+    Recipe recipe = handler.load(path, "Pizza");
 
     assertEquals("Pizza", recipe.getName());
   }
 
   @Test
-  void loadRecipeShouldThrowExceptionWhenRecipeDoesNotExist() throws IOException {
+  /** Verifies that loading an unknown recipe name throws an exception. */
+  void loadShouldThrowExceptionWhenRecipeDoesNotExist() throws IOException {
     Path path = tempDir.resolve("recipes.json");
 
     handler.saveAll(List.of(createRecipe("Pizza")), path);
 
-    assertThrows(IllegalArgumentException.class, () -> handler.loadRecipe(path, "Pannekaker"));
+    assertThrows(IllegalArgumentException.class, () -> handler.load(path, "Pannekaker"));
   }
 
   @Test
+  /** Verifies that loading malformed JSON throws an I/O exception. */
   void loadAllShouldThrowExceptionForInvalidJson() throws IOException {
     Path path = createFile("recipes.json", "Dette er ikke gyldig JSON");
 
@@ -128,6 +140,7 @@ class RecipeFileHandlerTest {
   }
 
   @Test
+  /** Verifies that an ingredient's amount and unit survive serialization. */
   void loadAllShouldPreserveIngredientAmountAndUnit() throws IOException {
     Path path = tempDir.resolve("recipes.json");
 
