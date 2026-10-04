@@ -25,6 +25,11 @@ Release 1 focused mainly on recipe functionality, while Release 2 extends the ap
 *Screenshot of the Dinnertracker application - recipes page.*
 
 
+![Dinnertracker recipes page](images/recipeView.png)
+
+*Screenshot of the Dinnertracker application - add recipe page.*
+
+
 ![Dinnertracker fridge page](images/fridge.png)
 
 *Screenshot of the Dinnertracker application - fridge page.*
