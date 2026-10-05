@@ -58,7 +58,8 @@ public class ShowAlertMessageTest {
           }
           cleanupCompleted.countDown();
         });
-    assertTrue(cleanupCompleted.await(5, TimeUnit.SECONDS), "JavaFX cleanup did not finish in time.");
+    assertTrue(
+        cleanupCompleted.await(5, TimeUnit.SECONDS), "JavaFX cleanup did not finish in time.");
     if (failure.get() != null) {
       throw new AssertionError("JavaFX action failed.", failure.get());
     }
