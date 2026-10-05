@@ -39,7 +39,7 @@
                               <Insets top="35.0" />
                            </VBox.margin>
                         </ImageView>
-                        <Button fx:id="fridgeButton" contentDisplay="CENTER" graphicTextGap="0.0" mnemonicParsing="false" onAction="#openFridgePage" prefHeight="49.0" prefWidth="180.0" style="-fx-background-color: #2F6B3B; -fx-text-fill: #ffffff;" text="Kjøleskap">
+                        <Button fx:id="fridgeButton" contentDisplay="CENTER" graphicTextGap="0.0" mnemonicParsing="false" onAction="#openFridgePage" prefHeight="49.0" prefWidth="180.0" style="-fx-background-color: #2F6B3B; -fx-text-fill: #ffffff; -fx-background-radius: 6;" text="Kjøleskap">
                            <VBox.margin>
                               <Insets top="20.0" />
                            </VBox.margin>
@@ -59,7 +59,7 @@
                               <Insets top="35.0" />
                            </VBox.margin>
                         </ImageView>
-                        <Button fx:id="recipeButton" mnemonicParsing="false" onAction="#openRecipePage" prefHeight="48.0" prefWidth="158.0" style="-fx-background-color: #2F6B3B; -fx-text-fill: #ffffff;" text="Oppskrifter" textAlignment="CENTER">
+                        <Button fx:id="recipeButton" mnemonicParsing="false" onAction="#openRecipePage" prefHeight="48.0" prefWidth="158.0" style="-fx-background-color: #2F6B3B; -fx-text-fill: #ffffff; -fx-background-radius: 6;" text="Oppskrifter" textAlignment="CENTER">
                            <VBox.margin>
                               <Insets top="20.0" />
                            </VBox.margin>
