@@ -12,8 +12,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
@@ -70,17 +68,20 @@ public class RecipePageController {
   @FXML
   private void initialize() {
     foodItemAmountSpinner.setValueFactory(
-        new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 1000.0, 1.0, 0.1));
+        new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 1000.0, 1.0, 0.1));
 
     foodItemUnitComboBox.getItems().setAll(Unit.values());
-    foodItemUnitComboBox.setCellFactory(comboBox -> new ListCell<>() {
-      @Override
-      protected void updateItem(Unit unit, boolean empty) {
-        super.updateItem(unit, empty);
-        setText(empty || unit == null ? null : unit.getSymbol());
-        setStyle(empty ? "" : "-fx-cursor: hand;");
-      }
-    });
+    foodItemUnitComboBox.setValue(Unit.GRAM);
+    foodItemUnitComboBox.setCellFactory(
+        comboBox ->
+            new ListCell<>() {
+              @Override
+              protected void updateItem(Unit unit, boolean empty) {
+                super.updateItem(unit, empty);
+                setText(empty || unit == null ? null : unit.getSymbol());
+                setStyle(empty ? "" : "-fx-cursor: hand;");
+              }
+            });
 
     foodItemUnitComboBox.setConverter(
         new StringConverter<Unit>() {
@@ -117,8 +118,6 @@ public class RecipePageController {
             return null;
           }
         });
-
-    foodItemUnitComboBox.setValue(Unit.GRAM);
   }
 
   /**
@@ -129,31 +128,38 @@ public class RecipePageController {
    */
   @FXML
   private void addFoodItem(ActionEvent event) {
-    String foodName = foodItemField.getText();
+    try{
+      String foodName = foodItemField.getText();
 
-    if (!isValidFoodItemName(foodName)) {
-      showAlertMessage("Ugyldig navn på matvare. Kun bokstaver og bindestrek er tillatt.");
-      return;
+      if (!isValidFoodItemName(foodName)) {
+        ShowAlertMessage.showErrorAlert(
+            "Ugyldig input",
+            null,
+            "Ugyldig navn på matvare. Kun bokstaver og bindestrek er tillatt.");
+        return;
+      }
+
+      double quantity = foodItemAmountSpinner.getValue();
+      Unit unit = foodItemUnitComboBox.getValue();
+
+      if (unit == null) {
+        ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Velg en enhet for mengden.");
+        return;
+      }
+
+      FoodItem newFoodItem = new FoodItem(foodName);
+      Amount amount = new Amount(quantity, unit);
+
+      ingredients.put(newFoodItem, amount);
+
+      ingredientsList.getItems().add(foodName + " - " + quantity + " " + unit.getSymbol());
+
+      foodItemField.clear();
+      foodItemAmountSpinner.getValueFactory().setValue(1.0);
+      foodItemUnitComboBox.setValue(Unit.GRAM);
+    } catch (IllegalArgumentException exception) {
+      ShowAlertMessage.showErrorAlert("Ugyldig input", null, exception.getMessage());
     }
-
-    double quantity = foodItemAmountSpinner.getValue();
-    Unit unit = foodItemUnitComboBox.getValue();
-
-    if (unit == null) {
-      showAlertMessage("Velg en enhet for mengden.");
-      return;
-    }
-
-    FoodItem newFoodItem = new FoodItem(foodName);
-    Amount amount = new Amount(quantity, unit);
-
-    ingredients.put(newFoodItem, amount);
-
-    ingredientsList.getItems().add(foodName + " - " + quantity + " " + unit.getSymbol());
-
-    foodItemField.clear();
-    foodItemAmountSpinner.getValueFactory().setValue(1.0);
-    foodItemUnitComboBox.setValue(Unit.GRAM);
   }
 
   /**
@@ -175,19 +181,6 @@ public class RecipePageController {
     }
 
     return true;
-  }
-
-  /**
-   * Displays an error alert with the given message.
-   *
-   * @param message the message to display
-   */
-  private void showAlertMessage(String message) {
-    Alert alert = new Alert(AlertType.ERROR);
-    alert.setTitle("Ugyldig input");
-    alert.setHeaderText(null);
-    alert.setContentText(message);
-    alert.showAndWait();
   }
 
   /**
@@ -216,19 +209,19 @@ public class RecipePageController {
     String recipeName = nameField.getText();
 
     if (recipeName == null || recipeName.isBlank()) {
-      showAlertMessage("Oppskriften må ha et navn.");
+      ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Oppskriften må ha et navn.");
       return;
     }
 
     if (ingredients.isEmpty()) {
-      showAlertMessage("Legg til minst en ingrediens.");
+      ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Legg til minst en ingrediens.");
       return;
     }
 
     List<String> steps = new ArrayList<>(stepsList.getItems());
 
     if (steps.isEmpty()) {
-      showAlertMessage("Legg til minst ett steg.");
+      ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Legg til minst ett steg.");
       return;
     }
 
@@ -240,25 +233,13 @@ public class RecipePageController {
     try {
       fileHandler.addRecipe(newRecipe, filePath);
 
-      showAddedRecipeMessage("Oppskrift lagt til");
+      ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til");
       clearForm();
 
     } catch (IOException e) {
-      showAlertMessage("Klarte ikke å lagre oppskriften: " + e.getMessage());
+      ShowAlertMessage.showErrorAlert(
+          "Klarte ikke å lagre oppskriften", null, "Feilen er: " + e.getMessage());
     }
-  }
-
-  /**
-   * Displays an information alert after a recipe has been successfully added.
-   *
-   * @param message the message to display
-   */
-  private void showAddedRecipeMessage(String message) {
-    Alert alert = new Alert(AlertType.INFORMATION);
-    alert.setTitle("Suksess");
-    alert.setHeaderText(null);
-    alert.setContentText(message);
-    alert.showAndWait();
   }
 
   /** Clears all input fields and removes all ingredients and steps from the current recipe. */
