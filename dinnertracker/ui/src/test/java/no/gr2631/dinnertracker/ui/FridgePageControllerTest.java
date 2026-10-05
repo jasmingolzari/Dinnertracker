@@ -328,26 +328,6 @@ public class FridgePageControllerTest {
     }
 
     /**
-     * Tests that the custom unit cell displays the unit symbol.
-     */
-    /**
-    @Test
-    public void unitCellShouldDisplayUnitSymbol() {
-        requireToolkit();
-
-        ListView<Unit> listView = new ListView<>();
-
-        ListCell<Unit> cell =
-                unitComboBox.getCellFactory().call(listView);
-
-        cell.setItem(Unit.KILOGRAM);
-
-        assertEquals("kg", cell.getText());
-        assertEquals("-fx-cursor: hand;", cell.getStyle());
-    }
-    */
-
-    /**
      * Tests that loading the fridge can be performed without a highlighted item.
      *
      * @throws Exception if reflection fails
