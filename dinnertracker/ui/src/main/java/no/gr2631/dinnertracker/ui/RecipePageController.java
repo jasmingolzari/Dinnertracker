@@ -128,7 +128,7 @@ public class RecipePageController {
    */
   @FXML
   private void addFoodItem(ActionEvent event) {
-    try{
+    try {
       String foodName = foodItemField.getText();
 
       if (!isValidFoodItemName(foodName)) {
