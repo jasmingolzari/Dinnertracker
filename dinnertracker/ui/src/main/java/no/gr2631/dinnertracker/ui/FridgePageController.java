@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
-
 import javafx.animation.PauseTransition;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -15,7 +14,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Spinner;
@@ -60,8 +58,8 @@ public class FridgePageController {
    * Initializes the quantity spinner, unit selector, and table bindings when the fridge page is
    * loaded.
    *
-   * <p>The table columns are bound to a lightweight row model and the current JSON-backed fridge data
-  * is loaded into the view immediately.
+   * <p>The table columns are bound to a lightweight row model and the current JSON-backed fridge
+   * data is loaded into the view immediately.
    */
   @FXML
   private void initialize() {
@@ -70,14 +68,16 @@ public class FridgePageController {
 
     unitComboBox.getItems().setAll(Unit.values());
     unitComboBox.setValue(Unit.GRAM);
-    unitComboBox.setCellFactory(comboBox -> new ListCell<>() {
-      @Override
-      protected void updateItem(Unit unit, boolean empty) {
-        super.updateItem(unit, empty);
-        setText(empty || unit == null ? null : unit.getSymbol());
-        setStyle(empty ? "" : "-fx-cursor: hand;");
-      }
-    });
+    unitComboBox.setCellFactory(
+        comboBox ->
+            new ListCell<>() {
+              @Override
+              protected void updateItem(Unit unit, boolean empty) {
+                super.updateItem(unit, empty);
+                setText(empty || unit == null ? null : unit.getSymbol());
+                setStyle(empty ? "" : "-fx-cursor: hand;");
+              }
+            });
     unitComboBox.setConverter(
         new StringConverter<Unit>() {
           @Override
@@ -96,31 +96,36 @@ public class FridgePageController {
           }
         });
 
-    foodNameColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().foodName()));
-    amountColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().amountText()));
+    foodNameColumn.setCellValueFactory(
+        cell -> new SimpleStringProperty(cell.getValue().foodName()));
+    amountColumn.setCellValueFactory(
+        cell -> new SimpleStringProperty(cell.getValue().amountText()));
     amountColumn.setStyle("-fx-alignment: CENTER_RIGHT;");
 
-    fridgeTable.setRowFactory(tableView -> {
-      TableRow<FridgeRow> row = new TableRow<>();
-      row.itemProperty().addListener((observable, oldItem, newItem) -> {
-        if (newItem != null
-            && highlightedFoodName != null
-            && newItem.foodName().equalsIgnoreCase(highlightedFoodName)) {
-          row.setStyle("-fx-background-color: rgba(47, 107, 59, 0.18);");
-          PauseTransition highlightPause = new PauseTransition(Duration.millis(900));
-          highlightPause.setOnFinished(
-              event -> {
-                if (row.getItem() == newItem) {
-                  row.setStyle("");
-                }
-              });
-          highlightPause.play();
-        } else {
-          row.setStyle("");
-        }
-      });
-      return row;
-    });
+    fridgeTable.setRowFactory(
+        tableView -> {
+          TableRow<FridgeRow> row = new TableRow<>();
+          row.itemProperty()
+              .addListener(
+                  (observable, oldItem, newItem) -> {
+                    if (newItem != null
+                        && highlightedFoodName != null
+                        && newItem.foodName().equalsIgnoreCase(highlightedFoodName)) {
+                      row.setStyle("-fx-background-color: rgba(47, 107, 59, 0.18);");
+                      PauseTransition highlightPause = new PauseTransition(Duration.millis(900));
+                      highlightPause.setOnFinished(
+                          event -> {
+                            if (row.getItem() == newItem) {
+                              row.setStyle("");
+                            }
+                          });
+                      highlightPause.play();
+                    } else {
+                      row.setStyle("");
+                    }
+                  });
+          return row;
+        });
 
     loadFridgeItems(null);
   }
@@ -141,17 +146,19 @@ public class FridgePageController {
       stage.setScene(new Scene(root));
       stage.show();
     } catch (IOException | RuntimeException exception) {
-      showAlert("Kunne ikke åpne hjemmesiden: " + exception.getMessage());
+      ShowAlertMessage.showErrorAlert(
+          "Kunne ikke åpne hjemmesiden", null, "Feilen er: " + exception.getMessage());
     }
   }
 
   /**
    * Adds the food item entered by the user to the fridge.
    *
-  * <p>After a successful addition, the table is refreshed and the affected food row receives a short
-  * visual highlight. The food name is cleared, and the quantity spinner is reset to zero. Invalid
-  * input is shown in an error dialog.
-   * TODO: Will update so that new food items are added to the fridge of the currently logged-in user, instead of always adding to the first fridge in the file. FOR Release 3.
+   * <p>After a successful addition, the table is refreshed and the affected food row receives a
+   * short visual highlight. The food name is cleared, and the quantity spinner is reset to zero.
+   * Invalid input is shown in an error dialog. TODO: Will update so that new food items are added
+   * to the fridge of the currently logged-in user, instead of always adding to the first fridge in
+   * the file. FOR Release 3.
    *
    * @param event action event generated by the add-food-item button.
    */
@@ -175,20 +182,21 @@ public class FridgePageController {
       loadFridgeItems(foodName);
 
     } catch (IllegalArgumentException exception) {
-      showAlert(exception.getMessage());
+      ShowAlertMessage.showErrorAlert("Ugyldig vare", null, exception.getMessage());
     } catch (Exception exception) {
-      showAlert("En uforventet feil oppsto: " + exception.getMessage());
+      ShowAlertMessage.showErrorAlert(
+          "En uforventet feil oppsto", null, "Feilen er: " + exception.getMessage());
     }
   }
 
   /**
    * Loads the persisted fridge contents from the JSON file and populates the table view.
    *
-  * <p>Each food item is converted to a row with the item name and the formatted quantity/unit text
-  * shown in the table. The table is refreshed after loading so the latest persisted contents are
-  * displayed immediately. If a food name is supplied, its row receives a brief highlight to make the
-  * update visible.
-  *
+   * <p>Each food item is converted to a row with the item name and the formatted quantity/unit text
+   * shown in the table. The table is refreshed after loading so the latest persisted contents are
+   * displayed immediately. If a food name is supplied, its row receives a brief highlight to make
+   * the update visible.
+   *
    * @param foodNameToHighlight name of the food item that was added or updated, or {@code null}
    */
   private void loadFridgeItems(String foodNameToHighlight) {
@@ -203,7 +211,10 @@ public class FridgePageController {
         Amount amount = entry.getValue();
         String amountText =
             String.format(
-                Locale.forLanguageTag("nb-NO"), "%.1f %s", amount.quantity(), amount.unit().getSymbol());
+                Locale.forLanguageTag("nb-NO"),
+                "%.1f %s",
+                amount.quantity(),
+                amount.unit().getSymbol());
         rows.add(new FridgeRow(foodItem.getName(), amountText));
       }
 
@@ -211,29 +222,15 @@ public class FridgePageController {
       fridgeTable.refresh();
     } catch (Exception exception) {
       fridgeTable.setItems(FXCollections.emptyObservableList());
-      showAlert("Kunne ikke laste kjøleskapet: " + exception.getMessage());
+      ShowAlertMessage.showErrorAlert("Kunne ikke laste kjøleskapet", null, exception.getMessage());
     }
   }
 
   /**
-   * Displays an error dialog with the supplied message.
+   * Represents a single row in the fridge table.
    *
-   * @param message message to display to the user TODO: Will later be moved to a utility class for
-   *     reuse across controllers.
+   * @param foodName the name of the food item
+   * @param amountText the formatted quantity and unit string shown in the table
    */
-  private void showAlert(String message) {
-    Alert alert = new Alert(Alert.AlertType.ERROR);
-    alert.setTitle("Ugyldig vare");
-    alert.setHeaderText(null);
-    alert.setContentText(message);
-    alert.showAndWait();
-  }
-
-/**
- * Represents a single row in the fridge table.
- *
- * @param foodName the name of the food item
- * @param amountText the formatted quantity and unit string shown in the table
- */
-public record FridgeRow(String foodName, String amountText) {}
+  public record FridgeRow(String foodName, String amountText) {}
 }
