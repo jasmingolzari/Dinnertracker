@@ -1,0 +1,17 @@
+[ {
+  "name" : "Pannekaker",
+  "ingredients" : [ {
+    "name" : "Egg",
+    "quantity" : 1.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "Melk",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  }, {
+    "name" : "Mel",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  } ],
+  "steps" : [ "Bland sammen" ]
+} ]

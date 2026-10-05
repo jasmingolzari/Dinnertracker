@@ -34,30 +34,30 @@
                         </Label>
                      </children>
                   </HBox>
-                  <Button mnemonicParsing="false" onAction="#backToHomePage" style="-fx-background-color: #2F6B3B; -fx-text-fill: white;" text="Tilbake" StackPane.alignment="CENTER_LEFT">
+                  <Button mnemonicParsing="false" onAction="#backToHomePage" style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-cursor: hand;" text="Tilbake" StackPane.alignment="CENTER_LEFT">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
                      </graphic>
                   </Button>
                </children>
             </StackPane>
-            <Label alignment="CENTER" maxWidth="Infinity" prefHeight="34.0" text="Her kan du legge til varer." textAlignment="CENTER" />
+            <Label alignment="CENTER" maxWidth="Infinity" prefHeight="34.0" text="Her kan du legge til varer i kjøleskapet (Oppgi navn, antall og enhet)." textAlignment="CENTER" />
             <HBox alignment="CENTER" maxWidth="Infinity" prefHeight="48.0" spacing="12.0">
                <children>
                   <TextField fx:id="foodItemField" prefHeight="40.0" prefWidth="260.0" promptText="Vare" />
-                  <Spinner fx:id="quantitySpinner" editable="true" prefHeight="40.0" prefWidth="80.0" />
-                  <ComboBox fx:id="unitComboBox" prefHeight="40.0" prefWidth="70.0" promptText="Enhet" />
-                  <Button fx:id="addFoodItemButton" mnemonicParsing="false" onAction="#addFoodItem" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white;" text="Legg til matvare">
+                  <Spinner fx:id="quantitySpinner" editable="true" prefHeight="40.0" prefWidth="80.0" style="-fx-cursor: hand;" />
+                  <ComboBox fx:id="unitComboBox" prefHeight="40.0" prefWidth="70.0" promptText="Enhet" style="-fx-cursor: hand;" />
+                  <Button fx:id="addFoodItemButton" mnemonicParsing="false" onAction="#addFoodItem" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-cursor: hand;" text="Legg til matvare">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
                      </graphic>
                   </Button>
                </children>
             </HBox>
-            <TableView prefHeight="275.0" prefWidth="600.0">
+            <TableView fx:id="fridgeTable" prefHeight="275.0" prefWidth="600.0" style="-fx-padding: 0; -fx-border-insets: 0; -fx-background-insets: 0;">
               <columns>
-                <TableColumn prefWidth="458.0" text="Matvarer" />
-                <TableColumn minWidth="0.0" prefWidth="142.0" text="Antall" />
+                <TableColumn fx:id="foodNameColumn" prefWidth="458.0" text="Matvarer" />
+                <TableColumn fx:id="amountColumn" minWidth="0.0" prefWidth="142.0" text="Antall" style="-fx-alignment: CENTER_RIGHT;" />
               </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
