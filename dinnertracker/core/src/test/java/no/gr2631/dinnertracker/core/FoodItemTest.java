@@ -34,6 +34,15 @@ public class FoodItemTest {
     assertNotEquals(tomato, milk);
   }
 
+  /** Tests that leading and trailing whitespace are ignored and names are compared case-insensitively. */
+  @Test
+  void testFoodItemsIgnoreWhitespaceAndCase() {
+    FoodItem tomato1 = new FoodItem(" Tomat ");
+    FoodItem tomato2 = new FoodItem("tomat");
+
+    assertEquals(tomato1, tomato2);
+  }
+
   /** Tests that food item names are compared without considering capitalization. */
   @Test
   void testFoodItemsIgnoreCase() {

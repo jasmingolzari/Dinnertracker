@@ -28,7 +28,7 @@
                   <VBox prefHeight="200.0" prefWidth="100.0" />
                   <VBox prefHeight="154.0" prefWidth="155.0">
                      <children>
-                        <Button fx:id="fridgeButton" mnemonicParsing="false" onAction="#openFridgePage" prefHeight="49.0" prefWidth="155.0" text=" Kjøleskap">
+                        <Button fx:id="fridgeButton" mnemonicParsing="false" onAction="#openFridgePage" prefHeight="49.0" prefWidth="155.0" style="-fx-cursor: hand;" text=" Kjøleskap">
                            <VBox.margin>
                               <Insets top="10.0" />
                            </VBox.margin>
@@ -37,7 +37,7 @@
                   </VBox>
                   <VBox prefHeight="100.0" prefWidth="140.0">
                      <children>
-                        <Button fx:id="recipeButton" mnemonicParsing="false" onAction="#openRecipePage" prefHeight="48.0" prefWidth="158.0" text="Oppskrifter">
+                        <Button fx:id="recipeButton" mnemonicParsing="false" onAction="#openRecipePage" prefHeight="48.0" prefWidth="158.0" style="-fx-cursor: hand;" text="Oppskrifter">
                            <VBox.margin>
                               <Insets top="10.0" />
                            </VBox.margin>

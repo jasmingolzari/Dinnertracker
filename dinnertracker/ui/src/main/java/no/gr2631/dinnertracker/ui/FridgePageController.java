@@ -1,6 +1,14 @@
 package no.gr2631.dinnertracker.ui;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
+
+import javafx.animation.PauseTransition;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,42 +17,112 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import javafx.util.StringConverter;
 import no.gr2631.dinnertracker.core.Amount;
 import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Unit;
+import no.gr2631.dinnertracker.persistence.FridgeFileHandler;
 
 /**
  * Controller for the fridge page.
  *
- * <p>Handles fridge-page initialization, adding food items, displaying input errors, and navigating
- * back to the home page.
+ * <p>Handles initialization of the fridge form, loading the current fridge contents from the JSON
+ * storage file, adding food items, and navigating back to the home page. The table view is backed
+ * by a list of row objects generated from the persisted fridge data.
  */
 public class FridgePageController {
-
-  private final Fridge fridge = App.getFridge();
-
   @FXML private TextField foodItemField;
 
   @FXML private Spinner<Double> quantitySpinner;
 
-  @FXML private ComboBox<String> unitComboBox;
+  @FXML private ComboBox<Unit> unitComboBox;
+
+  @FXML private TableView<FridgeRow> fridgeTable;
+
+  @FXML private TableColumn<FridgeRow, String> foodNameColumn;
+
+  @FXML private TableColumn<FridgeRow, String> amountColumn;
+
+  /** Name of the row that should receive temporary visual feedback after an update. */
+  private String highlightedFoodName;
 
   /**
-   * Initializes the quantity spinner and available measurement units when the fridge page is
+   * Initializes the quantity spinner, unit selector, and table bindings when the fridge page is
    * loaded.
+   *
+   * <p>The table columns are bound to a lightweight row model and the current JSON-backed fridge data
+  * is loaded into the view immediately.
    */
   @FXML
   private void initialize() {
     quantitySpinner.setValueFactory(
         new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 100, 0, 0.1));
 
-    unitComboBox.getItems().setAll("L", "kg", "stk", "ss", "ts");
-    unitComboBox.setValue("stk");
+    unitComboBox.getItems().setAll(Unit.values());
+    unitComboBox.setValue(Unit.GRAM);
+    unitComboBox.setCellFactory(comboBox -> new ListCell<>() {
+      @Override
+      protected void updateItem(Unit unit, boolean empty) {
+        super.updateItem(unit, empty);
+        setText(empty || unit == null ? null : unit.getSymbol());
+        setStyle(empty ? "" : "-fx-cursor: hand;");
+      }
+    });
+    unitComboBox.setConverter(
+        new StringConverter<Unit>() {
+          @Override
+          public String toString(Unit unit) {
+            return unit == null ? "" : unit.getSymbol();
+          }
+
+          @Override
+          public Unit fromString(String symbol) {
+            for (Unit unit : Unit.values()) {
+              if (unit.getSymbol().equals(symbol)) {
+                return unit;
+              }
+            }
+            return null;
+          }
+        });
+
+    foodNameColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().foodName()));
+    amountColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().amountText()));
+    amountColumn.setStyle("-fx-alignment: CENTER_RIGHT;");
+
+    fridgeTable.setRowFactory(tableView -> {
+      TableRow<FridgeRow> row = new TableRow<>();
+      row.itemProperty().addListener((observable, oldItem, newItem) -> {
+        if (newItem != null
+            && highlightedFoodName != null
+            && newItem.foodName().equalsIgnoreCase(highlightedFoodName)) {
+          row.setStyle("-fx-background-color: rgba(47, 107, 59, 0.18);");
+          PauseTransition highlightPause = new PauseTransition(Duration.millis(900));
+          highlightPause.setOnFinished(
+              event -> {
+                if (row.getItem() == newItem) {
+                  row.setStyle("");
+                }
+              });
+          highlightPause.play();
+        } else {
+          row.setStyle("");
+        }
+      });
+      return row;
+    });
+
+    loadFridgeItems(null);
   }
 
   /**
@@ -70,8 +148,10 @@ public class FridgePageController {
   /**
    * Adds the food item entered by the user to the fridge.
    *
-   * <p>After a successful addition, the food name is cleared and the quantity spinner is reset to
-   * zero. Invalid input is shown in an error dialog.
+  * <p>After a successful addition, the table is refreshed and the affected food row receives a short
+  * visual highlight. The food name is cleared, and the quantity spinner is reset to zero. Invalid
+  * input is shown in an error dialog.
+   * TODO: Will update so that new food items are added to the fridge of the currently logged-in user, instead of always adding to the first fridge in the file. FOR Release 3.
    *
    * @param event action event generated by the add-food-item button.
    */
@@ -80,16 +160,58 @@ public class FridgePageController {
     try {
       String foodName = foodItemField.getText().trim();
       double quantity = quantitySpinner.getValue();
-      Unit unit = getUnit(unitComboBox.getValue());
+      Unit unit = unitComboBox.getValue();
       FoodItem foodItem = new FoodItem(foodName);
 
+      FridgeFileHandler fridgeFileHandler = new FridgeFileHandler();
+      Fridge fridge = fridgeFileHandler.load(Path.of("..", "data", "fridges.json"), "0");
+
       fridge.addFoodItem(foodItem, new Amount(quantity, unit));
+      fridgeFileHandler.saveAll(List.of(fridge), Path.of("..", "data", "fridges.json"));
+
       foodItemField.clear();
       quantitySpinner.getValueFactory().setValue(0.0);
+      unitComboBox.setValue(Unit.GRAM);
+      loadFridgeItems(foodName);
+
     } catch (IllegalArgumentException exception) {
       showAlert(exception.getMessage());
     } catch (Exception exception) {
-      showAlert("An unexpected error occurred: " + exception.getMessage());
+      showAlert("En uforventet feil oppsto: " + exception.getMessage());
+    }
+  }
+
+  /**
+   * Loads the persisted fridge contents from the JSON file and populates the table view.
+   *
+  * <p>Each food item is converted to a row with the item name and the formatted quantity/unit text
+  * shown in the table. The table is refreshed after loading so the latest persisted contents are
+  * displayed immediately. If a food name is supplied, its row receives a brief highlight to make the
+  * update visible.
+  *
+   * @param foodNameToHighlight name of the food item that was added or updated, or {@code null}
+   */
+  private void loadFridgeItems(String foodNameToHighlight) {
+    try {
+      FridgeFileHandler fridgeFileHandler = new FridgeFileHandler();
+      Fridge fridge = fridgeFileHandler.load(Path.of("..", "data", "fridges.json"), "0");
+      highlightedFoodName = foodNameToHighlight;
+
+      ObservableList<FridgeRow> rows = FXCollections.observableArrayList();
+      for (var entry : fridge.getFoodItems().entrySet()) {
+        FoodItem foodItem = entry.getKey();
+        Amount amount = entry.getValue();
+        String amountText =
+            String.format(
+                Locale.forLanguageTag("nb-NO"), "%.1f %s", amount.quantity(), amount.unit().getSymbol());
+        rows.add(new FridgeRow(foodItem.getName(), amountText));
+      }
+
+      fridgeTable.setItems(rows);
+      fridgeTable.refresh();
+    } catch (Exception exception) {
+      fridgeTable.setItems(FXCollections.emptyObservableList());
+      showAlert("Kunne ikke laste kjøleskapet: " + exception.getMessage());
     }
   }
 
@@ -107,19 +229,11 @@ public class FridgePageController {
     alert.showAndWait();
   }
 
-  /**
-   * Finds the measurement unit represented by a symbol from the UI.
-   *
-   * @param symbol the unit symbol selected by the user
-   * @return the matching measurement unit
-   * @throws IllegalArgumentException if no unit matches the symbol
-   */
-  private Unit getUnit(String symbol) {
-    for (Unit unit : Unit.values()) {
-      if (unit.getSymbol().equals(symbol)) {
-        return unit;
-      }
-    }
-    throw new IllegalArgumentException("Ugyldig måleenhet.");
-  }
+/**
+ * Represents a single row in the fridge table.
+ *
+ * @param foodName the name of the food item
+ * @param amountText the formatted quantity and unit string shown in the table
+ */
+public record FridgeRow(String foodName, String amountText) {}
 }

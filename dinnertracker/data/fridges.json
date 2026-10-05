@@ -1,0 +1,11 @@
+[ {
+  "foodItems" : [ {
+    "name" : "Jordbær",
+    "quantity" : 3.0000000000000004,
+    "unit" : "KILOGRAM"
+  }, {
+    "name" : "Eple",
+    "quantity" : 5.0,
+    "unit" : "PIECE"
+  } ]
+} ]
