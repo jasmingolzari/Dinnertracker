@@ -1,4 +1,4 @@
-package no.ntnu.it1901.gr2631.dinnertracker.ui;
+package no.gr2631.dinnertracker.ui;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +16,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
-import no.gr2631.dinnertracker.ui.HomePageController;
 
 class HomePageControllerTest {
 
