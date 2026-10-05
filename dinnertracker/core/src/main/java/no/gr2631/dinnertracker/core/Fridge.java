@@ -35,6 +35,8 @@ public class Fridge {
       throw new IllegalArgumentException("Matvare eller mengde kan ikke være null.");
     }
 
+    validateQuantity(amount.quantity());
+
     Amount currentAmount = foodItems.get(foodItem);
     if (currentAmount == null) {
       foodItems.put(foodItem, amount);

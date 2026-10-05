@@ -83,6 +83,7 @@ public final class Recipe {
     if (amount == null) {
       throw new IllegalArgumentException("Mengde kan ikke være null.");
     }
+    validateQuantity(amount.quantity());
     ingredients.put(item, amount);
   }
 
@@ -157,5 +158,17 @@ public final class Recipe {
     }
 
     return sb.toString();
+  }
+
+  /**
+   * Validate that the quantity is not negative.
+   *
+   * @param quantity The quantity to validate.
+   * @throws IllegalArgumentException if the quantity is negative.
+   */
+  private static void validateQuantity(double quantity) {
+    if (!Double.isFinite(quantity) || quantity < 0) {
+      throw new IllegalArgumentException("Mengden må være endelig og ikke-negativ.");
+    }
   }
 }

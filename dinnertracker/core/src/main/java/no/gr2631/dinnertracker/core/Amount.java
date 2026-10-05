@@ -19,11 +19,11 @@ public record Amount(double quantity, Unit unit) {
    */
   public Amount {
     if (!Double.isFinite(quantity) || quantity <= 0) {
-      throw new IllegalArgumentException("Quantity must be positive finite number ");
+      throw new IllegalArgumentException("Mengden må være endelig og større enn null.");
     }
 
     if (unit == null) {
-      throw new IllegalArgumentException("Unit cannot be null");
+      throw new IllegalArgumentException("Enhet kan ikke være null.");
     }
   }
 }
