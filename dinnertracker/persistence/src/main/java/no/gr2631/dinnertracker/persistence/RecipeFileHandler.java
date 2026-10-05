@@ -64,6 +64,7 @@ public class RecipeFileHandler implements GenericRepository<Recipe> {
    * @throws IOException if the file cannot be read or contains invalid JSON
    * @throws IllegalArgumentException if no recipe with the given name exists in the file
    */
+  @Override
   public Recipe load(Path path, String recipeName) throws IOException {
     for (Recipe recipe : loadAll(path)) {
       if (recipe.getName().equals(recipeName)) {
@@ -95,6 +96,7 @@ public class RecipeFileHandler implements GenericRepository<Recipe> {
    * @param path the path to the JSON file to write to
    * @throws IOException if the file cannot be written
    */
+  @Override
   public void saveAll(List<Recipe> recipes, Path path) throws IOException {
     ArrayNode array = objectMapper.createArrayNode();
     for (Recipe recipe : recipes) {
