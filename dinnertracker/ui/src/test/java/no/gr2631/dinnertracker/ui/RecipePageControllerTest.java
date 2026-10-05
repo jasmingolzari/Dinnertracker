@@ -2,26 +2,39 @@ package no.gr2631.dinnertracker.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mockStatic;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import no.gr2631.dinnertracker.core.Unit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 /**
  * Simple tests for the methods in {@link RecipePageController}. The private fields and methods are
- * reached with reflection. Only methods that do not open an alert are called.
+ * reached with reflection.
  *
  * <p>The name validation tests do not need JavaFX. The tests that use controls are skipped if the
  * JavaFX toolkit cannot start.
@@ -31,6 +44,7 @@ public class RecipePageControllerTest {
   private static boolean toolkitStarted;
 
   private RecipePageController controller;
+  private TextField nameField;
   private TextField foodItemField;
   private Spinner<Double> amountSpinner;
   private ComboBox<Unit> unitComboBox;
@@ -58,6 +72,7 @@ public class RecipePageControllerTest {
     if (!toolkitStarted) {
       return;
     }
+    nameField = new TextField();
     foodItemField = new TextField();
     amountSpinner = new Spinner<>();
     unitComboBox = new ComboBox<>();
@@ -65,6 +80,7 @@ public class RecipePageControllerTest {
     stepsField = new TextField();
     stepsList = new ListView<>();
 
+    setField("nameField", nameField);
     setField("foodItemField", foodItemField);
     setField("foodItemAmountSpinner", amountSpinner);
     setField("foodItemUnitComboBox", unitComboBox);
@@ -113,6 +129,32 @@ public class RecipePageControllerTest {
     call("addStep", ActionEvent.class, null);
   }
 
+  /** Runs a controller action on the JavaFX application thread. */
+  private void runOnFxThread(ThrowingRunnable action) throws Exception {
+    if (Platform.isFxApplicationThread()) {
+      action.run();
+      return;
+    }
+
+    CountDownLatch completed = new CountDownLatch(1);
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    Platform.runLater(
+        () -> {
+          try {
+            action.run();
+          } catch (Throwable throwable) {
+            failure.set(throwable);
+          } finally {
+            completed.countDown();
+          }
+        });
+
+    assertTrue(completed.await(5, TimeUnit.SECONDS), "JavaFX action did not finish in time.");
+    if (failure.get() != null) {
+      throw new AssertionError("JavaFX action failed.", failure.get());
+    }
+  }
+
   /** Names with letters and hyphens are valid. */
   @Test
   public void validNamesShouldBeAccepted() throws Exception {
@@ -131,6 +173,20 @@ public class RecipePageControllerTest {
     assertFalse(isValid("Salt!"));
   }
 
+  /** initialize should configure the default amount, units and unit converter. */
+  @Test
+  public void initializeShouldConfigureAmountAndUnitControls() throws Exception {
+    requireToolkit();
+
+    assertEquals(1.0, amountSpinner.getValue());
+    assertEquals(Unit.GRAM, unitComboBox.getValue());
+    assertEquals(Unit.values().length, unitComboBox.getItems().size());
+    assertEquals(Unit.GRAM.getSymbol(), unitComboBox.getConverter().toString(Unit.GRAM));
+    assertEquals("", unitComboBox.getConverter().toString(null));
+    assertEquals(Unit.GRAM, unitComboBox.getConverter().fromString(Unit.GRAM.getSymbol()));
+    assertNull(unitComboBox.getConverter().fromString("unknown"));
+  }
+
   /** addFoodItem should show the ingredient in the list and empty the fields. */
   @Test
   public void addFoodItemShouldShowIngredientAndClearFields() throws Exception {
@@ -142,6 +198,38 @@ public class RecipePageControllerTest {
     assertEquals(List.of("Tomat - 2.5 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
     assertEquals("", foodItemField.getText());
     assertEquals(1.0, amountSpinner.getValue());
+  }
+
+  /** Invalid ingredient names should be rejected. */
+  @Test
+  public void invalidFoodItemShouldShowAlert() throws Exception {
+    requireToolkit();
+    foodItemField.setText("Tomat2");
+    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+      call("addFoodItem", ActionEvent.class, null);
+      alerts.verify(
+          () ->
+              ShowAlertMessage.showErrorAlert(
+                  "Ugyldig input",
+                  null,
+                  "Ugyldig navn på matvare. Kun bokstaver og bindestrek er tillatt."));
+    }
+    assertTrue(ingredientsList.getItems().isEmpty());
+  }
+
+  /** Ingredients without a selected unit should be rejected. */
+  @Test
+  public void missingFoodItemUnitShouldShowAlert() throws Exception {
+    requireToolkit();
+    foodItemField.setText("Tomat");
+    unitComboBox.setValue(null);
+    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+      call("addFoodItem", ActionEvent.class, null);
+      alerts.verify(
+          () ->
+              ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Velg en enhet for mengden."));
+    }
+    assertTrue(ingredientsList.getItems().isEmpty());
   }
 
   /** Ingredients should be listed in the order they were added. */
@@ -183,5 +271,130 @@ public class RecipePageControllerTest {
     addStep("   ");
 
     assertTrue(stepsList.getItems().isEmpty());
+  }
+
+  /** clearForm should reset every field, list and stored ingredient. */
+  @Test
+  public void clearFormShouldResetAllInputs() throws Exception {
+    requireToolkit();
+    nameField.setText("Pasta");
+    foodItemField.setText("Tomat");
+    stepsField.setText("Kok pasta");
+    addIngredient("Tomat");
+    addStep("Kok pasta");
+
+    Method clearForm = RecipePageController.class.getDeclaredMethod("clearForm");
+    clearForm.setAccessible(true);
+    clearForm.invoke(controller);
+
+    assertEquals("", nameField.getText());
+    assertEquals("", foodItemField.getText());
+    assertEquals("", stepsField.getText());
+    assertTrue(ingredientsList.getItems().isEmpty());
+    assertTrue(stepsList.getItems().isEmpty());
+    assertTrue(controllerIngredients().isEmpty());
+    assertEquals(1.0, amountSpinner.getValue());
+    assertEquals(Unit.GRAM, unitComboBox.getValue());
+  }
+
+  /** Recipes without names should be rejected. */
+  @Test
+  public void recipeWithoutNameShouldShowAlert() throws Exception {
+    requireToolkit();
+    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+      call("addRecipe", ActionEvent.class, null);
+      alerts.verify(
+          () ->
+              ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Oppskriften må ha et navn."));
+    }
+  }
+
+  /** Recipes without ingredients should be rejected. */
+  @Test
+  public void recipeWithoutIngredientsShouldShowAlert() throws Exception {
+    requireToolkit();
+    nameField.setText("Pasta");
+    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+      call("addRecipe", ActionEvent.class, null);
+      alerts.verify(
+          () ->
+              ShowAlertMessage.showErrorAlert(
+                  "Ugyldig input", null, "Legg til minst en ingrediens."));
+    }
+  }
+
+  /** Recipes without steps should be rejected. */
+  @Test
+  public void recipeWithoutStepsShouldShowAlert() throws Exception {
+    requireToolkit();
+    nameField.setText("Pasta");
+    addIngredient("Tomat");
+    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+      call("addRecipe", ActionEvent.class, null);
+      alerts.verify(
+          () -> ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Legg til minst ett steg."));
+    }
+  }
+
+  /** A complete recipe should be saved and the form should then be cleared. */
+  @Test
+  public void completeRecipeShouldBeSavedAndClearForm() throws Exception {
+    requireToolkit();
+    nameField.setText("Testoppskrift");
+    addIngredient("Tomat");
+    addStep("Kutt tomat");
+
+    Path recipePath = Path.of("..", "data", "recipes.json");
+    boolean fileExists = Files.exists(recipePath);
+    byte[] originalContent = fileExists ? Files.readAllBytes(recipePath) : new byte[0];
+
+    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+      call("addRecipe", ActionEvent.class, null);
+      alerts.verify(() -> ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til"));
+      assertEquals("", nameField.getText());
+      assertTrue(ingredientsList.getItems().isEmpty());
+      assertTrue(stepsList.getItems().isEmpty());
+    } finally {
+      if (fileExists) {
+        Files.write(recipePath, originalContent);
+      } else {
+        Files.deleteIfExists(recipePath);
+      }
+    }
+  }
+
+  /** Returns the private ingredient map for checking that clearForm removes its state. */
+  @SuppressWarnings("unchecked")
+  private java.util.Map<Object, Object> controllerIngredients() throws Exception {
+    Field field = RecipePageController.class.getDeclaredField("ingredients");
+    field.setAccessible(true);
+    return (java.util.Map<Object, Object>) field.get(controller);
+  }
+
+  /** backToHomePage should replace the current scene with the home page view. */
+  @Test
+  public void backToHomePageShouldNavigateHome() throws Exception {
+    requireToolkit();
+    runOnFxThread(
+        () -> {
+          Stage stage = new Stage();
+          Button source = new Button();
+          stage.setScene(new Scene(new VBox(source)));
+          invokeBackToHomePage(source);
+          assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
+        });
+  }
+
+  /** Invokes the private back navigation method with a button as its event source. */
+  private void invokeBackToHomePage(Button source) throws Exception {
+    Method method =
+        RecipePageController.class.getDeclaredMethod("backToHomePage", ActionEvent.class);
+    method.setAccessible(true);
+    method.invoke(controller, new ActionEvent(source, source));
+  }
+
+  @FunctionalInterface
+  private interface ThrowingRunnable {
+    void run() throws Exception;
   }
 }
