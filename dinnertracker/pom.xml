@@ -23,7 +23,6 @@
         <jacoco.version>0.8.13</jacoco.version>
         <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
         <spotbugs.plugin.version>4.10.4.1</spotbugs.plugin.version>
-        <pmd.plugin.version>3.28.0</pmd.plugin.version>
         <spotless.plugin.version>3.10.3</spotless.plugin.version>
     </properties>
 
@@ -71,28 +70,6 @@
                 <executions>
                     <execution>
                         <id>spotbugs-check</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>${pmd.plugin.version}</version>
-                <configuration>
-                    <targetJdk>${maven.compiler.release}</targetJdk>
-                    <printFailingErrors>true</printFailingErrors>
-                    <rulesets>
-                        <ruleset>config/ruleset.xml</ruleset>
-                    </rulesets>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>pmd-check</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>check</goal>

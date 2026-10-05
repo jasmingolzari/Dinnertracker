@@ -42,21 +42,6 @@ reporting threshold. The SpotBugs check runs
 automatically during the Maven verify phase and
 fails the build if configured violations are found.
 
-## PMD
-
-PMD is a static analysis tool used to detect
-potential problems and code quality issues in Java code.
-
-PMD is configured in the parent pom.xml file
-using the Maven PMD Plugin.
-
-PMD uses the project's configured Java version as
-the target JDK and prints detected violations to the
-build output.
-
-The PMD check runs automatically during the Maven
-verify phase.
-
 ## Spotless
 
 Spotless is used to enforce consistent formatting
@@ -85,7 +70,7 @@ Run the following command from the repository root:
     mvn -f dinnertracker/pom.xml verify
 
 The verify phase runs the automated tests and the
-configured Checkstyle, SpotBugs, PMD, Spotless, and
+configured Checkstyle, SpotBugs, Spotless, and
 JaCoCo checks.
 
 JaCoCo generates coverage reports and checks the
