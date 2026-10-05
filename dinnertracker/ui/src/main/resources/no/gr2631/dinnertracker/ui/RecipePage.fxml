@@ -57,6 +57,7 @@
                <children>
                   <Label text="Mengde" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
                   <Spinner fx:id="foodItemAmountSpinner"
+                           editable="true"
                            prefWidth="100.0" />
                </children>
                <padding>
