@@ -48,6 +48,7 @@
             <groupId>no.gr2631</groupId>
             <artifactId>persistence</artifactId>
             <version>${project.version}</version>
+        
         </dependency>
     </dependencies>
 
