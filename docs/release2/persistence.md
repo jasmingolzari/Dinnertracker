@@ -22,7 +22,7 @@ The persistence module depends on the core module. The user interface module dep
 
 ## JSON persistence
 
-Recipe data is stored in JSON format. Jackson is used by the persistence module to serialize and deserialize recipe objects.
+Recipe and fridge data is stored in JSON format. We chose this format because it makes the data clear and easy to store. Jackson is used by the persistence module to serialize and deserialize recipe objects.
 
 ## File format
 
@@ -32,23 +32,38 @@ Each recipe contains a name, a list of food item objects, and a list of steps.
 
 Example:
 ```json
-[
-  {
-    "name": "Pasta",
-    "ingridients": [
-  {
-    "name": "Pasta"
-  },
-  {
-    "name": "Tomato sauce"
-  }
-],
-    "steps": [
-      "Boil the pasta",
-      "Add the tomato sauce"
-    ]
-  }
-]
+[ {
+  "name" : "Pannekaker",
+  "ingredients" : [ {
+    "name" : "Egg",
+    "quantity" : 1.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "Melk",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  }, {
+    "name" : "Mel",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  } ],
+  "steps" : [ "Bland sammen" ]
+} ]
+```
+
+The fridge file contains all fridges which we will later use when we implement user support. It stores an array with fridges, fridges is a json object that stores name and amount.
+```
+[ {
+  "foodItems" : [ {
+    "name" : "Jordbær",
+    "quantity" : 3.0000000000000004,
+    "unit" : "KILOGRAM"
+  }, {
+    "name" : "Eple",
+    "quantity" : 5.0,
+    "unit" : "PIECE"
+  } ]
+} ]
 ```
 
 ## Storage model
