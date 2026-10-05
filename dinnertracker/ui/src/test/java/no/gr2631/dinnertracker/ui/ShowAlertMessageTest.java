@@ -23,8 +23,10 @@ public class ShowAlertMessageTest {
   public static void startToolkit() {
     try {
       Platform.startup(() -> {});
+      Platform.setImplicitExit(false);
       toolkitStarted = true;
     } catch (IllegalStateException exception) {
+      Platform.setImplicitExit(false);
       toolkitStarted = true;
     } catch (Throwable exception) {
       toolkitStarted = false;
@@ -48,12 +50,15 @@ public class ShowAlertMessageTest {
         });
 
     assertTrue(completed.await(5, TimeUnit.SECONDS), "JavaFX action did not finish in time.");
+    CountDownLatch cleanupCompleted = new CountDownLatch(1);
     Platform.runLater(
         () -> {
           for (Window window : new ArrayList<>(Window.getWindows())) {
             window.hide();
           }
+          cleanupCompleted.countDown();
         });
+    assertTrue(cleanupCompleted.await(5, TimeUnit.SECONDS), "JavaFX cleanup did not finish in time.");
     if (failure.get() != null) {
       throw new AssertionError("JavaFX action failed.", failure.get());
     }

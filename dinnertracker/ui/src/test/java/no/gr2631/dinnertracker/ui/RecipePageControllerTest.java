@@ -57,8 +57,10 @@ public class RecipePageControllerTest {
   public static void startToolkit() {
     try {
       Platform.startup(() -> {});
+      Platform.setImplicitExit(false);
       toolkitStarted = true;
     } catch (IllegalStateException e) {
+      Platform.setImplicitExit(false);
       toolkitStarted = true; // Already started.
     } catch (Throwable e) {
       toolkitStarted = false; // JavaFX could not start.
@@ -380,8 +382,12 @@ public class RecipePageControllerTest {
           Stage stage = new Stage();
           Button source = new Button();
           stage.setScene(new Scene(new VBox(source)));
-          invokeBackToHomePage(source);
-          assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
+          try {
+            invokeBackToHomePage(source);
+            assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
+          } finally {
+            stage.close();
+          }
         });
   }
 

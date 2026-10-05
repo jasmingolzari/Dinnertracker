@@ -21,18 +21,12 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Install Maven on self-hosted runner
+      - name: Install Maven and virtual display
         run: |
-          if ! command -v mvn >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y maven
-          fi
+          sudo apt-get update
+          sudo apt-get install -y maven xvfb
           mvn -version
-          
-      - name: Run Maven tests
-        working-directory: dinnertracker
-        run: mvn --batch-mode test
 
-      - name: Verify project checks
+      - name: Run Maven verification
         working-directory: dinnertracker
-        run: mvn --batch-mode verify
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" mvn --batch-mode verify

@@ -34,8 +34,10 @@ public class RecipeViewPageControllerTest {
   public static void startToolkit() {
     try {
       Platform.startup(() -> {});
+      Platform.setImplicitExit(false);
       toolkitStarted = true;
     } catch (IllegalStateException e) {
+      Platform.setImplicitExit(false);
       toolkitStarted = true;
     } catch (Throwable e) {
       toolkitStarted = false;
@@ -156,8 +158,12 @@ public class RecipeViewPageControllerTest {
           Button source = new Button();
           stage.setScene(new Scene(new VBox(source)));
           RecipeViewPageController controller = new RecipeViewPageController();
-          invoke(controller, "makeNewRecipe", new ActionEvent(source, source));
-          assertEquals(VBox.class, stage.getScene().getRoot().getClass());
+          try {
+            invoke(controller, "makeNewRecipe", new ActionEvent(source, source));
+            assertEquals(VBox.class, stage.getScene().getRoot().getClass());
+          } finally {
+            stage.close();
+          }
         });
   }
 
@@ -171,8 +177,12 @@ public class RecipeViewPageControllerTest {
           Button source = new Button();
           stage.setScene(new Scene(new VBox(source)));
           RecipeViewPageController controller = new RecipeViewPageController();
-          invoke(controller, "backToHomePage", new ActionEvent(source, source));
-          assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
+          try {
+            invoke(controller, "backToHomePage", new ActionEvent(source, source));
+            assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
+          } finally {
+            stage.close();
+          }
         });
   }
 
