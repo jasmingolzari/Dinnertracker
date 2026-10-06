@@ -15,7 +15,7 @@
    <top>
       <BorderPane prefHeight="94.0" prefWidth="600.0" style="-fx-background-color: #2F6B3B;" BorderPane.alignment="CENTER">
          <center>
-            <Label prefHeight="76.0" prefWidth="355.0" text="   DINNERTRACKER" textAlignment="CENTER" textFill="WHITE" BorderPane.alignment="CENTER">
+            <Label alignment="CENTER" prefHeight="76.0" prefWidth="450.0" text="DINNERTRACKER" textFill="WHITE" BorderPane.alignment="CENTER">
                <font>
                   <Font name="System Bold" size="40.0" />
                </font>
