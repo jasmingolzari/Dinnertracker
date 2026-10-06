@@ -5,155 +5,140 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-      prefHeight="400.0" prefWidth="600.0" spacing="15.0"
-      style="-fx-background-color: #F4F8F4;"
-      xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="no.gr2631.dinnertracker.ui.RecipePageController">
+<ScrollPane fitToHeight="false" fitToWidth="true" hbarPolicy="NEVER"
+            prefHeight="500.0" prefWidth="600.0"
+            style="-fx-background: #F4F8F4; -fx-background-color: #F4F8F4;"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="no.gr2631.dinnertracker.ui.RecipePageController">
 
-   <children>
-
-      <HBox alignment="CENTER" spacing="8.0">
-         <children>
-            <FontIcon iconColor="#2F6B3B" iconLiteral="mdi2b-book-open-page-variant-outline" iconSize="24" />
-            <Label text="Ny oppskrift" textFill="#2F6B3B">
-               <font>
-                  <Font name="System Bold" size="24.0" />
-               </font>
-            </Label>
-         </children>
-      </HBox>
-
-      <Label maxWidth="1.7976931348623157E308" text="Navn"
-             style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
-      <TextField fx:id="nameField"
-                 style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
-
-      <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+   <content>
+      <VBox spacing="10.0" style="-fx-background-color: #F4F8F4;">
          <children>
 
-            <VBox prefHeight="200.0" prefWidth="150.0" spacing="10.0">
+            <HBox alignment="CENTER" spacing="8.0">
                <children>
-                  <Label text="Matvare" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
-                  <TextField fx:id="foodItemField"
-                             style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
+                  <FontIcon iconColor="#2F6B3B" iconLiteral="mdi2b-book-open-page-variant-outline" iconSize="24" />
+                  <Label text="Ny oppskrift" textFill="#2F6B3B">
+                     <font>
+                        <Font name="System Bold" size="22.0" />
+                     </font>
+                  </Label>
                </children>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
-            </VBox>
+            </HBox>
 
-            <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
-               <children>
-                  <Label text="Mengde" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
-                  <Spinner fx:id="foodItemAmountSpinner"
-                           editable="true"
-                           prefWidth="100.0" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
-            </VBox>
+            <Label text="Navn" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
+            <TextField fx:id="nameField"
+                       style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
 
-            <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+            <FlowPane alignment="BOTTOM_LEFT" columnHalignment="LEFT" hgap="10.0" vgap="8.0">
                <children>
-                  <Label text="Enhet" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
-                  <ComboBox fx:id="foodItemUnitComboBox"
-                            prefWidth="100.0" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
-            </VBox>
 
-            <VBox maxWidth="1.7976931348623157E308">
-               <children>
+                  <VBox spacing="4.0">
+                     <children>
+                        <Label text="Matvare" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
+                        <TextField fx:id="foodItemField" prefWidth="180.0"
+                                   style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
+                     </children>
+                  </VBox>
+
+                  <VBox spacing="4.0">
+                     <children>
+                        <Label text="Mengde" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
+                        <Spinner fx:id="foodItemAmountSpinner" editable="true" prefWidth="90.0" />
+                     </children>
+                  </VBox>
+
+                  <VBox spacing="4.0">
+                     <children>
+                        <Label text="Enhet" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
+                        <ComboBox fx:id="foodItemUnitComboBox" prefWidth="90.0" />
+                     </children>
+                  </VBox>
+
                   <Button fx:id="addFoodItemButton"
                           mnemonicParsing="false"
                           onAction="#addFoodItem"
                           style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
-                          text="Legg til ingrediens">
+                          text="+Legg til ingrediens">
+                     <graphic>
+                        <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
+                     </graphic>
+                  </Button>
+
+               </children>
+            </FlowPane>
+
+            <Label text="Ingredienser" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
+
+            <ListView fx:id="ingredientsList"
+                      minHeight="110.0"
+                      prefHeight="110.0"
+                      maxHeight="110.0"
+                      style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
+
+            <Label text="Steg" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
+
+            <HBox spacing="10.0">
+               <children>
+                  <TextField fx:id="stepsField"
+                             HBox.hgrow="ALWAYS"
+                             style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
+                  <Button fx:id="addStepButton"
+                          mnemonicParsing="false"
+                          onAction="#addStep"
+                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
+                          text="+Legg til steg">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
                      </graphic>
                   </Button>
                </children>
-               <padding>
-                  <Insets top="30.0" />
-               </padding>
-            </VBox>
+            </HBox>
+
+            <ListView fx:id="stepsList"
+                      minHeight="110.0"
+                      prefHeight="110.0"
+                      maxHeight="110.0"
+                      style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
+
+            <HBox alignment="CENTER">
+               <children>
+                  <Button fx:id="backButton"
+                          mnemonicParsing="false"
+                          onAction="#backToHomePage"
+                          style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-background-radius: 6;"
+                          text="Tilbake">
+                     <graphic>
+                        <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
+                     </graphic>
+                  </Button>
+
+                  <Region HBox.hgrow="ALWAYS" />
+
+                  <Button fx:id="addRecipeButton"
+                          mnemonicParsing="false"
+                          onAction="#addRecipe"
+                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
+                          text="+Legg til oppskrift" />
+               </children>
+            </HBox>
 
          </children>
-      </HBox>
+         <padding>
+            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+         </padding>
+      </VBox>
+   </content>
 
-      <ListView fx:id="ingredientsList"
-                prefHeight="150.0"
-                prefWidth="757.0"
-                style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
-
-      <Label text="Steg" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
-
-      <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
-         <children>
-            <TextField fx:id="stepsField"
-                       HBox.hgrow="ALWAYS"
-                       style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
-            <Button fx:id="addStepButton"
-                    mnemonicParsing="false"
-                    onAction="#addStep"
-                    style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
-                    text="Legg til steg">
-               <graphic>
-                  <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
-               </graphic>
-            </Button>
-         </children>
-      </HBox>
-
-      <ListView fx:id="stepsList"
-                prefHeight="150.0"
-                prefWidth="200.0"
-                style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;" />
-
-      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-         <children>
-            <Button fx:id="backButton"
-                    mnemonicParsing="false"
-                    onAction="#backToHomePage"
-                    style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-background-radius: 6;"
-                    text="Tilbake">
-               <graphic>
-                  <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
-               </graphic>
-            </Button>
-
-            <Region HBox.hgrow="ALWAYS" />
-
-            <Button fx:id="addRecipeButton"
-                    mnemonicParsing="false"
-                    onAction="#addRecipe"
-                    style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
-                    text="+Legg til oppskrift" />
-         </children>
-      </HBox>
-
-   </children>
-
-   <padding>
-      <Insets bottom="20.0"
-              left="20.0"
-              right="20.0"
-              top="20.0" />
-   </padding>
-
-</VBox>
+</ScrollPane>
