@@ -17,6 +17,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import no.gr2631.dinnertracker.core.Recipe;
@@ -34,10 +35,8 @@ public class RecipeViewPageControllerTest {
   public static void startToolkit() {
     try {
       Platform.startup(() -> {});
-      Platform.setImplicitExit(false);
       toolkitStarted = true;
     } catch (IllegalStateException e) {
-      Platform.setImplicitExit(false);
       toolkitStarted = true;
     } catch (Throwable e) {
       toolkitStarted = false;
@@ -158,12 +157,8 @@ public class RecipeViewPageControllerTest {
           Button source = new Button();
           stage.setScene(new Scene(new VBox(source)));
           RecipeViewPageController controller = new RecipeViewPageController();
-          try {
-            invoke(controller, "makeNewRecipe", new ActionEvent(source, source));
-            assertEquals(VBox.class, stage.getScene().getRoot().getClass());
-          } finally {
-            stage.close();
-          }
+          invoke(controller, "makeNewRecipe", new ActionEvent(source, source));
+          assertEquals(ScrollPane.class, stage.getScene().getRoot().getClass());
         });
   }
 
@@ -177,12 +172,8 @@ public class RecipeViewPageControllerTest {
           Button source = new Button();
           stage.setScene(new Scene(new VBox(source)));
           RecipeViewPageController controller = new RecipeViewPageController();
-          try {
-            invoke(controller, "backToHomePage", new ActionEvent(source, source));
-            assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
-          } finally {
-            stage.close();
-          }
+          invoke(controller, "backToHomePage", new ActionEvent(source, source));
+          assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
         });
   }
 
