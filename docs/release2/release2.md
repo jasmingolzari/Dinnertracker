@@ -52,6 +52,14 @@ code quality checks.
 The setup and use of the testing and code quality tools are documented
 in [Code Quality](code-quality.md).
 
+## Future work
+- Integrate user login into the project.
+- Connect recipes and fridge to user ID.
+- Further develop the existing pages with accessibility in mind.
+-   Add cursor mouse on button hover.
+-   Better the table/list view on the recipe page.
+- Enable clicking on added recipes so that they show up on their own page.
+
 ## Documentation
 
 The following documents provide more detailed information about
