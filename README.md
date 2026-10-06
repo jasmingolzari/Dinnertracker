@@ -81,6 +81,7 @@ The project also uses the following main libraries and tools:
 - JaCoCo for measuring test coverage
 - Checkstyle for code style checking
 - SpotBugs for static analysis
+- Spotstyle for styling conventions
 
 The project dependencies and module configuration are defined in the Maven `pom.xml` files.
 
