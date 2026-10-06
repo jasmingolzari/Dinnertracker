@@ -70,7 +70,7 @@
                           mnemonicParsing="false"
                           onAction="#addFoodItem"
                           style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
-                          text="+Legg til ingrediens">
+                          text="Legg til ingrediens">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
                      </graphic>
@@ -98,7 +98,7 @@
                           mnemonicParsing="false"
                           onAction="#addStep"
                           style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
-                          text="+Legg til steg">
+                          text="Legg til steg">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
                      </graphic>
