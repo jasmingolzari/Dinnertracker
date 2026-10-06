@@ -24,7 +24,7 @@ jobs:
       - name: Install Maven and virtual display
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb curl libgtk-3-0 libgbm1 libasound2
+          sudo apt-get install -y xvfb curl libgtk-3-0 libgbm1 libasound2t64
           MAVEN_VERSION=3.9.15
           curl -fsSL "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
             | tar -xz -C "$RUNNER_TEMP"
