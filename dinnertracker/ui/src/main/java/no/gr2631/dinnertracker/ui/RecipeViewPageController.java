@@ -30,7 +30,7 @@ public class RecipeViewPageController {
       List<String> recipeNames = recipes.stream().map(Recipe::getName).toList();
       recipesListView.getItems().setAll(recipeNames);
     } catch (IOException e) {
-      e.printStackTrace(); // TODO: Replace with method from showAlertMessage
+      e.printStackTrace();
     }
   }
 

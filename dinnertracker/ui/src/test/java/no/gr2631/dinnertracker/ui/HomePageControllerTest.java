@@ -1,27 +1,24 @@
 package no.gr2631.dinnertracker.ui;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 class HomePageControllerTest {
 
-/** Initialized the JavaFX runtime and keeps it running
- * between tests when stages are closed.
- */
+  /** Initialized the JavaFX runtime and keeps it running between tests when stages are closed. */
   @BeforeAll
   static void initJavaFx() {
     try {
@@ -32,13 +29,12 @@ class HomePageControllerTest {
     Platform.setImplicitExit(false);
   }
 
-  /** 
-   * Runs the given action on the JavaFX Application Thread and 
-   * waits for it to finish.
+  /**
+   * Runs the given action on the JavaFX Application Thread and waits for it to finish.
+   *
    * @param action the action to run on the JavaFX Application Thread
    * @throws Throwable if the action throws an exception
    */
-
   private static void runOnFx(ThrowingRunnable action) throws Throwable {
     CountDownLatch latch = new CountDownLatch(1);
     AtomicReference<Throwable> error = new AtomicReference<>();
@@ -89,9 +85,8 @@ class HomePageControllerTest {
           assertNotNull(root);
         });
   }
-  /**
-   * Tests that FridgePage.fxml opens when fridge button is clicked on
-   */
+
+  /** Tests that FridgePage.fxml opens when fridge button is clicked on */
   @Test
   void fridgeButtonOpensFridgePage() throws Throwable {
     runOnFx(
@@ -111,35 +106,29 @@ class HomePageControllerTest {
         });
   }
 
-  /**
-   * Tests that RecipePage.fxml opens when recipe button is clicked on.
-   */
+  /** Tests that RecipePage.fxml opens when recipe button is clicked on. */
+  @Test
+  void recipeButtonOpensRecipePage() throws Throwable {
+    runOnFx(
+        () -> {
+          Parent root = FXMLLoader.load(HomePageController.class.getResource("HomePage.fxml"));
 
-@Test
-void recipeButtonOpensRecipePage() throws Throwable {
-  runOnFx(
-      () -> {
-        Parent root =
-            FXMLLoader.load(
-                HomePageController.class.getResource("HomePage.fxml"));
+          Stage stage = new Stage();
 
-        Stage stage = new Stage();
+          try {
+            stage.setScene(new Scene(root));
+            stage.show();
 
-        try {
-          stage.setScene(new Scene(root));
-          stage.show();
+            Button recipeButton = (Button) root.lookup("#recipeButton");
 
-          Button recipeButton =
-              (Button) root.lookup("#recipeButton");
+            assertNotNull(recipeButton);
+            Scene homeScene = stage.getScene();
+            recipeButton.fire();
+            assertNotSame(homeScene, stage.getScene());
 
-          assertNotNull(recipeButton);
-          Scene homeScene = stage.getScene();
-          recipeButton.fire();
-          assertNotSame(homeScene, stage.getScene());
-
-        } finally {
-          stage.close();
-        }
-      });
-}
+          } finally {
+            stage.close();
+          }
+        });
+  }
 }

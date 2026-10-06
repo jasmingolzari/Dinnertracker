@@ -21,18 +21,22 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Install Maven on self-hosted runner
+      - name: Install Maven and virtual display
         run: |
-          if ! command -v mvn >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y maven
-          fi
+          sudo apt-get update
+          sudo apt-get install -y xvfb curl libgtk-3-0 libgbm1 libasound2t64
+          MAVEN_VERSION=3.9.15
+          curl -fsSL "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP"
+          export PATH="$RUNNER_TEMP/apache-maven-${MAVEN_VERSION}/bin:$PATH"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_VERSION}/bin" >> "$GITHUB_PATH"
           mvn -version
-          
-      - name: Run Maven tests
-        working-directory: dinnertracker
-        run: mvn --batch-mode test
 
-      - name: Verify project checks
+      - name: Run Maven verification
         working-directory: dinnertracker
-        run: mvn --batch-mode verify
+        env:
+          JAVA_TOOL_OPTIONS: >-
+            -Dprism.order=sw
+            -Dprism.verbose=true
+            -Djava.awt.headless=true
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" mvn --batch-mode verify
