@@ -5,8 +5,10 @@ import java.util.Map;
 
 public class Fridge {
   private final Map<FoodItem, Amount> foodItems;
+  private final User user;
 
-  public Fridge() {
+  public Fridge(User user) {
+    this.user = user;
     this.foodItems = new HashMap<>();
   }
 
@@ -130,5 +132,14 @@ public class Fridge {
    */
   public Map<FoodItem, Amount> getFoodItems() {
     return new HashMap<>(foodItems);
+  }
+
+  /**
+   * Get the user.
+   *
+   * @return user object.
+   */ 
+  public User getUser() {
+      return user;
   }
 }
