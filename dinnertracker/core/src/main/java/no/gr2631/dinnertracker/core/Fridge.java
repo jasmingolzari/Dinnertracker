@@ -3,20 +3,29 @@ package no.gr2631.dinnertracker.core;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Stores food items and their amounts in a fridge associated with a user. Each food item has one
+ * stored quantity and unit.
+ */
 public class Fridge {
   private final Map<FoodItem, Amount> foodItems;
-  private final User user;
+  private final User userName;
 
-  public Fridge(User user) {
-    this.user = user;
+  /**
+   * Creates an empty fridge associated with the given user.
+   *
+   * @param userName the associated user, which may be null
+   */
+  public Fridge(User userName) {
+    this.userName = userName;
     this.foodItems = new HashMap<>();
   }
 
   /**
-   * Validate that the quantity is not negative.
+   * Validates that a quantity is finite and non-negative.
    *
-   * @param quantity The quantity to validate.
-   * @throws IllegalArgumentException if the quantity is negative.
+   * @param quantity the quantity to validate
+   * @throws IllegalArgumentException if the quantity is negative, infinite, or NaN
    */
   private static void validateQuantity(double quantity) {
     if (!Double.isFinite(quantity) || quantity < 0) {
@@ -25,12 +34,13 @@ public class Fridge {
   }
 
   /**
-   * Add an amount of a food item to the fridge.
+   * Adds an amount of a food item to the fridge. If the item is already stored, the quantities are
+   * added together, provided their units match.
    *
    * @param foodItem the food item to add
    * @param amount the amount to add
-   * @throws IllegalArgumentException if the item or amount is null, or if the units do not match an
-   *     existing item
+   * @throws IllegalArgumentException if the item or amount is null, the quantity is negative or
+   *     non-finite, or the unit differs from the stored unit
    */
   public void addFoodItem(FoodItem foodItem, Amount amount) {
     if (foodItem == null || amount == null) {
@@ -60,12 +70,16 @@ public class Fridge {
   }
 
   /**
-   * Use a food item from the fridge.
+   * Removes the requested amount of a food item from the fridge. The item must be stored in a
+   * sufficient quantity and with the requested unit. If the entire stored quantity is used, the
+   * item is removed from the fridge.
    *
-   * @param foodItem The food item to use.
-   * @param amount The amount to use.
-   * @throws IllegalArgumentException if the food item does not exist in the fridge, or if the
-   *     amount is null.
+   * @param foodItem the food item to use
+   * @param amount the amount to use
+   * @throws IllegalArgumentException if the item is missing, the amount is null, the requested
+   *     quantity is negative or non-finite, the units differ, or the stored quantity is
+   *     insufficient
+   * @throws NullPointerException if the food item is null
    */
   public void useFoodItem(FoodItem foodItem, Amount amount) {
     Amount currentAmount = foodItems.get(foodItem);
@@ -85,12 +99,13 @@ public class Fridge {
   }
 
   /**
-   * Check whether the fridge contains enough of a food item.
+   * Checks whether the fridge contains the requested quantity of a food item with the same unit.
    *
    * @param foodItem the food item to check
    * @param amount the amount to check
-   * @throws IllegalArgumentException if the food item or amount is null
-   * @return true if enough of the item is available
+   * @return true if the item exists with a matching unit and sufficient quantity; false otherwise
+   * @throws IllegalArgumentException if the food item or amount is null, or the requested quantity
+   *     is negative or non-finite
    */
   private boolean hasItem(FoodItem foodItem, Amount amount) {
     if (foodItem == null || amount == null) {
@@ -104,10 +119,10 @@ public class Fridge {
   }
 
   /**
-   * Get the quantity of a food item in the fridge.
+   * Gets the stored quantity of a food item.
    *
-   * @param foodItem
-   * @return double quantity of the food item in the fridge, or 0 if the food item does not exist.
+   * @param foodItem the food item to look up
+   * @return the stored quantity, or zero if the item is absent or null
    */
   public double getQuantity(FoodItem foodItem) {
     Amount amount = foodItems.get(foodItem);
@@ -115,10 +130,10 @@ public class Fridge {
   }
 
   /**
-   * Get the unit of a food item in the fridge.
+   * Gets the unit used for a stored food item.
    *
-   * @param foodItem
-   * @return Unit of the food item in the fridge, or null if the food item does not exist.
+   * @param foodItem the food item to look up
+   * @return the stored unit, or null if the item is absent or null
    */
   public Unit getUnit(FoodItem foodItem) {
     Amount amount = foodItems.get(foodItem);
@@ -126,7 +141,8 @@ public class Fridge {
   }
 
   /**
-   * Get the food items and their amounts.
+   * Gets a shallow copy of the food items and their amounts. Adding or removing entries in the
+   * returned map does not change the fridge contents.
    *
    * @return a copy of the fridge contents
    */
@@ -135,11 +151,11 @@ public class Fridge {
   }
 
   /**
-   * Get the user.
+   * Gets the user associated with this fridge.
    *
-   * @return user object.
-   */ 
-  public User getUser() {
-      return user;
+   * @return the associated user, or null if no user was supplied
+   */
+  public User getUserName() {
+    return userName;
   }
 }

@@ -5,17 +5,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /** Tests adding, using, and querying fractional food quantities in a fridge. */
 class FridgeTest {
 
   private static final double DELTA = 0.000001;
+  private User userName;
+
+  /** Sets up a user for the fridge tests. */
+  @BeforeEach
+  void setup() {
+    this.userName = new User("testuser");
+  }
 
   /** Verifies that a food item can be added with a fractional quantity. */
   @Test
   void testAddFoodItem() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem milk = new FoodItem("Milk");
 
     fridge.addFoodItem(milk, new Amount(5.5, Unit.LITRE));
@@ -27,7 +35,7 @@ class FridgeTest {
   /** Verifies that adding an existing food item increases its quantity. */
   @Test
   void testAddExistingFoodItemAddsQuantity() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem eggs = new FoodItem("Eggs");
 
     fridge.addFoodItem(eggs, new Amount(4.25, Unit.PIECE));
@@ -39,7 +47,7 @@ class FridgeTest {
   /** Verifies that querying an item not in the fridge returns zero. */
   @Test
   void testGetQuantityOfNonExistingFoodItem() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem cheese = new FoodItem("Cheese");
 
     assertEquals(0.0, fridge.getQuantity(cheese), DELTA);
@@ -49,7 +57,7 @@ class FridgeTest {
   /** Verifies that using part of an item's quantity succeeds and updates the remainder. */
   @Test
   void testUseFoodItem() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem bread = new FoodItem("Bread");
 
     fridge.addFoodItem(bread, new Amount(5.5, Unit.PIECE));
@@ -63,7 +71,7 @@ class FridgeTest {
   /** Verifies that using an item's exact quantity removes it from the fridge. */
   @Test
   void testUseExactQuantityRemovesFoodItem() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem butter = new FoodItem("Butter");
 
     fridge.addFoodItem(butter, new Amount(5.5, Unit.PIECE));
@@ -76,7 +84,7 @@ class FridgeTest {
   /** Verifies that using more than the available quantity fails without changing it. */
   @Test
   void testCannotUseMoreThanAvailableQuantity() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem yogurt = new FoodItem("Yogurt");
 
     fridge.addFoodItem(yogurt, new Amount(3.5, Unit.LITRE));
@@ -91,7 +99,7 @@ class FridgeTest {
   /** Verifies that using an item that is not in the fridge fails. */
   @Test
   void testCannotUseFoodItemThatDoesNotExist() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem chicken = new FoodItem("Chicken");
 
     assertThrows(
@@ -103,7 +111,7 @@ class FridgeTest {
   /** Verifies that adding a negative quantity throws an exception. */
   @Test
   void testAddNegativeQuantityThrowsException() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem apples = new FoodItem("Apples");
 
     assertThrows(
@@ -114,7 +122,7 @@ class FridgeTest {
   /** Verifies that using a negative quantity throws an exception and preserves stock. */
   @Test
   void testUseNegativeQuantityThrowsException() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem bananas = new FoodItem("Bananas");
 
     fridge.addFoodItem(bananas, new Amount(5.5, Unit.PIECE));
@@ -129,7 +137,7 @@ class FridgeTest {
   /** Verifies that adding an existing item with another unit is rejected. */
   @Test
   void testAddingWithDifferentUnitThrowsException() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem flour = new FoodItem("Flour");
     fridge.addFoodItem(flour, new Amount(1.0, Unit.KILOGRAM));
 
@@ -142,7 +150,7 @@ class FridgeTest {
   /** Verifies that null food items and amounts are rejected. */
   @Test
   void testNullFoodItemOrAmountThrowsException() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -155,7 +163,7 @@ class FridgeTest {
   /** Verifies that NaN and infinite quantities are rejected. */
   @Test
   void testNonFiniteQuantityThrowsException() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem sugar = new FoodItem("Sugar");
 
     assertThrows(
@@ -169,7 +177,7 @@ class FridgeTest {
   /** Verifies that hasItem reports whether enough quantity is available. */
   @Test
   void testHasItemChecksAvailableQuantity() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem oil = new FoodItem("Oil");
     fridge.addFoodItem(oil, new Amount(2.0, Unit.LITRE));
 
@@ -185,7 +193,7 @@ class FridgeTest {
   /** Verifies that modifying the returned map does not modify the fridge. */
   @Test
   void testGetFoodItemsReturnsCopy() {
-    Fridge fridge = new Fridge();
+    Fridge fridge = new Fridge(userName);
     FoodItem beans = new FoodItem("Beans");
     fridge.addFoodItem(beans, new Amount(3.0, Unit.PIECE));
 

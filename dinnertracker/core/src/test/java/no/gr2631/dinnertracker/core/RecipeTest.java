@@ -15,10 +15,12 @@ public class RecipeTest {
   private Recipe recipe;
   private Amount melkAmount;
   private Amount eggAmount;
+  private User userName;
 
   @BeforeEach
   void setup() {
-    recipe = new Recipe("Pannekaker");
+    userName = new User("testuser");
+    recipe = new Recipe("Pannekaker", userName);
 
     melkAmount = new Amount(0.5, Unit.LITRE);
     eggAmount = new Amount(3, Unit.PIECE);
@@ -33,13 +35,13 @@ public class RecipeTest {
   /** Tests that the constructor throws if the name is null. */
   @Test
   void constructorThrowsOnNullName() {
-    assertThrows(IllegalArgumentException.class, () -> new Recipe(null));
+    assertThrows(IllegalArgumentException.class, () -> new Recipe(null, userName));
   }
 
   /** Tests that the constructor throws if the name is blank. */
   @Test
   void constructorThrowsOnBlankName() {
-    assertThrows(IllegalArgumentException.class, () -> new Recipe("   "));
+    assertThrows(IllegalArgumentException.class, () -> new Recipe("   ", userName));
   }
 
   /** Tests that a newly created recipe starts with empty ingredient and step collections. */
@@ -59,7 +61,7 @@ public class RecipeTest {
     Map<FoodItem, Amount> ingredients = Map.of(melk, melkAmount);
     List<String> steps = List.of("Visp sammen");
 
-    Recipe loaded = new Recipe("Lasagne", ingredients, steps);
+    Recipe loaded = new Recipe("Lasagne", userName, ingredients, steps);
 
     assertEquals("Lasagne", loaded.getName());
     assertEquals(1, loaded.getIngredients().size());
