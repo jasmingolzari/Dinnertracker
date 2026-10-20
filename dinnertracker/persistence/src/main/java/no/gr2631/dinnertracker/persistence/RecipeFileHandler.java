@@ -7,13 +7,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import no.gr2631.dinnertracker.core.Amount;
 import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Recipe;
+import no.gr2631.dinnertracker.core.RecipeBook;
 import no.gr2631.dinnertracker.core.Unit;
+import no.gr2631.dinnertracker.core.User;
 
 /**
  * Handles reading and writing of recipes to a JSON file. All recipes are stored together in a
@@ -21,7 +21,7 @@ import no.gr2631.dinnertracker.core.Unit;
  * and JSON is done manually, since a recipe stores its ingredients in a {@code Map<FoodItem,
  * Amount>}, which Jackson cannot handle automatically in a useful way.
  */
-public class RecipeFileHandler implements GenericRepository<Recipe> {
+public class RecipeFileHandler implements GenericRepository<RecipeBook> {
 
   private final ObjectMapper objectMapper;
 
@@ -40,67 +40,40 @@ public class RecipeFileHandler implements GenericRepository<Recipe> {
    * @throws IOException if the file cannot be read or contains invalid JSON
    */
   @Override
-  public List<Recipe> loadAll(Path path) throws IOException {
-    List<Recipe> recipes = new ArrayList<>();
+  public RecipeBook load(Path path, User userName) throws IOException {
+    RecipeBook recipeBook = new RecipeBook(userName);
 
     if (!path.toFile().exists() || path.toFile().length() == 0) {
-      return recipes;
+      return recipeBook;
     }
 
     JsonNode root = objectMapper.readTree(path.toFile());
+    if (root == null || root.isNull()) {
+      return recipeBook;
+    }
+
     for (JsonNode recipeNode : root) {
-      recipes.add(fromJson(recipeNode));
-    }
-    return recipes;
-  }
-
-  /**
-   * Loads a single recipe with the given name from the file. This reads the entire file every time
-   * it is called.
-   *
-   * @param path the path to the JSON file to read from
-   * @param name the name of the recipe to find
-   * @return the recipe with the given name
-   * @throws IOException if the file cannot be read or contains invalid JSON
-   * @throws IllegalArgumentException if no recipe with the given name exists in the file
-   */
-  @Override
-  public Recipe load(Path path, String recipeName) throws IOException {
-    for (Recipe recipe : loadAll(path)) {
-      if (recipe.getName().equals(recipeName)) {
-        return recipe;
+      if (recipeNode == null || recipeNode.isNull()) {
+        continue;
       }
+      recipeBook.addRecipe(fromJson(recipeNode));
     }
-    throw new IllegalArgumentException("Fant ingen oppskrift med navn: " + recipeName);
+    return recipeBook;
   }
 
   /**
-   * Adds a recipe to the file without removing the existing recipes. The existing recipes are
-   * loaded, the new recipe is appended to the list, and the whole list is written back to the file.
+   * Writes the recipes in the given recipebook to the file as a JSON array. Any existing content in
+   * the file is overwritten.
    *
-   * @param recipe the recipe to add
-   * @param path the path to the JSON file to add the recipe to
-   * @throws IOException if the file cannot be read or written
-   */
-  public void addRecipe(Recipe recipe, Path path) throws IOException {
-    List<Recipe> recipes = loadAll(path);
-    recipes.add(recipe);
-    saveAll(recipes, path);
-  }
-
-  /**
-   * Writes the given recipes to the file as a JSON array. Any existing content in the file is
-   * overwritten.
-   *
-   * @param recipes the recipes to save
+   * @param recipebook the recipebook to save
    * @param path the path to the JSON file to write to
    * @throws IOException if the file cannot be written
    */
   @Override
-  public void saveAll(List<Recipe> recipes, Path path) throws IOException {
+  public void save(Path path, RecipeBook recipebook) throws IOException {
     ArrayNode array = objectMapper.createArrayNode();
-    for (Recipe recipe : recipes) {
-      array.add(toJson(recipe));
+    for (Recipe recipe : recipebook.getRecipes()) {
+      array.add(toJson(recipe, recipe.getUserName()));
     }
     objectMapper.writeValue(path.toFile(), array);
   }
@@ -110,10 +83,12 @@ public class RecipeFileHandler implements GenericRepository<Recipe> {
    * {@code name}, {@code quantity} and {@code unit}) and {@code steps}.
    *
    * @param recipe the recipe to convert
+   * @param userName the user associated with the recipe
    * @return a JSON object representing the recipe
    */
-  private ObjectNode toJson(Recipe recipe) {
+  private ObjectNode toJson(Recipe recipe, User userName) {
     ObjectNode node = objectMapper.createObjectNode();
+    node.put("userName", userName.getUserName());
     node.put("name", recipe.getName());
 
     ArrayNode ingredientsNode = node.putArray("ingredients");
@@ -141,36 +116,33 @@ public class RecipeFileHandler implements GenericRepository<Recipe> {
    *     recipe name is blank
    */
   private Recipe fromJson(JsonNode recipeNode) {
-    Recipe recipe = new Recipe(recipeNode.get("name").asText());
+    String recipeName = recipeNode.get("name").asText();
+    User userName = new User(recipeNode.get("userName").asText());
+    Recipe recipe = new Recipe(recipeName, userName);
 
-    for (JsonNode ingredientNode : recipeNode.get("ingredients")) {
-      FoodItem item = new FoodItem(ingredientNode.get("name").asText());
-      Amount amount =
-          new Amount(
-              ingredientNode.get("quantity").asDouble(),
-              parseUnit(ingredientNode.get("unit").asText()));
-      recipe.addIngredient(item, amount);
-    }
-
-    for (JsonNode stepNode : recipeNode.get("steps")) {
-      recipe.addStep(stepNode.asText());
-    }
-    return recipe;
-  }
-
-  /**
-   * Resolves a JSON unit value to the matching {@link Unit}.
-   *
-   * @param value the serialized unit value, either as an enum name or as a symbol such as "stk"
-   * @return the matching unit enum constant
-   * @throws IllegalArgumentException if no matching unit exists
-   */
-  private Unit parseUnit(String value) {
-    for (Unit unit : Unit.values()) {
-      if (unit.name().equalsIgnoreCase(value) || unit.getSymbol().equalsIgnoreCase(value)) {
-        return unit;
+    JsonNode ingredientsNode = recipeNode.get("ingredients");
+    if (ingredientsNode != null && !ingredientsNode.isNull()) {
+      for (JsonNode ingredientNode : ingredientsNode) {
+        if (ingredientNode == null || ingredientNode.isNull()) {
+          continue;
+        }
+        FoodItem item = new FoodItem(ingredientNode.get("name").asText());
+        Amount amount =
+            new Amount(
+                ingredientNode.get("quantity").asDouble(),
+                Unit.parseUnit(ingredientNode.get("unit").asText()));
+        recipe.addIngredient(item, amount);
       }
     }
-    throw new IllegalArgumentException("Unsupported unit: " + value);
+
+    JsonNode stepsNode = recipeNode.get("steps");
+    if (stepsNode != null && !stepsNode.isNull()) {
+      for (JsonNode stepNode : stepsNode) {
+        if (stepNode != null && !stepNode.isNull()) {
+          recipe.addStep(stepNode.asText());
+        }
+      }
+    }
+    return recipe;
   }
 }

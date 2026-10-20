@@ -1,13 +1,15 @@
-{
-  "fridges" : [ {
-    "foodItems" : [ {
-      "name" : "Jordbær",
-      "quantity" : 4.0,
-      "unit" : "KILOGRAM"
-    }, {
-      "name" : "Eple",
-      "quantity" : 6.0,
-      "unit" : "PIECE"
-    } ]
+[ {
+  "userName" : "Rumyana",
+  "foodItems" : [ {
+    "name" : "Epler",
+    "quantity" : 4.0,
+    "unit" : "PIECE"
   } ]
-}
+}, {
+  "userName" : "Eira",
+  "foodItems" : [ {
+    "name" : "Jordbær",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  } ]
+} ]

@@ -1,4 +1,5 @@
 [ {
+  "userName" : "Rumyana",
   "name" : "Pannekaker",
   "ingredients" : [ {
     "name" : "Egg",
@@ -14,4 +15,21 @@
     "unit" : "KILOGRAM"
   } ],
   "steps" : [ "Bland sammen" ]
+}, {
+  "userName" : "Eira",
+  "name" : "Horn",
+  "ingredients" : [ {
+    "name" : "Ost",
+    "quantity" : 200.0,
+    "unit" : "GRAM"
+  }, {
+    "name" : "Egg",
+    "quantity" : 2.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "Mel",
+    "quantity" : 500.0,
+    "unit" : "GRAM"
+  } ],
+  "steps" : [ "Bland sammen", "La det heve", "Stek" ]
 } ]
