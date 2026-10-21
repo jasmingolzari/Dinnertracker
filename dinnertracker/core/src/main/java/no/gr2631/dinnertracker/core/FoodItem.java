@@ -4,7 +4,6 @@ import java.util.Locale;
 
 /** Represents a food item in our dinner tracker. */
 public final class FoodItem {
-
   private final String name;
 
   /**

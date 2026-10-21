@@ -33,6 +33,8 @@ import no.gr2631.dinnertracker.persistence.RecipeFileHandler;
  */
 public class RecipePageController {
 
+  private final RecipeFileHandler recipeFileHandler;
+
   @FXML private TextField nameField;
 
   @FXML private TextField foodItemField;
@@ -60,6 +62,20 @@ public class RecipePageController {
    * units.
    */
   private final Map<FoodItem, Amount> ingredients = new LinkedHashMap<>();
+
+  /** Creates the FXML controller with the application's shared recipe file handler. */
+  public RecipePageController() {
+    this(App.recipeFileHandler);
+  }
+
+  /**
+   * Creates a controller with the supplied recipe file handler.
+   *
+   * @param recipeFileHandler the handler used to save recipes
+   */
+  RecipePageController(RecipeFileHandler recipeFileHandler) {
+    this.recipeFileHandler = recipeFileHandler;
+  }
 
   /**
    * Initializes the recipe page. Sets up the quantity spinner and the unit selection dropdown. Gram
@@ -225,13 +241,12 @@ public class RecipePageController {
       return;
     }
 
-    Recipe newRecipe = new Recipe(recipeName, new LinkedHashMap<>(ingredients), steps);
-
-    Path filePath = Path.of("..", "data", "recipes.json");
-    RecipeFileHandler fileHandler = new RecipeFileHandler();
+    Recipe newRecipe =
+        new Recipe(recipeName, App.getCurrentUser(), new LinkedHashMap<>(ingredients), steps);
 
     try {
-      fileHandler.addRecipe(newRecipe, filePath);
+      App.getRecipeBook().addRecipe(newRecipe);
+      save();
 
       ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til");
       clearForm();
@@ -271,5 +286,14 @@ public class RecipePageController {
 
     stage.setScene(new Scene(root));
     stage.show();
+  }
+
+  /**
+   * Saves the current recipe book to the JSON file. The file path is relative to the project root.
+   *
+   * @throws IOException if an error occurs while writing to the file
+   */
+  private void save() throws IOException {
+    recipeFileHandler.save(Path.of("..", "data", "recipes.json"), App.getRecipeBook());
   }
 }

@@ -1,420 +1,470 @@
 package no.gr2631.dinnertracker.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.util.StringConverter;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import no.gr2631.dinnertracker.core.Amount;
+import no.gr2631.dinnertracker.core.FoodItem;
+import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Unit;
+import no.gr2631.dinnertracker.core.User;
+import no.gr2631.dinnertracker.persistence.FridgeFileHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
-/** Tests for the FridgePageController class. */
+/** Tests the fridge form, table contents, persistence calls, and navigation. */
 public class FridgePageControllerTest {
+
+  private static final Path FRIDGE_PATH = Path.of("..", "data", "fridges.json");
 
   private static boolean toolkitStarted;
 
   private FridgePageController controller;
-
   private TextField foodItemField;
   private Spinner<Double> quantitySpinner;
   private ComboBox<Unit> unitComboBox;
-  private TableView<FridgePageController.FridgeRow> fridgeTable;
-  private TableColumn<FridgePageController.FridgeRow, String> foodNameColumn;
-  private TableColumn<FridgePageController.FridgeRow, String> amountColumn;
-  private Path fridgePath;
-  private byte[] originalFridgeData;
+  private TableView<Object> fridgeTable;
+  private TableColumn<Object, String> foodNameColumn;
+  private TableColumn<Object, String> amountColumn;
 
-  /** Starts the JavaFX toolkit before running the tests. */
+  private FridgeFileHandler mockFileHandler;
+  private User testUser;
+  private Fridge testFridge;
+
+  // Original App state, restored after each test
+  private User originalUser;
+  private Fridge originalFridge;
+
+  /** Starts JavaFX and keeps it running when a navigation test closes its stage. */
   @BeforeAll
   public static void startToolkit() {
     try {
       Platform.startup(() -> {});
+      Platform.setImplicitExit(false);
       toolkitStarted = true;
-    } catch (IllegalStateException e) {
-      // JavaFX toolkit was already started.
+    } catch (IllegalStateException exception) {
+      Platform.setImplicitExit(false);
       toolkitStarted = true;
-    } catch (Throwable e) {
+    } catch (Throwable exception) {
       toolkitStarted = false;
     }
   }
 
-  /**
-   * Creates a controller and injects the JavaFX controls needed by the controller before each test.
-   *
-   * @throws Exception if reflection fails
-   */
+  /** Creates a populated fridge, injects a mock file handler, and initializes the controller. */
   @BeforeEach
   public void setUp() throws Exception {
-    fridgePath = Path.of("..", "data", "fridges.json");
-    originalFridgeData = Files.readAllBytes(fridgePath);
-    Files.writeString(
-        fridgePath,
-        """
-        {
-          "fridges": [ {
-            "foodItems": [
-              { "name": "Jordbær", "quantity": 3.0, "unit": "KILOGRAM" },
-              { "name": "Eple", "quantity": 5.0, "unit": "PIECE" }
-            ]
-          } ]
-        }
-        """);
-    controller = new FridgePageController();
-
-    if (!toolkitStarted) {
-      return;
-    }
-
-    foodItemField = new TextField();
-    quantitySpinner = new Spinner<>();
-    unitComboBox = new ComboBox<>();
-    fridgeTable = new TableView<>();
-    foodNameColumn = new TableColumn<>();
-    amountColumn = new TableColumn<>();
-
-    setField("foodItemField", foodItemField);
-    setField("quantitySpinner", quantitySpinner);
-    setField("unitComboBox", unitComboBox);
-    setField("fridgeTable", fridgeTable);
-    setField("foodNameColumn", foodNameColumn);
-    setField("amountColumn", amountColumn);
-
-    Method initialize = FridgePageController.class.getDeclaredMethod("initialize");
-
-    initialize.setAccessible(true);
-    initialize.invoke(controller);
-  }
-
-  /** Closes the construction mock after each test. */
-  @AfterEach
-  public void tearDown() throws Exception {
-    if (fridgePath != null && originalFridgeData != null) {
-      Files.write(fridgePath, originalFridgeData);
-    }
-  }
-
-  /** Skips a test if the JavaFX toolkit could not be started. */
-  private void requireToolkit() {
     assumeTrue(toolkitStarted, "JavaFX toolkit is not available");
+
+    originalUser = App.getCurrentUser();
+    originalFridge = App.getFridge();
+
+    testUser = new User("fridge-page-test");
+    testFridge = new Fridge(testUser);
+    testFridge.addFoodItem(new FoodItem("Jordbær"), new Amount(3.0, Unit.KILOGRAM));
+    testFridge.addFoodItem(new FoodItem("Eple"), new Amount(5.0, Unit.PIECE));
+
+    mockFileHandler = mock(FridgeFileHandler.class);
+
+    App.setCurrentUser(testUser);
+    App.setFridge(testFridge);
+
+    runOnFxThread(
+        () -> {
+          controller = new FridgePageController(mockFileHandler);
+          foodItemField = new TextField();
+          quantitySpinner = new Spinner<>();
+          unitComboBox = new ComboBox<>();
+          fridgeTable = new TableView<>();
+          foodNameColumn = new TableColumn<>();
+          amountColumn = new TableColumn<>();
+          fridgeTable.getColumns().add(foodNameColumn);
+          fridgeTable.getColumns().add(amountColumn);
+
+          setField("foodItemField", foodItemField);
+          setField("quantitySpinner", quantitySpinner);
+          setField("unitComboBox", unitComboBox);
+          setField("fridgeTable", fridgeTable);
+          setField("foodNameColumn", foodNameColumn);
+          setField("amountColumn", amountColumn);
+
+          Method initialize = FridgePageController.class.getDeclaredMethod("initialize");
+          initialize.setAccessible(true);
+          initialize.invoke(controller);
+        });
   }
 
-  /**
-   * Sets a private field on the controller using reflection.
-   *
-   * @param fieldName the name of the field
-   * @param value the value to inject
-   * @throws Exception if the field cannot be accessed
-   */
-  private void setField(String fieldName, Object value) throws Exception {
-    Field field = FridgePageController.class.getDeclaredField(fieldName);
+  /** Restores the shared App state after each test. */
+  @AfterEach
+  public void tearDown() {
+    App.setCurrentUser(originalUser);
+    App.setFridge(originalFridge);
+  }
 
+  /** Tests the default quantity. */
+  @Test
+  public void initializeShouldSetUpSpinner() throws Exception {
+    runOnFxThread(
+        () -> {
+          assertNotNull(quantitySpinner.getValueFactory());
+          assertEquals(0.0, quantitySpinner.getValue());
+        });
+  }
+
+  /** Tests all available units and the default selection. */
+  @Test
+  public void initializeShouldSetUpUnitComboBox() throws Exception {
+    runOnFxThread(
+        () -> {
+          assertEquals(Unit.values().length, unitComboBox.getItems().size());
+          for (Unit unit : Unit.values()) {
+            assertTrue(unitComboBox.getItems().contains(unit));
+          }
+          assertEquals(Unit.GRAM, unitComboBox.getValue());
+        });
+  }
+
+  /** Tests the names and Norwegian amount formatting shown for the current fridge. */
+  @Test
+  public void initializeShouldDisplayFridgeItemsAndAmounts() throws Exception {
+    runOnFxThread(
+        () -> {
+          assertEquals(2, fridgeTable.getItems().size());
+          assertEquals(
+              "3,0 kg", amountColumn.getCellObservableValue(rowNamed("Jordbær")).getValue());
+          assertEquals("5,0 stk", amountColumn.getCellObservableValue(rowNamed("Eple")).getValue());
+        });
+  }
+
+  /** Tests unit symbols, including an absent selection. */
+  @Test
+  public void unitConverterShouldConvertUnitToSymbol() throws Exception {
+    runOnFxThread(
+        () -> {
+          assertEquals("g", unitComboBox.getConverter().toString(Unit.GRAM));
+          assertEquals("kg", unitComboBox.getConverter().toString(Unit.KILOGRAM));
+          assertEquals("stk", unitComboBox.getConverter().toString(Unit.PIECE));
+          assertEquals("", unitComboBox.getConverter().toString(null));
+        });
+  }
+
+  /** Tests symbol parsing and an unknown symbol. */
+  @Test
+  public void unitConverterShouldConvertSymbolToUnit() throws Exception {
+    runOnFxThread(
+        () -> {
+          assertEquals(Unit.GRAM, unitComboBox.getConverter().fromString("g"));
+          assertEquals(Unit.KILOGRAM, unitComboBox.getConverter().fromString("kg"));
+          assertEquals(Unit.PIECE, unitComboBox.getConverter().fromString("stk"));
+          assertNull(unitComboBox.getConverter().fromString("unknown"));
+        });
+  }
+
+  /** Tests table bindings and alignment. */
+  @Test
+  public void initializeShouldSetUpTableColumns() throws Exception {
+    runOnFxThread(
+        () -> {
+          assertNotNull(foodNameColumn.getCellValueFactory());
+          assertNotNull(amountColumn.getCellValueFactory());
+          assertEquals("-fx-alignment: CENTER_RIGHT;", amountColumn.getStyle());
+        });
+  }
+
+  /** Tests a displayed food name without depending on the controller's private row type. */
+  @Test
+  public void foodNameColumnShouldReturnFoodName() throws Exception {
+    runOnFxThread(
+        () ->
+            assertEquals(
+                "Jordbær", foodNameColumn.getCellObservableValue(rowNamed("Jordbær")).getValue()));
+  }
+
+  /** Tests the displayed amount through the column's public interface. */
+  @Test
+  public void amountColumnShouldReturnAmountText() throws Exception {
+    runOnFxThread(
+        () ->
+            assertEquals(
+                "3,0 kg", amountColumn.getCellObservableValue(rowNamed("Jordbær")).getValue()));
+  }
+
+  /** Refreshing without a highlighted name keeps all items and clears the highlight. */
+  @Test
+  public void highlightFridgeItemShouldLoadWithoutHighlight() throws Exception {
+    runOnFxThread(
+        () -> {
+          invoke("highlightFridgeItem", String.class, "Eple");
+          invoke("highlightFridgeItem", String.class, null);
+          assertEquals(2, fridgeTable.getItems().size());
+          assertNull(highlightedFoodName());
+        });
+  }
+
+  /** Refreshing stores the name of the row that should receive feedback. */
+  @Test
+  public void highlightFridgeItemShouldSetHighlightedFoodName() throws Exception {
+    runOnFxThread(
+        () -> {
+          invoke("highlightFridgeItem", String.class, "Jordbær");
+          assertEquals("Jordbær", highlightedFoodName());
+        });
+  }
+
+  /** Refreshing from an empty fridge removes previous rows. */
+  @Test
+  public void highlightFridgeItemShouldClearRowsForEmptyFridge() throws Exception {
+    runOnFxThread(
+        () -> {
+          App.setFridge(new Fridge(testUser));
+          invoke("highlightFridgeItem", String.class, null);
+          assertTrue(fridgeTable.getItems().isEmpty());
+        });
+  }
+
+  /** Matching food names are highlighted without regard to case. */
+  @Test
+  public void rowFactoryShouldHighlightMatchingFood() throws Exception {
+    runOnFxThread(
+        () -> {
+          setField("highlightedFoodName", "jordbær");
+          TableRow<Object> row = fridgeTable.getRowFactory().call(fridgeTable);
+          row.setItem(rowNamed("Jordbær"));
+          assertEquals("-fx-background-color: rgba(47, 107, 59, 0.18);", row.getStyle());
+        });
+  }
+
+  /** Other food names receive no highlight. */
+  @Test
+  public void rowFactoryShouldNotHighlightDifferentFood() throws Exception {
+    runOnFxThread(
+        () -> {
+          setField("highlightedFoodName", "Jordbær");
+          TableRow<Object> row = fridgeTable.getRowFactory().call(fridgeTable);
+          row.setStyle("old style");
+          row.setItem(rowNamed("Eple"));
+          assertEquals("", row.getStyle());
+        });
+  }
+
+  /** A valid addition saves the current fridge, refreshes its rows, and resets the inputs. */
+  @Test
+  public void addFoodItemShouldAddValidFoodItem() throws Exception {
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("  Testmat  ");
+          quantitySpinner.getValueFactory().setValue(2.0);
+          unitComboBox.setValue(Unit.KILOGRAM);
+          invoke("addFoodItem", ActionEvent.class, null);
+          assertEquals(
+              new Amount(2.0, Unit.KILOGRAM),
+              testFridge.getFoodItems().get(new FoodItem("Testmat")));
+          verify(mockFileHandler).save(FRIDGE_PATH, testFridge);
+          assertEquals(3, fridgeTable.getItems().size());
+          assertNotNull(rowNamed("Testmat"));
+          assertEquals("Testmat", highlightedFoodName());
+          assertEquals("", foodItemField.getText());
+          assertEquals(0.0, quantitySpinner.getValue());
+          assertEquals(Unit.GRAM, unitComboBox.getValue());
+        });
+  }
+
+  /** Adding more of an existing ingredient updates its quantity instead of adding another row. */
+  @Test
+  public void addFoodItemShouldUpdateExistingFoodItem() throws Exception {
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("Eple");
+          quantitySpinner.getValueFactory().setValue(2.0);
+          unitComboBox.setValue(Unit.PIECE);
+          invoke("addFoodItem", ActionEvent.class, null);
+          assertEquals(
+              new Amount(7.0, Unit.PIECE), testFridge.getFoodItems().get(new FoodItem("Eple")));
+          assertEquals(2, fridgeTable.getItems().size());
+          assertEquals("7,0 stk", amountColumn.getCellObservableValue(rowNamed("Eple")).getValue());
+          verify(mockFileHandler).save(FRIDGE_PATH, testFridge);
+        });
+  }
+
+  /** An empty food name is rejected before saving. */
+  @Test
+  public void addFoodItemShouldRejectBlankName() throws Exception {
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("   ");
+          quantitySpinner.getValueFactory().setValue(1.0);
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            invoke("addFoodItem", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig vare", null, "Du må oppgi et navn for matvaren."));
+          }
+          assertEquals(2, testFridge.getFoodItems().size());
+          verifyNoInteractions(mockFileHandler);
+        });
+  }
+
+  /** A zero amount is rejected before saving. */
+  @Test
+  public void addFoodItemShouldRejectZeroQuantity() throws Exception {
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("Testmat");
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            invoke("addFoodItem", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig vare", null, "Mengden må være endelig og større enn null."));
+          }
+          assertEquals(2, testFridge.getFoodItems().size());
+          verifyNoInteractions(mockFileHandler);
+        });
+  }
+
+  /** A missing unit is rejected before saving. */
+  @Test
+  public void addFoodItemShouldRejectMissingUnit() throws Exception {
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("Testmat");
+          quantitySpinner.getValueFactory().setValue(1.0);
+          unitComboBox.setValue(null);
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            invoke("addFoodItem", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig vare", null, "Enhet kan ikke være null."));
+          }
+          assertEquals(2, testFridge.getFoodItems().size());
+          verifyNoInteractions(mockFileHandler);
+        });
+  }
+
+  /** A failed save reports the error and leaves the form available. */
+  @Test
+  public void failedSaveShouldShowAlertAndKeepInputs() throws Exception {
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("Testmat");
+          quantitySpinner.getValueFactory().setValue(2.0);
+          unitComboBox.setValue(Unit.KILOGRAM);
+          doThrow(new IOException("test failure"))
+              .when(mockFileHandler)
+              .save(FRIDGE_PATH, testFridge);
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            invoke("addFoodItem", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "En uforventet feil oppsto", null, "Feilen er: test failure"));
+          }
+          assertEquals("Testmat", foodItemField.getText());
+          assertEquals(2.0, quantitySpinner.getValue());
+          assertEquals(Unit.KILOGRAM, unitComboBox.getValue());
+        });
+  }
+
+  /** The back action replaces the current scene with the home page. */
+  @Test
+  public void backToHomePageShouldNavigateHome() throws Exception {
+    runOnFxThread(
+        () -> {
+          Stage stage = new Stage();
+          try {
+            Button source = new Button();
+            stage.setScene(new Scene(new VBox(source)));
+            invoke("backToHomePage", ActionEvent.class, new ActionEvent(source, source));
+            assertEquals(BorderPane.class, stage.getScene().getRoot().getClass());
+          } finally {
+            stage.close();
+          }
+        });
+  }
+
+  private void setField(String name, Object value) throws Exception {
+    Field field = FridgePageController.class.getDeclaredField(name);
     field.setAccessible(true);
     field.set(controller, value);
   }
 
-  /**
-   * Gets the private highlightedFoodName field from the controller.
-   *
-   * @return the currently highlighted food name
-   * @throws Exception if the field cannot be accessed
-   */
-  private String getHighlightedFoodName() throws Exception {
-    Field field = FridgePageController.class.getDeclaredField("highlightedFoodName");
+  private void invoke(String name, Class<?> argumentType, Object argument) throws Exception {
+    Method method = FridgePageController.class.getDeclaredMethod(name, argumentType);
+    method.setAccessible(true);
+    method.invoke(controller, argument);
+  }
 
+  private String highlightedFoodName() throws Exception {
+    Field field = FridgePageController.class.getDeclaredField("highlightedFoodName");
     field.setAccessible(true);
     return (String) field.get(controller);
   }
 
-  /**
-   * Gets the StringConverter configured by initialize.
-   *
-   * @return the unit converter used by the ComboBox
-   */
-  private StringConverter<Unit> getUnitConverter() {
-    return unitComboBox.getConverter();
+  private Object rowNamed(String name) {
+    return fridgeTable.getItems().stream()
+        .filter(row -> foodNameColumn.getCellObservableValue(row).getValue().equals(name))
+        .findFirst()
+        .orElseThrow();
   }
 
-  /** Tests that initialize sets the default spinner value correctly. */
-  @Test
-  public void initializeShouldSetUpSpinner() {
-    requireToolkit();
-
-    assertNotNull(quantitySpinner.getValueFactory());
-    assertEquals(0.0, quantitySpinner.getValue());
-  }
-
-  /** Tests that initialize adds all available units to the ComboBox. */
-  @Test
-  public void initializeShouldSetUpUnitComboBox() {
-    requireToolkit();
-
-    assertEquals(Unit.values().length, unitComboBox.getItems().size());
-
-    for (Unit unit : Unit.values()) {
-      assertTrue(unitComboBox.getItems().contains(unit));
+  /** Runs JavaFX work on its application thread and propagates assertion failures. */
+  private void runOnFxThread(ThrowingRunnable action) throws Exception {
+    if (Platform.isFxApplicationThread()) {
+      action.run();
+      return;
     }
-
-    assertEquals(Unit.GRAM, unitComboBox.getValue());
+    CountDownLatch completed = new CountDownLatch(1);
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    Platform.runLater(
+        () -> {
+          try {
+            action.run();
+          } catch (Throwable throwable) {
+            failure.set(throwable);
+          } finally {
+            completed.countDown();
+          }
+        });
+    assertTrue(completed.await(5, TimeUnit.SECONDS), "JavaFX action did not finish in time.");
+    if (failure.get() != null) {
+      throw new AssertionError("JavaFX action failed.", failure.get());
+    }
   }
 
-  /** Tests that initialize loads the food items from the fridge. */
-  @Test
-  public void initializeShouldLoadFridgeItems() {
-    requireToolkit();
-
-    assertFalse(fridgeTable.getItems().isEmpty());
-
-    assertTrue(fridgeTable.getItems().stream().anyMatch(row -> row.foodName().equals("Jordbær")));
-
-    assertTrue(fridgeTable.getItems().stream().anyMatch(row -> row.foodName().equals("Eple")));
-  }
-
-  /**
-   * Tests that the fridge displays quantities using the correct Norwegian formatting and unit
-   * symbols.
-   */
-  @Test
-  public void fridgeRowsShouldContainCorrectAmountText() {
-    requireToolkit();
-
-    FridgePageController.FridgeRow jordbaer =
-        fridgeTable.getItems().stream()
-            .filter(row -> row.foodName().equals("Jordbær"))
-            .findFirst()
-            .orElseThrow();
-
-    FridgePageController.FridgeRow eple =
-        fridgeTable.getItems().stream()
-            .filter(row -> row.foodName().equals("Eple"))
-            .findFirst()
-            .orElseThrow();
-
-    assertEquals("3,0 kg", jordbaer.amountText());
-    assertEquals("5,0 stk", eple.amountText());
-  }
-
-  /** Tests that the unit converter converts a Unit to its symbol. */
-  @Test
-  public void unitConverterShouldConvertUnitToSymbol() {
-    requireToolkit();
-
-    StringConverter<Unit> converter = getUnitConverter();
-
-    assertEquals("g", converter.toString(Unit.GRAM));
-    assertEquals("kg", converter.toString(Unit.KILOGRAM));
-    assertEquals("stk", converter.toString(Unit.PIECE));
-  }
-
-  /** Tests that the unit converter converts symbols back to Units. */
-  @Test
-  public void unitConverterShouldConvertSymbolToUnit() {
-    requireToolkit();
-
-    StringConverter<Unit> converter = getUnitConverter();
-
-    assertEquals(Unit.GRAM, converter.fromString("g"));
-    assertEquals(Unit.KILOGRAM, converter.fromString("kg"));
-    assertEquals(Unit.PIECE, converter.fromString("stk"));
-  }
-
-  /** Tests that an unknown unit symbol is converted to null. */
-  @Test
-  public void unitConverterShouldReturnNullForUnknownSymbol() {
-    requireToolkit();
-
-    StringConverter<Unit> converter = getUnitConverter();
-
-    assertNull(converter.fromString("unknown"));
-  }
-
-  /** Tests that converting a null unit returns an empty string. */
-  @Test
-  public void unitConverterShouldHandleNull() {
-    requireToolkit();
-
-    StringConverter<Unit> converter = getUnitConverter();
-
-    assertEquals("", converter.toString(null));
-  }
-
-  /** Tests that initialize configures the table columns. */
-  @Test
-  public void initializeShouldSetUpTableColumns() {
-    requireToolkit();
-
-    assertNotNull(foodNameColumn.getCellValueFactory());
-    assertNotNull(amountColumn.getCellValueFactory());
-    assertEquals("-fx-alignment: CENTER_RIGHT;", amountColumn.getStyle());
-  }
-
-  /** Tests that the food name column returns the correct value. */
-  @Test
-  public void foodNameColumnShouldReturnFoodName() {
-    requireToolkit();
-
-    FridgePageController.FridgeRow row = new FridgePageController.FridgeRow("Melk", "2,0 L");
-
-    TableColumn.CellDataFeatures<FridgePageController.FridgeRow, String> data =
-        new TableColumn.CellDataFeatures<>(fridgeTable, foodNameColumn, row);
-
-    assertEquals("Melk", foodNameColumn.getCellValueFactory().call(data).getValue());
-  }
-
-  /** Tests that the amount column returns the correct value. */
-  @Test
-  public void amountColumnShouldReturnAmountText() {
-    requireToolkit();
-
-    FridgePageController.FridgeRow row = new FridgePageController.FridgeRow("Melk", "2,0 L");
-
-    TableColumn.CellDataFeatures<FridgePageController.FridgeRow, String> data =
-        new TableColumn.CellDataFeatures<>(fridgeTable, amountColumn, row);
-
-    assertEquals("2,0 L", amountColumn.getCellValueFactory().call(data).getValue());
-  }
-
-  /**
-   * Tests that loading the fridge can be performed without a highlighted item.
-   *
-   * @throws Exception if reflection fails
-   */
-  @Test
-  public void loadFridgeItemsShouldLoadWithoutHighlight() throws Exception {
-    requireToolkit();
-
-    Method method = FridgePageController.class.getDeclaredMethod("loadFridgeItems", String.class);
-
-    method.setAccessible(true);
-    method.invoke(controller, (String) null);
-
-    assertFalse(fridgeTable.getItems().isEmpty());
-    assertNull(getHighlightedFoodName());
-  }
-
-  /**
-   * Tests that loading the fridge stores the food name that should receive visual feedback.
-   *
-   * @throws Exception if reflection fails
-   */
-  @Test
-  public void loadFridgeItemsShouldSetHighlightedFoodName() throws Exception {
-
-    requireToolkit();
-
-    Method method = FridgePageController.class.getDeclaredMethod("loadFridgeItems", String.class);
-
-    method.setAccessible(true);
-    method.invoke(controller, "Jordbær");
-
-    assertEquals("Jordbær", getHighlightedFoodName());
-  }
-
-  /** Tests that a FridgeRow stores its food name and amount text. */
-  @Test
-  public void fridgeRowShouldStoreFoodNameAndAmount() {
-    FridgePageController.FridgeRow row = new FridgePageController.FridgeRow("Melk", "2,0 L");
-
-    assertEquals("Melk", row.foodName());
-    assertEquals("2,0 L", row.amountText());
-  }
-
-  /**
-   * Tests that the row factory highlights a matching food item.
-   *
-   * @throws Exception if reflection fails
-   */
-  @Test
-  public void rowFactoryShouldHighlightMatchingFood() throws Exception {
-
-    requireToolkit();
-
-    Field field = FridgePageController.class.getDeclaredField("highlightedFoodName");
-
-    field.setAccessible(true);
-    field.set(controller, "jordbær");
-
-    TableRow<FridgePageController.FridgeRow> row = fridgeTable.getRowFactory().call(fridgeTable);
-
-    row.setItem(new FridgePageController.FridgeRow("Jordbær", "3,0 kg"));
-
-    assertEquals("-fx-background-color: rgba(47, 107, 59, 0.18);", row.getStyle());
-  }
-
-  /**
-   * Tests that the row factory does not highlight a different food item.
-   *
-   * @throws Exception if reflection fails
-   */
-  @Test
-  public void rowFactoryShouldNotHighlightDifferentFood() throws Exception {
-
-    requireToolkit();
-
-    Field field = FridgePageController.class.getDeclaredField("highlightedFoodName");
-
-    field.setAccessible(true);
-    field.set(controller, "Jordbær");
-
-    TableRow<FridgePageController.FridgeRow> row = fridgeTable.getRowFactory().call(fridgeTable);
-
-    row.setItem(new FridgePageController.FridgeRow("Eple", "5,0 stk"));
-
-    assertEquals("", row.getStyle());
-  }
-
-  /**
-   * Tests that adding a valid food item updates the fridge and resets the input controls.
-   *
-   * @throws Exception if the file cannot be accessed
-   */
-  @Test
-  public void addFoodItemShouldAddValidFoodItem() throws Exception {
-    requireToolkit();
-
-    foodItemField.setText("Testmat");
-    quantitySpinner.getValueFactory().setValue(2.0);
-    unitComboBox.setValue(Unit.KILOGRAM);
-
-    Method method = FridgePageController.class.getDeclaredMethod("addFoodItem", ActionEvent.class);
-
-    method.setAccessible(true);
-    method.invoke(controller, (ActionEvent) null);
-
-    assertEquals("", foodItemField.getText());
-    assertEquals(0.0, quantitySpinner.getValue());
-    assertEquals(Unit.GRAM, unitComboBox.getValue());
-
-    assertTrue(fridgeTable.getItems().stream().anyMatch(row -> row.foodName().equals("Testmat")));
-  }
-
-  /**
-   * Tests that the back button method can load the home page.
-   *
-   * <p>The method only needs a valid action event source to perform the navigation. This test uses
-   * the existing JavaFX scene setup.
-   */
-  @Test
-  public void backToHomePageShouldBeCallable() {
-    requireToolkit();
-
-    assertNotNull(controller);
+  @FunctionalInterface
+  private interface ThrowingRunnable {
+    void run() throws Exception;
   }
 }

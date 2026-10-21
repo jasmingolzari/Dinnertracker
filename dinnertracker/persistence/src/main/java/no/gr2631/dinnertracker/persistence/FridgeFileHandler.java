@@ -6,14 +6,14 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import no.gr2631.dinnertracker.core.Amount;
 import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Unit;
+import no.gr2631.dinnertracker.core.User;
 
 /** Handles reading and writing fridges to a JSON file. */
 public class FridgeFileHandler implements GenericRepository<Fridge> {
@@ -26,76 +26,81 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
   }
 
   /**
-   * Loads all fridges from the given path. If the file does not exist or is empty, an empty list is
+   * Load Fridge from the given path. If the file does not exist or is empty, an empty list is
    * returned.
    *
    * @param path the path to read from
-   * @return all fridges stored at the path, or an empty list if the file is missing or empty
+   * @return The fridge stored at the path, or an empty list if the file is missing or empty
    * @throws IOException if the file cannot be read or contains invalid JSON
    */
   @Override
-  public List<Fridge> loadAll(Path path) throws IOException {
-    List<Fridge> fridgesList = new ArrayList<>();
+  public Fridge load(Path path, User userName) throws IOException {
+    Fridge fridge = new Fridge(userName);
 
     if (!path.toFile().exists() || path.toFile().length() == 0) {
-      return fridgesList;
+      return fridge;
     }
 
     JsonNode root = objectMapper.readTree(path.toFile());
+    if (root == null || root.isNull()) {
+      return fridge;
+    }
+
     JsonNode fridgesNode = root.has("fridges") ? root.get("fridges") : root;
 
-    if (fridgesNode == null || fridgesNode.isNull()) {
-      return fridgesList;
+    if (fridgesNode == null || !fridgesNode.isArray()) {
+      return fridge;
     }
 
     for (JsonNode fridgeNode : fridgesNode) {
-      fridgesList.add(fromJson(fridgeNode));
+      if (fridgeNode == null || fridgeNode.isNull()) {
+        continue;
+      }
+
+      String storedUsername = fridgeNode.path("userName").asText();
+
+      if (storedUsername.equals(userName.getUserName())) {
+        return fromJson(fridgeNode, userName);
+      }
     }
-    return fridgesList;
+
+    return fridge;
   }
 
   /**
-   * Loads the fridge at the zero-based index represented by the given string. TODO: Will change
-   * this to load by user ID instead of index, since the index is not a stable identifier. FOR
-   * Release 3.
+   * Saves a fridge while preserving the other users' fridges in the file.
    *
-   * @param path the path to read from
-   * @param index the zero-based index of the fridge to load
-   * @return the fridge at the given index
-   * @throws IOException if the fridges cannot be read
-   * @throws IllegalArgumentException if the index is not an integer or is out of bounds
-   */
-  @Override
-  public Fridge load(Path path, String index) throws IOException {
-    int fridgeIndex;
-    try {
-      fridgeIndex = Integer.parseInt(index);
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Kjøleskapets indeks må være et heltall: " + index, e);
-    }
-
-    List<Fridge> fridges = loadAll(path);
-    if (fridgeIndex < 0 || fridgeIndex >= fridges.size()) {
-      throw new IllegalArgumentException("Indeks utenfor gyldig område: " + index);
-    }
-    return fridges.get(fridgeIndex);
-  }
-
-  /**
-   * Writes all fridges to the given path, replacing any existing content.
+   * <p>Existing entries for the same username are replaced. Both a JSON array and an object
+   * containing a {@code fridges} array are supported, matching {@link #load(Path, User)}.
    *
-   * @param fridgesList the fridges to save
    * @param path the path to write to
-   * @throws IOException if the fridges cannot be written
+   * @param fridge the fridge to save
+   * @throws IOException if existing data cannot be read, has an unsupported structure, or the
+   *     fridge cannot be written
    */
   @Override
-  public void saveAll(List<Fridge> fridgesList, Path path) throws IOException {
-    ObjectNode root = objectMapper.createObjectNode();
-    ArrayNode array = objectMapper.createArrayNode();
-    for (Fridge fridge : fridgesList) {
-      array.add(toJson(fridge));
+  public void save(Path path, Fridge fridge) throws IOException {
+    JsonNode root = objectMapper.createArrayNode();
+    if (Files.exists(path) && Files.size(path) > 0) {
+      root = objectMapper.readTree(path.toFile());
+      if (root == null || root.isNull()) {
+        root = objectMapper.createArrayNode();
+      }
     }
-    root.set("fridges", array);
+
+    JsonNode storedFridges = root.has("fridges") ? root.get("fridges") : root;
+    if (!storedFridges.isArray()) {
+      throw new IOException("Expected a JSON array of fridges");
+    }
+
+    ArrayNode fridgesNode = (ArrayNode) storedFridges;
+    String username = fridge.getUserName().getUserName();
+    for (int i = fridgesNode.size() - 1; i >= 0; i--) {
+      if (fridgesNode.get(i).path("userName").asText().equals(username)) {
+        fridgesNode.remove(i);
+      }
+    }
+    fridgesNode.add(toJson(fridge, fridge.getUserName()));
     objectMapper.writeValue(path.toFile(), root);
   }
 
@@ -105,10 +110,9 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
    * @param fridge the fridge instance to convert
    * @return a JSON object representing the fridge and its food items
    */
-  private ObjectNode toJson(Fridge fridge) {
+  private ObjectNode toJson(Fridge fridge, User userName) {
     ObjectNode node = objectMapper.createObjectNode();
-    // TODO add user ID to the JSON representation of the fridge
-    // node.put("UserID", fridge.getName());
+    node.put("userName", userName.getUserName());
 
     ArrayNode foodItemsNode = node.putArray("foodItems");
     for (Map.Entry<FoodItem, Amount> entry : fridge.getFoodItems().entrySet()) {
@@ -127,10 +131,11 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
    * as either enum names or unit symbols such as "stk" or "kg".
    *
    * @param fridgeNode the JSON object representing a single fridge
+   * @param userName the user associated with the fridge
    * @return the reconstructed fridge
    */
-  private Fridge fromJson(JsonNode fridgeNode) {
-    Fridge fridge = new Fridge();
+  private Fridge fromJson(JsonNode fridgeNode, User userName) {
+    Fridge fridge = new Fridge(userName);
     JsonNode foodItemsNode = fridgeNode.get("foodItems");
 
     if (foodItemsNode == null || foodItemsNode.isNull()) {
@@ -142,29 +147,9 @@ public class FridgeFileHandler implements GenericRepository<Fridge> {
       Amount amount =
           new Amount(
               foodItemNode.get("quantity").asDouble(),
-              parseUnit(foodItemNode.get("unit").asText()));
+              Unit.parseUnit(foodItemNode.get("unit").asText()));
       fridge.addFoodItem(item, amount);
     }
-
     return fridge;
-  }
-
-  /**
-   * Resolves a serialized unit value to the corresponding {@link Unit} enum constant.
-   *
-   * <p>Support is included for both the enum names (for example, "PIECE") and the user-facing
-   * symbols (for example, "stk").
-   *
-   * @param value the stored unit value
-   * @return the matching unit enum constant
-   * @throws IllegalArgumentException if the value does not match any supported unit
-   */
-  private Unit parseUnit(String value) {
-    for (Unit unit : Unit.values()) {
-      if (unit.name().equalsIgnoreCase(value) || unit.getSymbol().equalsIgnoreCase(value)) {
-        return unit;
-      }
-    }
-    throw new IllegalArgumentException("Ugyldig enhet: " + value);
   }
 }

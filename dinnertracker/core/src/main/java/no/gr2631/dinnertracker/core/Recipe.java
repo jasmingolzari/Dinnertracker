@@ -11,6 +11,7 @@ public final class Recipe {
   private String name;
   private Map<FoodItem, Amount> ingredients;
   private List<String> steps;
+  private User userName;
 
   /**
    * Creates a new recipe with existing ingredients and steps. Used when loading a complete recipe
@@ -19,9 +20,10 @@ public final class Recipe {
    * @param name the name of the recipe
    * @param ingredients map from food item to the amount required
    * @param steps the list of steps describing how to prepare the recipe
+   * @param user the current user to connect a recipe to
    */
-  public Recipe(String name, Map<FoodItem, Amount> ingredients, List<String> steps) {
-    this(name);
+  public Recipe(String name, User userName, Map<FoodItem, Amount> ingredients, List<String> steps) {
+    this(name, userName);
     ingredients.forEach(this::addIngredient);
     this.steps.addAll(steps);
   }
@@ -31,15 +33,17 @@ public final class Recipe {
    * themselves, by adding ingredients and steps afterwards.
    *
    * @param name
+   * @param userName the user associated with the recipe
    * @throws IllegalArgumentException if the name is null or blank.
    */
-  public Recipe(String name) {
+  public Recipe(String name, User userName) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("Navnet kan ikke være tomt.");
     }
     this.name = name;
     this.ingredients = new HashMap<>();
     this.steps = new ArrayList<>();
+    this.userName = userName;
   }
 
   /**
@@ -49,6 +53,15 @@ public final class Recipe {
    */
   public String getName() {
     return name;
+  }
+
+  /**
+   * Gets the current user that the recipe is connected to.
+   *
+   * @return the current user
+   */
+  public User getUserName() {
+    return userName;
   }
 
   /**
@@ -113,20 +126,6 @@ public final class Recipe {
    */
   public void removeStep(int index) {
     steps.remove(index);
-  }
-
-  /**
-   * Uses a recipe by removing the required amount of each ingredient from the fridge. Each
-   * ingredient in the recipe must exist in the fridge in a sufficient amount.
-   *
-   * @param recipe the recipe whose ingredients should be used
-   * @param fridge the fridge to remove the ingredients from
-   * @throws IllegalArgumentException if the fridge does not contain enough of an ingredient
-   */
-  public void useRecipe(Recipe recipe, Fridge fridge) {
-    for (Map.Entry<FoodItem, Amount> entry : recipe.getIngredients().entrySet()) {
-      fridge.useFoodItem(entry.getKey(), entry.getValue());
-    }
   }
 
   /**

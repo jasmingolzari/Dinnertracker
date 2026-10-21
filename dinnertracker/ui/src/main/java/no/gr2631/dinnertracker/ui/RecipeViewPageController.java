@@ -1,7 +1,6 @@
 package no.gr2631.dinnertracker.ui;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,28 +9,18 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
-import no.gr2631.dinnertracker.core.Recipe;
-import no.gr2631.dinnertracker.persistence.RecipeFileHandler;
 
 /** Controller for loading and displaying a list of saved recipes. */
 public class RecipeViewPageController {
-
   /** List view component for displaying recipe names in the UI. */
   @FXML private ListView<String> recipesListView;
-
-  /** File handler used to load recipe data from persistent storage. */
-  private RecipeFileHandler filehandler = new RecipeFileHandler();
 
   /** Initializes the page by loading recipes from file and populating the list view. */
   @FXML
   private void initialize() {
-    try {
-      List<Recipe> recipes = filehandler.loadAll(Path.of("..", "data", "recipes.json"));
-      List<String> recipeNames = recipes.stream().map(Recipe::getName).toList();
-      recipesListView.getItems().setAll(recipeNames);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    List<String> recipeNames =
+        App.getRecipeBook().getRecipes().stream().map(r -> r.getName()).toList();
+    recipesListView.getItems().setAll(recipeNames);
   }
 
   /**

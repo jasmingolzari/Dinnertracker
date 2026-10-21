@@ -55,21 +55,21 @@
                   <VBox spacing="4.0">
                      <children>
                         <Label text="Mengde" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
-                        <Spinner fx:id="foodItemAmountSpinner" editable="true" prefWidth="90.0" />
+                        <Spinner fx:id="foodItemAmountSpinner" style="-fx-cursor: hand;" editable="true" prefWidth="90.0" />
                      </children>
                   </VBox>
 
                   <VBox spacing="4.0">
                      <children>
                         <Label text="Enhet" style="-fx-font-weight: bold; -fx-text-fill: #2F6B3B;" />
-                        <ComboBox fx:id="foodItemUnitComboBox" prefWidth="90.0" />
+                        <ComboBox fx:id="foodItemUnitComboBox" style="-fx-cursor: hand;" prefWidth="90.0" />
                      </children>
                   </VBox>
 
                   <Button fx:id="addFoodItemButton"
                           mnemonicParsing="false"
                           onAction="#addFoodItem"
-                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
+                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;-fx-cursor: hand;"
                           text="Legg til ingrediens">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
@@ -97,7 +97,7 @@
                   <Button fx:id="addStepButton"
                           mnemonicParsing="false"
                           onAction="#addStep"
-                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
+                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;"
                           text="Legg til steg">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
@@ -117,7 +117,7 @@
                   <Button fx:id="backButton"
                           mnemonicParsing="false"
                           onAction="#backToHomePage"
-                          style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-background-radius: 6;"
+                          style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;"
                           text="Tilbake">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
@@ -129,7 +129,7 @@
                   <Button fx:id="addRecipeButton"
                           mnemonicParsing="false"
                           onAction="#addRecipe"
-                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6;"
+                          style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;"
                           text="+Legg til oppskrift" />
                </children>
             </HBox>

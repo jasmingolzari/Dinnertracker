@@ -3,13 +3,14 @@ package no.gr2631.dinnertracker.ui;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -26,7 +27,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import no.gr2631.dinnertracker.core.Amount;
+import no.gr2631.dinnertracker.core.FoodItem;
+import no.gr2631.dinnertracker.core.Recipe;
+import no.gr2631.dinnertracker.core.RecipeBook;
 import no.gr2631.dinnertracker.core.Unit;
+import no.gr2631.dinnertracker.core.User;
+import no.gr2631.dinnertracker.persistence.RecipeFileHandler;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +52,7 @@ public class RecipePageControllerTest {
   private static boolean toolkitStarted;
 
   private RecipePageController controller;
+  private RecipeFileHandler recipeFileHandler;
   private TextField nameField;
   private TextField foodItemField;
   private Spinner<Double> amountSpinner;
@@ -51,6 +60,8 @@ public class RecipePageControllerTest {
   private ListView<String> ingredientsList;
   private TextField stepsField;
   private ListView<String> stepsList;
+  private User previousUser;
+  private RecipeBook previousRecipeBook;
 
   /** Tries to start the JavaFX toolkit so that controls can be created. */
   @BeforeAll
@@ -70,29 +81,44 @@ public class RecipePageControllerTest {
   /** Creates a controller, and new controls if JavaFX works, then calls {@code initialize()}. */
   @BeforeEach
   public void setUp() throws Exception {
-    controller = new RecipePageController();
+    previousUser = App.getCurrentUser();
+    previousRecipeBook = App.getRecipeBook();
+    recipeFileHandler = mock(RecipeFileHandler.class);
+    App.setCurrentUser(new User("testuser"));
+    App.setRecipeBook(new RecipeBook(App.getCurrentUser()));
+    controller = new RecipePageController(recipeFileHandler);
     if (!toolkitStarted) {
       return;
     }
-    nameField = new TextField();
-    foodItemField = new TextField();
-    amountSpinner = new Spinner<>();
-    unitComboBox = new ComboBox<>();
-    ingredientsList = new ListView<>();
-    stepsField = new TextField();
-    stepsList = new ListView<>();
+    runOnFxThread(
+        () -> {
+          nameField = new TextField();
+          foodItemField = new TextField();
+          amountSpinner = new Spinner<>();
+          unitComboBox = new ComboBox<>();
+          ingredientsList = new ListView<>();
+          stepsField = new TextField();
+          stepsList = new ListView<>();
 
-    setField("nameField", nameField);
-    setField("foodItemField", foodItemField);
-    setField("foodItemAmountSpinner", amountSpinner);
-    setField("foodItemUnitComboBox", unitComboBox);
-    setField("ingredientsList", ingredientsList);
-    setField("stepsField", stepsField);
-    setField("stepsList", stepsList);
+          setField("nameField", nameField);
+          setField("foodItemField", foodItemField);
+          setField("foodItemAmountSpinner", amountSpinner);
+          setField("foodItemUnitComboBox", unitComboBox);
+          setField("ingredientsList", ingredientsList);
+          setField("stepsField", stepsField);
+          setField("stepsList", stepsList);
 
-    Method initialize = RecipePageController.class.getDeclaredMethod("initialize");
-    initialize.setAccessible(true);
-    initialize.invoke(controller);
+          Method initialize = RecipePageController.class.getDeclaredMethod("initialize");
+          initialize.setAccessible(true);
+          initialize.invoke(controller);
+        });
+  }
+
+  /** Restores the shared application state after each test. */
+  @AfterEach
+  public void tearDown() {
+    App.setCurrentUser(previousUser);
+    App.setRecipeBook(previousRecipeBook);
   }
 
   /** Skips the test if the JavaFX toolkit is not available. */
@@ -179,190 +205,267 @@ public class RecipePageControllerTest {
   @Test
   public void initializeShouldConfigureAmountAndUnitControls() throws Exception {
     requireToolkit();
-
-    assertEquals(1.0, amountSpinner.getValue());
-    assertEquals(Unit.GRAM, unitComboBox.getValue());
-    assertEquals(Unit.values().length, unitComboBox.getItems().size());
-    assertEquals(Unit.GRAM.getSymbol(), unitComboBox.getConverter().toString(Unit.GRAM));
-    assertEquals("", unitComboBox.getConverter().toString(null));
-    assertEquals(Unit.GRAM, unitComboBox.getConverter().fromString(Unit.GRAM.getSymbol()));
-    assertNull(unitComboBox.getConverter().fromString("unknown"));
+    runOnFxThread(
+        () -> {
+          assertEquals(1.0, amountSpinner.getValue());
+          assertEquals(Unit.GRAM, unitComboBox.getValue());
+          assertEquals(Unit.values().length, unitComboBox.getItems().size());
+          assertEquals(Unit.GRAM.getSymbol(), unitComboBox.getConverter().toString(Unit.GRAM));
+          assertEquals("", unitComboBox.getConverter().toString(null));
+          assertEquals(Unit.GRAM, unitComboBox.getConverter().fromString(Unit.GRAM.getSymbol()));
+          assertNull(unitComboBox.getConverter().fromString("unknown"));
+        });
   }
 
   /** addFoodItem should show the ingredient in the list and empty the fields. */
   @Test
   public void addFoodItemShouldShowIngredientAndClearFields() throws Exception {
     requireToolkit();
-    amountSpinner.getValueFactory().setValue(2.5);
+    runOnFxThread(
+        () -> {
+          amountSpinner.getValueFactory().setValue(2.5);
 
-    addIngredient("Tomat");
+          addIngredient("Tomat");
 
-    assertEquals(List.of("Tomat - 2.5 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
-    assertEquals("", foodItemField.getText());
-    assertEquals(1.0, amountSpinner.getValue());
+          assertEquals(List.of("Tomat - 2.5 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
+          assertEquals("", foodItemField.getText());
+          assertEquals(1.0, amountSpinner.getValue());
+        });
   }
 
   /** Invalid ingredient names should be rejected. */
   @Test
   public void invalidFoodItemShouldShowAlert() throws Exception {
     requireToolkit();
-    foodItemField.setText("Tomat2");
-    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-      call("addFoodItem", ActionEvent.class, null);
-      alerts.verify(
-          () ->
-              ShowAlertMessage.showErrorAlert(
-                  "Ugyldig input",
-                  null,
-                  "Ugyldig navn på matvare. Kun bokstaver og bindestrek er tillatt."));
-    }
-    assertTrue(ingredientsList.getItems().isEmpty());
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("Tomat2");
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            call("addFoodItem", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig input",
+                        null,
+                        "Ugyldig navn på matvare. Kun bokstaver og bindestrek er tillatt."));
+          }
+          assertTrue(ingredientsList.getItems().isEmpty());
+        });
   }
 
   /** Ingredients without a selected unit should be rejected. */
   @Test
   public void missingFoodItemUnitShouldShowAlert() throws Exception {
     requireToolkit();
-    foodItemField.setText("Tomat");
-    unitComboBox.setValue(null);
-    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-      call("addFoodItem", ActionEvent.class, null);
-      alerts.verify(
-          () ->
-              ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Velg en enhet for mengden."));
-    }
-    assertTrue(ingredientsList.getItems().isEmpty());
+    runOnFxThread(
+        () -> {
+          foodItemField.setText("Tomat");
+          unitComboBox.setValue(null);
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            call("addFoodItem", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig input", null, "Velg en enhet for mengden."));
+          }
+          assertTrue(ingredientsList.getItems().isEmpty());
+        });
   }
 
   /** Ingredients should be listed in the order they were added. */
   @Test
   public void ingredientsShouldKeepOrder() throws Exception {
     requireToolkit();
-    addIngredient("Pasta");
-    addIngredient("Saus");
+    runOnFxThread(
+        () -> {
+          addIngredient("Pasta");
+          addIngredient("Saus");
 
-    assertTrue(ingredientsList.getItems().get(0).startsWith("Pasta"));
-    assertTrue(ingredientsList.getItems().get(1).startsWith("Saus"));
+          assertTrue(ingredientsList.getItems().get(0).startsWith("Pasta"));
+          assertTrue(ingredientsList.getItems().get(1).startsWith("Saus"));
+        });
   }
 
   /** addStep should show the step in the list and empty the field. */
   @Test
   public void addStepShouldShowStepAndClearField() throws Exception {
     requireToolkit();
-    addStep("Boil the pasta");
+    runOnFxThread(
+        () -> {
+          addStep("Boil the pasta");
 
-    assertEquals(List.of("Boil the pasta"), stepsList.getItems());
-    assertEquals("", stepsField.getText());
+          assertEquals(List.of("Boil the pasta"), stepsList.getItems());
+          assertEquals("", stepsField.getText());
+        });
   }
 
   /** Steps should be listed in the order they were added. */
   @Test
   public void stepsShouldKeepOrder() throws Exception {
     requireToolkit();
-    addStep("First");
-    addStep("Second");
+    runOnFxThread(
+        () -> {
+          addStep("First");
+          addStep("Second");
 
-    assertEquals(List.of("First", "Second"), stepsList.getItems());
+          assertEquals(List.of("First", "Second"), stepsList.getItems());
+        });
   }
 
   /** Empty steps should not be added. */
   @Test
   public void emptyStepShouldNotBeAdded() throws Exception {
     requireToolkit();
-    addStep("");
-    addStep("   ");
+    runOnFxThread(
+        () -> {
+          addStep("");
+          addStep("   ");
 
-    assertTrue(stepsList.getItems().isEmpty());
+          assertTrue(stepsList.getItems().isEmpty());
+        });
   }
 
   /** clearForm should reset every field, list and stored ingredient. */
   @Test
   public void clearFormShouldResetAllInputs() throws Exception {
     requireToolkit();
-    nameField.setText("Pasta");
-    foodItemField.setText("Tomat");
-    stepsField.setText("Kok pasta");
-    addIngredient("Tomat");
-    addStep("Kok pasta");
+    runOnFxThread(
+        () -> {
+          nameField.setText("Pasta");
+          foodItemField.setText("Tomat");
+          stepsField.setText("Kok pasta");
+          addIngredient("Tomat");
+          addStep("Kok pasta");
 
-    Method clearForm = RecipePageController.class.getDeclaredMethod("clearForm");
-    clearForm.setAccessible(true);
-    clearForm.invoke(controller);
+          Method clearForm = RecipePageController.class.getDeclaredMethod("clearForm");
+          clearForm.setAccessible(true);
+          clearForm.invoke(controller);
 
-    assertEquals("", nameField.getText());
-    assertEquals("", foodItemField.getText());
-    assertEquals("", stepsField.getText());
-    assertTrue(ingredientsList.getItems().isEmpty());
-    assertTrue(stepsList.getItems().isEmpty());
-    assertTrue(controllerIngredients().isEmpty());
-    assertEquals(1.0, amountSpinner.getValue());
-    assertEquals(Unit.GRAM, unitComboBox.getValue());
+          assertEquals("", nameField.getText());
+          assertEquals("", foodItemField.getText());
+          assertEquals("", stepsField.getText());
+          assertTrue(ingredientsList.getItems().isEmpty());
+          assertTrue(stepsList.getItems().isEmpty());
+          assertTrue(controllerIngredients().isEmpty());
+          assertEquals(1.0, amountSpinner.getValue());
+          assertEquals(Unit.GRAM, unitComboBox.getValue());
+        });
   }
 
   /** Recipes without names should be rejected. */
   @Test
   public void recipeWithoutNameShouldShowAlert() throws Exception {
     requireToolkit();
-    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-      call("addRecipe", ActionEvent.class, null);
-      alerts.verify(
-          () ->
-              ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Oppskriften må ha et navn."));
-    }
+    runOnFxThread(
+        () -> {
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            call("addRecipe", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig input", null, "Oppskriften må ha et navn."));
+          }
+          assertTrue(App.getRecipeBook().getRecipes().isEmpty());
+          verifyNoInteractions(recipeFileHandler);
+        });
   }
 
   /** Recipes without ingredients should be rejected. */
   @Test
   public void recipeWithoutIngredientsShouldShowAlert() throws Exception {
     requireToolkit();
-    nameField.setText("Pasta");
-    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-      call("addRecipe", ActionEvent.class, null);
-      alerts.verify(
-          () ->
-              ShowAlertMessage.showErrorAlert(
-                  "Ugyldig input", null, "Legg til minst en ingrediens."));
-    }
+    runOnFxThread(
+        () -> {
+          nameField.setText("Pasta");
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            call("addRecipe", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig input", null, "Legg til minst en ingrediens."));
+          }
+          assertTrue(App.getRecipeBook().getRecipes().isEmpty());
+          verifyNoInteractions(recipeFileHandler);
+        });
   }
 
   /** Recipes without steps should be rejected. */
   @Test
   public void recipeWithoutStepsShouldShowAlert() throws Exception {
     requireToolkit();
-    nameField.setText("Pasta");
-    addIngredient("Tomat");
-    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-      call("addRecipe", ActionEvent.class, null);
-      alerts.verify(
-          () -> ShowAlertMessage.showErrorAlert("Ugyldig input", null, "Legg til minst ett steg."));
-    }
+    runOnFxThread(
+        () -> {
+          nameField.setText("Pasta");
+          addIngredient("Tomat");
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            call("addRecipe", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Ugyldig input", null, "Legg til minst ett steg."));
+          }
+          assertTrue(App.getRecipeBook().getRecipes().isEmpty());
+          verifyNoInteractions(recipeFileHandler);
+        });
   }
 
   /** A complete recipe should be saved and the form should then be cleared. */
   @Test
   public void completeRecipeShouldBeSavedAndClearForm() throws Exception {
     requireToolkit();
-    nameField.setText("Testoppskrift");
-    addIngredient("Tomat");
-    addStep("Kutt tomat");
+    runOnFxThread(
+        () -> {
+          nameField.setText("Testoppskrift");
+          addIngredient("Tomat");
+          addStep("Kutt tomat");
 
-    Path recipePath = Path.of("..", "data", "recipes.json");
-    boolean fileExists = Files.exists(recipePath);
-    byte[] originalContent = fileExists ? Files.readAllBytes(recipePath) : new byte[0];
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            call("addRecipe", ActionEvent.class, null);
+            alerts.verify(
+                () -> ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til"));
+            verify(recipeFileHandler)
+                .save(Path.of("..", "data", "recipes.json"), App.getRecipeBook());
+            assertEquals(1, App.getRecipeBook().getRecipes().size());
+            Recipe recipe = App.getRecipeBook().getRecipes().get(0);
+            assertEquals("Testoppskrift", recipe.getName());
+            assertSame(App.getCurrentUser(), recipe.getUserName());
+            assertEquals(
+                new Amount(1.0, Unit.GRAM), recipe.getIngredients().get(new FoodItem("Tomat")));
+            assertEquals(List.of("Kutt tomat"), recipe.getSteps());
+            alerts.verify(
+                () -> ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til"));
+            assertEquals("", nameField.getText());
+            assertTrue(ingredientsList.getItems().isEmpty());
+            assertTrue(stepsList.getItems().isEmpty());
+          }
+        });
+  }
 
-    try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-      call("addRecipe", ActionEvent.class, null);
-      alerts.verify(() -> ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til"));
-      assertEquals("", nameField.getText());
-      assertTrue(ingredientsList.getItems().isEmpty());
-      assertTrue(stepsList.getItems().isEmpty());
-    } finally {
-      if (fileExists) {
-        Files.write(recipePath, originalContent);
-      } else {
-        Files.deleteIfExists(recipePath);
-      }
-    }
+  /** A failed save should report the error and keep the completed form available. */
+  @Test
+  public void failedSaveShouldShowAlertAndKeepForm() throws Exception {
+    requireToolkit();
+    runOnFxThread(
+        () -> {
+          nameField.setText("Testoppskrift");
+          addIngredient("Tomat");
+          addStep("Kutt tomat");
+          doThrow(new IOException("test failure"))
+              .when(recipeFileHandler)
+              .save(Path.of("..", "data", "recipes.json"), App.getRecipeBook());
+
+          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
+            call("addRecipe", ActionEvent.class, null);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        "Klarte ikke å lagre oppskriften", null, "Feilen er: test failure"));
+            alerts.verifyNoMoreInteractions();
+          }
+          assertEquals("Testoppskrift", nameField.getText());
+          assertEquals(List.of("Tomat - 1.0 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
+          assertEquals(List.of("Kutt tomat"), stepsList.getItems());
+        });
   }
 
   /** Returns the private ingredient map for checking that clearForm removes its state. */
