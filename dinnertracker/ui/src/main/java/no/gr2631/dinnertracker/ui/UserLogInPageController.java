@@ -69,7 +69,7 @@ public class UserLogInPageController {
       User user = isNewUser ? requestedUser : existingUser;
 
       loadData(user);
-
+      System.out.println("Fridge after login: " + App.getFridge());
       App.setCurrentUser(user);
 
       if (isNewUser) {

@@ -16,6 +16,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
+import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Recipe;
 import no.gr2631.dinnertracker.core.RecipeBook;
 import no.gr2631.dinnertracker.core.User;
@@ -97,18 +98,28 @@ class HomePageControllerTest {
   void fridgeButtonOpensFridgePage() throws Throwable {
     runOnFx(
         () -> {
-          Parent root = FXMLLoader.load(HomePageController.class.getResource("HomePage.fxml"));
-
+          Fridge previousFridge = App.getFridge();
           Stage stage = new Stage();
-          stage.setScene(new Scene(root));
-          stage.show();
 
-          Button fridgeButton = (Button) root.lookup("#fridgeButton");
+          try {
+            // Initialize a fridge for this test
+            User testUser = new User("testuser");
+            App.setFridge(new Fridge(testUser));
 
-          assertNotNull(fridgeButton);
+            Parent root = FXMLLoader.load(HomePageController.class.getResource("HomePage.fxml"));
 
-          fridgeButton.fire();
-          stage.close();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+            Button fridgeButton = (Button) root.lookup("#fridgeButton");
+            assertNotNull(fridgeButton);
+
+            fridgeButton.fire();
+
+          } finally {
+            stage.close();
+            App.setFridge(previousFridge);
+          }
         });
   }
 
