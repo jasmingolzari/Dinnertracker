@@ -2,22 +2,26 @@
 
 ## About the application
 
-Dinnertracker is a dinner planning application designed to help users
-keep track of the ingredients they have available in their fridge and manage their own
-dinner recipes. It is a dinner planning application developed as part of the IT1901 course.
+Dinnertracker is a dinner planning application developed as part of the IT1901 course at NTNU. It helps users manage dinner recipes and keep track of ingredients available in their fridge. 
 
-The long-term goal is to make it
-easier to plan dinners based on the ingredients available to the user.
+The application supports user accounts, login, recipe management, and personal fridge management. Each user can manage their own fridge and the recipes available through the application
 
-Release 1 focused mainly on recipe functionality, while Release 2 extends the application with fridge functionality, persistence, testing and a clearer separation between the different parts of the application.
+Dinnertracker is developed in Java and uses JavaFX for the graphical user interface, a REST server for communication between the client and server, and JSON-based persistence for application data.
 
 
 ## Application screenshot
 
+The screenshots below show the application's user interface. They will be updated soon så fort som mulig hehe. 
+
+
+![Dinnertracker application login page](images/login.png)
+
+*Screenshot of the Dinnertracker application - login page.*
+
+
 ![Dinnertracker application homepage](images/dinnertrackerhome.png)
 
 *Screenshot of the Dinnertracker application - homepage.*
-
 
 
 ![Dinnertracker recipes page](images/recipes.png)
@@ -34,109 +38,132 @@ Release 1 focused mainly on recipe functionality, while Release 2 extends the ap
 
 *Screenshot of the Dinnertracker application - fridge page.*
 
-## User stories
+
+
+## Functionality and user stories
 
 ### User story 1 – Adding a recipe
 
 > As a user, I want to add a recipe with a name and ingredients, so that
 > I can save my own dinner recipes.
 
+
 ### User story 2 – Managing fridge ingredients
 
 > As a user, I want to add ingredients to my fridge, so that I can keep
 > an overview of the ingredients I have available.
 
+
+### User story 3 - Detailed view of recipes
+
+> As a user, I want to view an overview of all available recipes, as well as click into a specific recipe, so that I can easily see which ingredients are needed and which steps to follow to prepare the meal.
+
+
+### User story 4 - Sorting based on fridge ingredients
+
+> As a user, I want to sort the recipes based on the food items I have in my refrigerator, so that I can use ingredients I already own, reduce food waste, and quickly figure out what to make for dinner.
+
+
+### User accounts and login
+
+Users can create an account and log in to the application. The application keeps track of the logged-in user so that user-specific functionality can be provided.
+
+### Recipe management
+
+Users can manage dinner recipes and their ingredients, making it easier to keep track of possible meals. Dinnertracker also sorts recipes by the proportion of ingredients available in the user's fridge, prioritizing recipes that can be prepared with the ingredients they already have. 
+
+### Personal fridge
+
+Each user has their own fridge, where they can manage the ingredients they have available. This provides an overview of available ingredients when planning meals.
+
+
+
+
 ## Application architecture
 
-Dinnertracker is organized as a multi-module Maven project with three
-main architectural layers:
+Dinnertracker is organized as a multi-module Maven project. The application separates the graphical user interface, REST API, core logic, and persistence.
 
-- **Core** – contains the domain logic and central concepts of the
-  application, such as recipes, food items, and the fridge.
-- **Persistence** – handles saving and loading application data using
-  JSON files.
-- **UI** – contains the graphical user interface, implemented using
-  JavaFX and FXML.
+The main modules have the following responsibilities:
 
-The modules are located in the following directories:
+- **`ui/`** – contains the graphical user interface implemented using JavaFX and FXML.
+- **`rest/`** – provides the REST API used for communication between the client and server.
+- **`core/`** – contains the application's domain model and core logic.
+- **`persistence/`** – handles loading and saving application data.
+- **`data/`** – contains application data files.
 
-```text
-dinnertracker/
-├── core/
-├── persistence/
-├── ui/
-├── data/
-└── pom.xml
+The intended client-server architecture is illustrated below:
+
+```mermaid
+flowchart TD
+    USER[User]
+    UI[JavaFX client<br/>UI module]
+    REST[REST server<br/>REST module]
+    CORE[Core module]
+    PERSISTENCE[Persistence module]
+    DATA[(JSON data files)]
+
+    USER --> UI
+    UI <-->|HTTP requests and responses| REST
+    REST --> CORE
+    REST --> PERSISTENCE
+    PERSISTENCE --> DATA
 ```
-This separation makes it possible to keep the application's domain logic independent from the user interface and file handling. More detailed information about the architecture can be found in [architecture.md](docs/release2/architecture.md).
 
-The overall `pom.xml` manages the three modules, while each module has
-its own `pom.xml` containing its module-specific configuration and
-dependencies.
+The JavaFX client communicates with the REST server, which connects incoming requests to the application's core logic and persistence layer.
+
+More detailed information about the architecture and design can be found in the [Release 3 documentation](../docs/release3/).
 
 
-## Coverage with JaCoCo
- 
-The project uses JaCoCo to measure test coverage and enforce a minimum threshold during the Maven verification phase.
- 
-### Commands
- 
+
+## Building and testing
+
+Dinnertracker uses Maven to manage dependencies, build the application, and run automated tests. 
+
+From the `dinnertracker/` directory, run the following commands.
+
+### Run tests
+
+```bash
+mvn test
+```
+
+### Verify the project
+
 ```bash
 mvn verify
+```
+
+The verification phase runs the configured tests and code quality checks. It also checks the configured test coverage requirements.
+
+### Generate JaCoCo reports
+
+```bash
 mvn jacoco:report
 ```
- 
-### What this does
- 
-- Runs the test suite and collects coverage data.
-- Generates an HTML coverage report for local inspection.
-- Generates an XML report for CI and tooling integration.
-- Fails the build if the configured coverage threshold is not met.
- 
-### Report locations
- 
-After running `mvn verify`, the reports are available in:
- 
-- `dinnertracker/core/target/site/jacoco/index.html`
-- `dinnertracker/persistence/target/site/jacoco/index.html`
-- `dinnertracker/ui/target/site/jacoco/index.html`
-- `dinnertracker/target/site/jacoco-aggregate/index.html`
- 
-The aggregated report in the root module gives the combined coverage across all modules.
- 
-### Coverage threshold
- 
-The current minimum enforced coverage is:
- 
+
+JaCoCo is used to measure test coverage. The project configuration sets minimum thresholds of:
+
 - 80% line coverage
 - 70% branch coverage
- 
-If the project falls below these values, `mvn verify` will fail.
 
+The generated reports are available in the relevant modules' `target/site/jacoco/` directories. An aggregated report may also be available under `target/site/jacoco-aggregate/`, depending on the Maven configuration.
 
-## Application data
+## Running the application
 
-Application data is stored as JSON files in the [`data/`](data/) directory.
+The application consists of a JavaFX client and a REST server. The server must be running and accessible to the client for REST-based functionality to work.
 
-The project currently contains a `recipes.json` file for recipe data. The persistence module is responsible for saving and loading this data. More information about persistence can be found in [persistence.md](docs/release2/persistence.md)
-
+The REST server is configured to use port `7070`. The exact startup commands and access to the server should be verified against the final Maven configuration and development environment.
 
 ## Development environment
 
-The project is configured to support development using Eclipse Che.
+The project uses Maven and is configured for development with Eclipse Che.
 
-The project can be opened in Eclipse Che using the following link:
-
-[Open Dinnertracker in Eclipse Che](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631)
-
-
+For the repository's Eclipse Che setup, see the [root README](../README.md).
 
 ## Project documentation
 
-Documentation for the individual releases is located in the
-[`docs/`](../docs/) directory.
+Documentation for the individual releases is located in the [`docs/`](../docs/) directory.
 
-The documentation for Release 1 can be found
-[here](../docs/release1/release1.md).
-
-The documentation for Release 2 can be found [here](../docs/release2/release2.md).
+- [Release 1 documentation](../docs/release1/release1.md)
+- [Release 2 documentation](../docs/release2/release2.md)
+- [Release 3 documentation](../docs/release3/release3.md)
