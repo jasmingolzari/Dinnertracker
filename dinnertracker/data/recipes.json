@@ -16,7 +16,6 @@
   } ],
   "steps" : [ "Bland sammen" ]
 }, {
-
   "userName" : "Eira",
   "name" : "Horn",
   "ingredients" : [ {
@@ -32,5 +31,18 @@
     "quantity" : 500.0,
     "unit" : "GRAM"
   } ],
-  "steps" : [ "Bland sammen", "La det heve", "Stek" ] }
- ]
+  "steps" : [ "Bland sammen", "La det heve", "Stek" ]
+}, {
+  "userName" : "Camilla",
+  "name" : "stekt ris ",
+  "ingredients" : [ {
+    "name" : "biff",
+    "quantity" : 400.0,
+    "unit" : "GRAM"
+  }, {
+    "name" : "ris",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  } ],
+  "steps" : [ "ha oppi ollje", "Bland sammen " ]
+} ]

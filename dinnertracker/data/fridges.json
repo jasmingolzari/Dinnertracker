@@ -12,4 +12,23 @@
     "quantity" : 1.0,
     "unit" : "KILOGRAM"
   } ]
+}, {
+  "userName" : "Camilla",
+  "foodItems" : [ {
+    "name" : "vaffel",
+    "quantity" : 3.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "ost",
+    "quantity" : 1.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "Melk",
+    "quantity" : 10.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "sukker",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  } ]
 } ]
