@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class DinnertrackerApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DinnertrackerApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(DinnertrackerApplication.class, args);
+  }
 }
