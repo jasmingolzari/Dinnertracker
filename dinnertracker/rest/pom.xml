@@ -13,12 +13,22 @@
 
     <artifactId>rest</artifactId>
     <packaging>jar</packaging>
+    <properties>
+    <spring-boot.version>3.5.7</spring-boot.version>
+</properties>
         <dependencies>
         <dependency>
-            <groupId>io.javalin</groupId>
-            <artifactId>javalin</artifactId>
-            <version>7.2.3</version>
-        </dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <version>${spring-boot.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <version>${spring-boot.version}</version>
+    <scope>test</scope>
+</dependency>
+
         <dependency>
     <groupId>no.gr2631</groupId>
     <artifactId>core</artifactId>
@@ -38,12 +48,17 @@
     </dependencies>
         <build>
         <plugins>
+        <plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <version>${spring-boot.version}</version>
+</plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <mainClass>no.gr2631.dinnertracker.rest.RestServer</mainClass>
+                    <mainClass>no.gr2631.dinnertracker.rest.DinnertrackerApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
