@@ -40,3 +40,13 @@ jobs:
             -Dprism.verbose=true
             -Djava.awt.headless=true
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" mvn --batch-mode verify
+
+      - name: Show UI JaCoCo coverage details
+        if: always()
+        working-directory: dinnertracker
+        run: |
+          if [ -f ui/target/site/jacoco/jacoco.csv ]; then
+            cat ui/target/site/jacoco/jacoco.csv
+          else
+            echo "UI JaCoCo CSV report not found"
+          fi
