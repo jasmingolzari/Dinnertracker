@@ -210,4 +210,138 @@ class RecipeRestControllerTest {
 
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
+
+  @Test
+  void testCreateRecipeWithMissingIngredientQuantityReturnsBadRequest() throws Exception {
+    Path testFile = Path.of("target/recipes-spring-automated-test.json");
+    String originalData = Files.readString(testFile);
+
+    String requestBody =
+        """
+            {
+                "userName": "Testbruker",
+                "name": "Ugyldig oppskrift",
+                "ingredients": [
+                    {
+                        "name": "Mel",
+                        "unit": "GRAM"
+                    }
+                ],
+                "steps": ["Bland ingrediensene"]
+            }
+            """;
+
+    mockMvc
+        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string("Ingredient name, quantity and unit are required"));
+
+    String savedData = Files.readString(testFile);
+
+    org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
+  }
+
+  @Test
+  void testCreateRecipeWithInvalidIngredientQuantityTypeReturnsBadRequest() throws Exception {
+    Path testFile = Path.of("target/recipes-spring-automated-test.json");
+    String originalData = Files.readString(testFile);
+
+    String requestBody =
+        """
+            {
+                "userName": "Testbruker",
+                "name": "Ugyldig oppskrift",
+                "ingredients": [
+                    {
+                        "name": "Mel",
+                        "quantity": "fem",
+                        "unit": "GRAM"
+                    }
+                ],
+                "steps": ["Bland ingrediensene"]
+            }
+            """;
+
+    mockMvc
+        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string("Invalid ingredient field types"));
+
+    String savedData = Files.readString(testFile);
+
+    org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
+  }
+
+  @Test
+  void testCreateRecipeWithValidIngredientSuccessfully() throws Exception {
+    String requestBody =
+        """
+            {
+                "userName": "Testbruker",
+                "name": "Testpannekaker",
+                "ingredients": [
+                    {
+                        "name": "Mel",
+                        "quantity": 200,
+                        "unit": "GRAM"
+                    }
+                ],
+                "steps": ["Bland ingrediensene"]
+            }
+            """;
+
+    mockMvc
+        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .andExpect(status().isCreated())
+        .andExpect(content().string("Recipe created successfully"));
+
+    mockMvc
+        .perform(get("/recipes").param("userName", "Testbruker"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].name").value("Testpannekaker"))
+        .andExpect(jsonPath("$[0].ingredients[0].name").value("Mel"))
+        .andExpect(jsonPath("$[0].ingredients[0].quantity").value(200))
+        .andExpect(jsonPath("$[0].ingredients[0].unit").value("GRAM"))
+        .andExpect(jsonPath("$[0].steps[0]").value("Bland ingrediensene"));
+  }
+
+  @Test
+  void testCreateRecipeWithJsonArrayReturnsBadRequest() throws Exception {
+    Path testFile = Path.of("target/recipes-spring-automated-test.json");
+    String originalData = Files.readString(testFile);
+
+    mockMvc
+        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content("[]"))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string("JSON object is required"));
+
+    String savedData = Files.readString(testFile);
+
+    org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
+  }
+
+  @Test
+  void testCreateRecipeWithNumericNameReturnsBadRequest() throws Exception {
+    Path testFile = Path.of("target/recipes-spring-automated-test.json");
+    String originalData = Files.readString(testFile);
+
+    String requestBody =
+        """
+            {
+                "userName": "Testbruker",
+                "name": 123,
+                "ingredients": [],
+                "steps": ["Bland ingrediensene"]
+            }
+            """;
+
+    mockMvc
+        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string("userName and name must be strings"));
+
+    String savedData = Files.readString(testFile);
+
+    org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
+  }
 }
