@@ -39,7 +39,7 @@ jobs:
             -Dprism.order=sw
             -Dprism.verbose=true
             -Djava.awt.headless=true
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" mvn --batch-mode verify
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" mvn --batch-mode clean verify
 
       - name: Show UI JaCoCo coverage details
         if: always()
