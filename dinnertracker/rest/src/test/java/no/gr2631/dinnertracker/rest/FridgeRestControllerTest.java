@@ -236,4 +236,64 @@ class FridgeRestControllerTest {
                 .content("{invalid json"))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void testUpdateFridgeWithMissingFoodItemNameReturnsBadRequest() throws Exception {
+    String requestBody =
+        """
+            {
+                "foodItems": [
+                    {
+                        "quantity": 2,
+                        "unit": "KG"
+                    }
+                ]
+            }
+            """;
+
+    mockMvc
+        .perform(
+            put("/fridges")
+                .param("userName", "Testbruker")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void testUpdateFridgeWithoutFoodItemsReturnsBadRequest() throws Exception {
+    String requestBody = "{}";
+
+    mockMvc
+        .perform(
+            put("/fridges")
+                .param("userName", "Testbruker")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void testUpdateFridgeWithInvalidQuantityTypeReturnsBadRequest() throws Exception {
+    String requestBody =
+        """
+        {
+          "foodItems": [
+            {
+              "name": "Melk",
+              "quantity": "to",
+              "unit": "L"
+            }
+          ]
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/fridges")
+                .param("userName", "Testbruker")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isBadRequest());
+  }
 }
