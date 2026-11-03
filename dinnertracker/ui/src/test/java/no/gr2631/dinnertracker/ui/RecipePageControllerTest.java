@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
@@ -465,6 +466,28 @@ public class RecipePageControllerTest {
           assertEquals("Testoppskrift", nameField.getText());
           assertEquals(List.of("Tomat - 1.0 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
           assertEquals(List.of("Kutt tomat"), stepsList.getItems());
+        });
+  }
+
+  /** Checks that the unit ComboBox cell displays the correct unit symbol and style. */
+  @Test
+  public void unitComboBoxShouldCreateCellWithCorrectUnitSymbol() throws Exception {
+    requireToolkit();
+
+    runOnFxThread(
+        () -> {
+          ListView<Unit> listView = new ListView<>();
+          listView.getItems().add(Unit.GRAM);
+
+          ListCell<Unit> cell = unitComboBox.getCellFactory().call(listView);
+
+          cell.updateListView(listView);
+          cell.updateIndex(0);
+
+          assertEquals(Unit.GRAM, unitComboBox.getValue());
+          assertEquals(Unit.values().length, unitComboBox.getItems().size());
+          assertEquals(Unit.GRAM.getSymbol(), cell.getText());
+          assertEquals("-fx-cursor: hand;", cell.getStyle());
         });
   }
 

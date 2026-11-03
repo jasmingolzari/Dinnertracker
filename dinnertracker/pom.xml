@@ -11,10 +11,11 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>core</module>
-        <module>persistence</module>
-        <module>ui</module>
-    </modules>
+    <module>core</module>
+    <module>persistence</module>
+    <module>ui</module>
+    <module>rest</module>
+</modules>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
