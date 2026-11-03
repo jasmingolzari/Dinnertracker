@@ -209,6 +209,10 @@ public class FridgePageController {
    * @param foodNameToHighlight name of the food item that was added or updated, or {@code null}
    */
   private void highlightFridgeItem(String foodNameToHighlight) {
+    if (App.getFridge() == null) {
+      fridgeTable.setItems(FXCollections.emptyObservableList());
+      return;
+    }
     try {
       highlightedFoodName = foodNameToHighlight;
 
@@ -228,6 +232,7 @@ public class FridgePageController {
       fridgeTable.setItems(rows);
       fridgeTable.refresh();
     } catch (Exception exception) {
+      exception.printStackTrace();
       fridgeTable.setItems(FXCollections.emptyObservableList());
       ShowAlertMessage.showErrorAlert("Kunne ikke laste kjøleskapet", null, exception.getMessage());
     }
