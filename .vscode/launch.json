@@ -1,0 +1,29 @@
+
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "DinnertrackerApplication",
+            "request": "launch",
+            "mainClass": "no.gr2631.dinnertracker.rest.DinnertrackerApplication",
+            "projectName": "rest"
+        },
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "no.gr2631.dinnertracker.ui/no.gr2631.dinnertracker.ui.App",
+            "projectName": "ui"
+        }
+    ]
+}
