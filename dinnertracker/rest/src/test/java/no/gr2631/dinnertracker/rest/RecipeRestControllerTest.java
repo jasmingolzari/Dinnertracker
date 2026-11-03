@@ -96,7 +96,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isCreated())
         .andExpect(content().string("Recipe created successfully"));
 
@@ -129,7 +130,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -154,7 +156,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -178,7 +181,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -203,7 +207,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -232,7 +237,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Ingredient name, quantity and unit are required"));
 
@@ -263,7 +269,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Invalid ingredient field types"));
 
@@ -291,7 +298,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isCreated())
         .andExpect(content().string("Recipe created successfully"));
 
@@ -311,7 +319,7 @@ class RecipeRestControllerTest {
     String originalData = Files.readString(testFile);
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content("[]"))
+        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content("[]"))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("JSON object is required"));
 
@@ -336,7 +344,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("userName and name must be strings"));
 

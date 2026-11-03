@@ -64,7 +64,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(requestBody))
         .andExpect(status().isOk());
 
@@ -97,7 +97,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(requestBody))
         .andExpect(status().isBadRequest());
   }
@@ -134,7 +134,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(validRequest))
         .andExpect(status().isOk());
 
@@ -142,7 +142,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(invalidRequest))
         .andExpect(status().isBadRequest());
 
@@ -187,7 +187,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Bruker1")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(firstFridge))
         .andExpect(status().isOk());
 
@@ -195,7 +195,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Bruker2")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(secondFridge))
         .andExpect(status().isOk());
 
@@ -221,7 +221,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content("{\"foodItems\":[]}"))
         .andExpect(status().isBadRequest());
   }
@@ -232,7 +232,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content("{invalid json"))
         .andExpect(status().isBadRequest());
   }
@@ -255,7 +255,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(requestBody))
         .andExpect(status().isBadRequest());
   }
@@ -268,7 +268,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(requestBody))
         .andExpect(status().isBadRequest());
   }
@@ -292,7 +292,7 @@ class FridgeRestControllerTest {
         .perform(
             put("/fridges")
                 .param("userName", "Testbruker")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(requestBody))
         .andExpect(status().isBadRequest());
   }
