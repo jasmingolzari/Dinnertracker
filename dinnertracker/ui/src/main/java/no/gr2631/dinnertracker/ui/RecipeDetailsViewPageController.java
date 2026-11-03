@@ -114,7 +114,8 @@ public class RecipeDetailsViewPageController {
   }
 
   /**
-   * Displays each recipe ingredient as a checkbox, highlighting ingredients available in the fridge.
+   * Displays each recipe ingredient as a checkbox, highlighting ingredients available in the
+   * fridge.
    *
    * @param recipe the recipe whose ingredients should be displayed
    */

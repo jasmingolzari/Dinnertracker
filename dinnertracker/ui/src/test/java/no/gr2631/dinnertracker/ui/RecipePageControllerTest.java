@@ -228,7 +228,7 @@ public class RecipePageControllerTest {
 
           addIngredient("Tomat");
 
-          assertEquals(List.of("Tomat - 2.5 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
+          assertEquals(List.of("Tomat : 2.5 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
           assertEquals("", foodItemField.getText());
           assertEquals(1.0, amountSpinner.getValue());
         });
@@ -464,7 +464,7 @@ public class RecipePageControllerTest {
             alerts.verifyNoMoreInteractions();
           }
           assertEquals("Testoppskrift", nameField.getText());
-          assertEquals(List.of("Tomat - 1.0 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
+          assertEquals(List.of("Tomat : 1.0 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
           assertEquals(List.of("Kutt tomat"), stepsList.getItems());
         });
   }

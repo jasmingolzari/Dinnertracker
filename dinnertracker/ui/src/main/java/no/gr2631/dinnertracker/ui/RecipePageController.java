@@ -69,8 +69,8 @@ public class RecipePageController {
   }
 
   /**
-   * Initializes the recipe page. Sets up the quantity spinner and the unit selection dropdown. Gram
-   * is selected as the default unit.
+   * Initializes the recipe page. Sets up the quantity spinner, unit selection dropdown, and
+   * numbered preparation-step display. Gram is selected as the default unit.
    */
   @FXML
   public void initialize() {
@@ -139,7 +139,8 @@ public class RecipePageController {
 
   /**
    * Adds an ingredient to the current recipe. Creates a FoodItem and an Amount using the selected
-   * quantity and unit, then displays the ingredient in the ingredient list.
+   * quantity and unit, then displays the ingredient in the ingredient list using the format {@code
+   * name : quantity unit}.
    *
    * @param event the action event triggered by the add button
    */

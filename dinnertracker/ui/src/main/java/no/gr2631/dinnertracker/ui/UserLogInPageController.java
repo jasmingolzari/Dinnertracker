@@ -2,7 +2,6 @@ package no.gr2631.dinnertracker.ui;
 
 import java.io.IOException;
 import java.nio.file.Path;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
