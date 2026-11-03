@@ -18,8 +18,12 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import no.gr2631.dinnertracker.core.Amount;
+import no.gr2631.dinnertracker.core.FoodItem;
+import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Recipe;
 import no.gr2631.dinnertracker.core.RecipeBook;
+import no.gr2631.dinnertracker.core.Unit;
 import no.gr2631.dinnertracker.core.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,6 +36,7 @@ public class RecipeViewPageControllerTest {
   private static boolean toolkitStarted;
   private User previousUser;
   private RecipeBook previousRecipeBook;
+  private Fridge previousFridge;
 
   /** Starts the JavaFX toolkit so controls and FXML views can be created. */
   @BeforeAll
@@ -57,8 +62,10 @@ public class RecipeViewPageControllerTest {
         () -> {
           previousUser = App.getCurrentUser();
           previousRecipeBook = App.getRecipeBook();
+          previousFridge = App.getFridge();
           App.setCurrentUser(new User("recipe-view-test"));
           App.setRecipeBook(new RecipeBook(App.getCurrentUser()));
+          App.setFridge(new Fridge(App.getCurrentUser()));
         });
   }
 
@@ -70,6 +77,7 @@ public class RecipeViewPageControllerTest {
           () -> {
             App.setCurrentUser(previousUser);
             App.setRecipeBook(previousRecipeBook);
+            App.setFridge(previousFridge);
           });
     }
   }
@@ -110,7 +118,7 @@ public class RecipeViewPageControllerTest {
         () -> {
           try {
             action.run();
-          } catch (Throwable throwable) {
+          } catch (Exception throwable) {
             failure.set(throwable);
           } finally {
             completed.countDown();
@@ -173,6 +181,89 @@ public class RecipeViewPageControllerTest {
           initialize(controller);
 
           assertEquals(List.of("Pasta", "Suppe"), listView.getItems());
+        });
+  }
+
+  /** Sorts fully makeable recipes before recipes with ingredients still missing. */
+  @Test
+  public void initializeShouldSortRecipesByIngredientsLeft() throws Exception {
+    runOnFxThread(
+        () -> {
+          FoodItem pasta = new FoodItem("Pasta");
+          FoodItem tomato = new FoodItem("Tomato");
+          FoodItem cheese = new FoodItem("Cheese");
+          App.getFridge().addFoodItem(pasta, new Amount(1, Unit.PIECE));
+          App.getFridge().addFoodItem(tomato, new Amount(1, Unit.PIECE));
+          App.getFridge().addFoodItem(cheese, new Amount(1, Unit.PIECE));
+
+          Recipe partiallyAvailable =
+              new Recipe(
+                  "Partially available",
+                  App.getCurrentUser(),
+                  java.util.Map.of(
+                      pasta,
+                      new Amount(1, Unit.PIECE),
+                      tomato,
+                      new Amount(1, Unit.PIECE),
+                      new FoodItem("Missing"),
+                      new Amount(1, Unit.PIECE),
+                      new FoodItem("Also missing"),
+                      new Amount(1, Unit.PIECE),
+                      new FoodItem("Still missing"),
+                      new Amount(1, Unit.PIECE)),
+                  List.of());
+          Recipe fullyAvailable =
+              new Recipe(
+                  "Fully available",
+                  App.getCurrentUser(),
+                  java.util.Map.of(
+                      pasta, new Amount(1, Unit.PIECE),
+                      cheese, new Amount(1, Unit.PIECE)),
+                  List.of());
+          App.getRecipeBook().addRecipe(partiallyAvailable);
+          App.getRecipeBook().addRecipe(fullyAvailable);
+
+          RecipeViewPageController controller = new RecipeViewPageController();
+          ListView<String> listView = new ListView<>();
+          setField(controller, "recipesListView", listView);
+
+          initialize(controller);
+
+          assertEquals(List.of("Fully available", "Partially available"), listView.getItems());
+        });
+  }
+
+  /** Refreshes recipe availability after a food item is added to the fridge. */
+  @Test
+  public void fridgeChangesShouldRefreshRecipeAvailability() throws Exception {
+    runOnFxThread(
+        () -> {
+          FoodItem pasta = new FoodItem("Pasta");
+          FoodItem missing = new FoodItem("Missing");
+          Recipe availableRecipe =
+              new Recipe(
+                  "Available recipe",
+                  App.getCurrentUser(),
+                  java.util.Map.of(pasta, new Amount(1, Unit.PIECE)),
+                  List.of());
+          Recipe missingRecipe =
+              new Recipe(
+                  "Missing recipe",
+                  App.getCurrentUser(),
+                  java.util.Map.of(missing, new Amount(1, Unit.PIECE)),
+                  List.of());
+          App.getRecipeBook().addRecipe(availableRecipe);
+          App.getRecipeBook().addRecipe(missingRecipe);
+
+          RecipeViewPageController controller = new RecipeViewPageController();
+          ListView<String> listView = new ListView<>();
+          setField(controller, "recipesListView", listView);
+          initialize(controller);
+
+          App.getFridge().addFoodItem(missing, new Amount(1, Unit.PIECE));
+          App.notifyFridgeChanged();
+
+          assertEquals(List.of("Missing recipe", "Available recipe"), listView.getItems());
         });
   }
 

@@ -26,20 +26,24 @@
             </Label>
          </children>
       </HBox>
-      <ListView fx:id="recipesListView" prefHeight="350.0" prefWidth="500.0" style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #B7D3BC;">
+      <ListView fx:id="recipesListView" prefHeight="350.0" prefWidth="500.0" style="-fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #2F6B3B;" VBox.vgrow="ALWAYS">
          <VBox.margin>
             <Insets top="20.0" />
          </VBox.margin>
       </ListView>
-      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+      <HBox alignment="CENTER" maxWidth="Infinity" prefHeight="80.0" prefWidth="540.0">
          <children>
-            <Button fx:id="backButton" mnemonicParsing="false" onAction="#backToHomePage" prefHeight="26.0" prefWidth="174.0" style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;" text="Tilbake">
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#backToHomePage" prefHeight="38.0" prefWidth="115.0" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;" text="Tilbake">
                <graphic>
                   <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
                </graphic>
             </Button>
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="makeNewRecipeButton" mnemonicParsing="false" onAction="#makeNewRecipe" prefHeight="45.0" prefWidth="220.0" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;" text="+ Lag ny oppskrift" />
+            <Button fx:id="makeNewRecipeButton" mnemonicParsing="false" onAction="#makeNewRecipe" prefHeight="38.0" prefWidth="170.0" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-radius: 6; -fx-cursor: hand;" text="Lag ny oppskrift">
+               <graphic>
+                  <FontIcon iconColor="white" iconLiteral="mdi2p-plus" iconSize="18" />
+               </graphic>
+            </Button>
          </children>
       </HBox>
    </children>

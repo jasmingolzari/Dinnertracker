@@ -27,7 +27,7 @@ class HomePageControllerTest {
 
   /** Initialized the JavaFX runtime and keeps it running between tests when stages are closed. */
   @BeforeAll
-  static void initJavaFx() {
+  public static void initJavaFx() {
     try {
       Platform.startup(() -> {});
     } catch (IllegalStateException e) {
@@ -50,7 +50,7 @@ class HomePageControllerTest {
         () -> {
           try {
             action.run();
-          } catch (Throwable t) {
+          } catch (Exception t) {
             error.set(t);
           } finally {
             latch.countDown();
@@ -130,11 +130,13 @@ class HomePageControllerTest {
         () -> {
           User previousUser = App.getCurrentUser();
           RecipeBook previousRecipeBook = App.getRecipeBook();
+          Fridge previousFridge = App.getFridge();
           Stage stage = new Stage();
 
           try {
             App.setCurrentUser(new User("home-page-test"));
             App.setRecipeBook(new RecipeBook(App.getCurrentUser()));
+            App.setFridge(new Fridge(App.getCurrentUser()));
             App.getRecipeBook().addRecipe(new Recipe("Pasta", App.getCurrentUser()));
             Parent root = FXMLLoader.load(HomePageController.class.getResource("HomePage.fxml"));
             stage.setScene(new Scene(root));
@@ -153,6 +155,7 @@ class HomePageControllerTest {
             stage.close();
             App.setCurrentUser(previousUser);
             App.setRecipeBook(previousRecipeBook);
+            App.setFridge(previousFridge);
           }
         });
   }

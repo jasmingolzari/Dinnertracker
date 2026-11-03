@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import no.gr2631.dinnertracker.core.Amount;
 import no.gr2631.dinnertracker.core.FoodItem;
+import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Recipe;
 import no.gr2631.dinnertracker.core.Unit;
 import org.junit.jupiter.api.BeforeAll;
@@ -106,7 +107,7 @@ class RecipeDetailsViewPageControllerTest {
   }
 
   @Test
-  void setRecipeDisplaysIngredientsWithAlternatingColors() throws Exception {
+  void setRecipeHighlightsAvailableIngredients() throws Exception {
     runOnFxThread(
         () -> {
           try {
@@ -122,6 +123,9 @@ class RecipeDetailsViewPageControllerTest {
                         new FoodItem("Agurk"),
                         new Amount(100, Unit.GRAM)),
                     List.of("Vask grønnsakene", "Kutt og bland"));
+            Fridge fridge = new Fridge(null);
+            fridge.addFoodItem(new FoodItem("Tomat"), new Amount(2, Unit.PIECE));
+            App.setFridge(fridge);
 
             Label nameLabel = new Label();
             VBox ingredientList = new VBox();
@@ -145,24 +149,24 @@ class RecipeDetailsViewPageControllerTest {
             controller.setRecipe(recipe);
 
             assertEquals("Tomatsalat", nameLabel.getText());
-            assertEquals(2, ingredientList.getChildren().size());
+            assertEquals(3, ingredientList.getChildren().size());
             assertEquals(2, stepsList.getChildren().size());
 
-            CheckBox first = (CheckBox) ingredientList.getChildren().get(0);
-            CheckBox second = (CheckBox) ingredientList.getChildren().get(1);
+            Label availability = (Label) ingredientList.getChildren().get(0);
+            CheckBox first = (CheckBox) ingredientList.getChildren().get(1);
+            CheckBox second = (CheckBox) ingredientList.getChildren().get(2);
+            CheckBox tomat = first.getText().contains("Tomat") ? first : second;
+            CheckBox agurk = tomat == first ? second : first;
 
-            assertEquals("-fx-background-color: #FFFFFF", first.getStyle());
-            assertEquals("-fx-background-color: #E8F5E9", second.getStyle());
+            assertEquals("Du har 1 av 2 ingredienser", availability.getText());
+            assertEquals("-fx-background-color: #E8F5E9; -fx-cursor: hand;", tomat.getStyle());
+            assertEquals("-fx-background-color: #FFFFFF; -fx-cursor: hand;", agurk.getStyle());
 
             assertTrue(first.getText().contains("stk") || first.getText().contains("g"));
             assertTrue(second.getText().contains("stk") || second.getText().contains("g"));
 
-            assertEquals(
-                "- Vask grønnsakene",
-                ((Label) stepsList.getChildren().get(0)).getText().stripLeading());
-            assertEquals(
-                "- Kutt og bland",
-                ((Label) stepsList.getChildren().get(1)).getText().stripLeading());
+            assertEquals("1. Vask grønnsakene", ((Label) stepsList.getChildren().get(0)).getText());
+            assertEquals("2. Kutt og bland", ((Label) stepsList.getChildren().get(1)).getText());
 
           } catch (Exception e) {
             throw new RuntimeException(e);

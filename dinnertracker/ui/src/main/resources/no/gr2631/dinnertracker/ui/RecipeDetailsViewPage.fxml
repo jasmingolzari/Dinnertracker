@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="no.gr2631.dinnertracker.ui.RecipeDetailsViewPageController">
    <center>
@@ -16,15 +17,15 @@
          <children>
             <VBox prefHeight="268.0" prefWidth="179.0" style="-fx-background-color: #F4F8F4; -fx-border-color: #2f6b3b; -fx-border-radius: 3; -fx-border-width: 3;">
                <children>
-                  <Label prefHeight="26.0" prefWidth="187.0" text="      Ingridienser:">
+                  <Label alignment="CENTER" prefHeight="26.0" prefWidth="180.0" text="Ingredienser:">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin>
                   </Label>
-                  <VBox fx:id="ingredientListVBox" prefHeight="200.0" prefWidth="100.0" />
+                  <VBox fx:id="ingredientListVBox" prefHeight="200.0" prefWidth="80.0" />
                </children>
                <HBox.margin>
-                  <Insets bottom="10.0" left="10.0" right="5.0" />
+                  <Insets bottom="10.0" left="10.0" right="10.0" />
                </HBox.margin>
             </VBox>
             <VBox prefHeight="272.0" prefWidth="427.0" style="-fx-background-color: #F4F8F4; -fx-border-color: #2f6b3b; -fx-border-width: 3; -fx-border-radius: 3;">
@@ -46,38 +47,39 @@
    <top>
       <VBox prefHeight="89.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
-            <HBox prefHeight="108.0" prefWidth="600.0" style="-fx-background-color: #F4F8F4;">
+            <HBox alignment="CENTER" prefHeight="89.0" prefWidth="600.0" style="-fx-background-color: #F4F8F4;">
                <children>
-                  <StackPane prefHeight="108.0" prefWidth="154.0">
-                     <children>
-                        <Button fx:id="backButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#backToViewPage" prefHeight="26.0" prefWidth="89.0" style="-fx-background-color: #2f6b3b;" text="Tilbake" textFill="WHITE">
-                           <cursor>
-                              <Cursor fx:constant="HAND" />
-                           </cursor>
-                           
-                           <font>
-                              <Font size="12.0" />
-                           </font>
-                        </Button>
-                     </children>
-                  </StackPane>
-                  <StackPane>
-                     <children>
-                        <Label fx:id="recipeNameLabel" alignment="CENTER" prefHeight="89.0" prefWidth="334.0" text="/oppskrift/" textAlignment="CENTER" textFill="#2f6b3b">
-                           <font>
-                              <Font name="System Bold" size="23.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </StackPane>
-                  <StackPane>
-                     <children>
-                        <Button mnemonicParsing="false" onAction="#handleUseRecipe" prefHeight="26.0" prefWidth="97.0" style="-fx-background-color: #2f6b3b;" text="Bruk oppskrift" textFill="WHITE" />
-                     </children>
-                  </StackPane>
+                  <Label fx:id="recipeNameLabel" alignment="CENTER" prefHeight="89.0" prefWidth="600.0" text="/oppskrift/" textAlignment="CENTER" textFill="#2f6b3b">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
                </children>
             </HBox>
          </children>
       </VBox>
    </top>
+   <bottom>
+      <HBox alignment="CENTER" prefHeight="60.0" prefWidth="600.0" spacing="20.0" style="-fx-background-color: #F4F8F4;">
+         <padding>
+            <Insets left="30.0" right="30.0" />
+         </padding>
+         <children>
+            <Button fx:id="backButton" alignment="CENTER" contentDisplay="LEFT" mnemonicParsing="false" onAction="#backToViewPage" prefHeight="26.0" prefWidth="115.0" style="-fx-font-weight: bold; -fx-background-color: #2f6b3b; -fx-background-radius: 6; -fx-cursor: hand;" text="Tilbake" textFill="WHITE">
+               <graphic>
+                  <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
+               </graphic>
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </Button>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button mnemonicParsing="false" onAction="#handleUseRecipe" prefHeight="26.0" prefWidth="160.0" style="-fx-font-weight: bold; -fx-background-color: #2f6b3b; -fx-background-radius: 6; -fx-cursor: hand;" text="Bruk oppskrift" textFill="WHITE">
+               <graphic>
+                  <FontIcon iconColor="white" iconLiteral="mdi2c-check" iconSize="16" />
+               </graphic>
+            </Button>
+         </children>
+      </HBox>
+   </bottom>
 </BorderPane>

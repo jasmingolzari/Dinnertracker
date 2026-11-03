@@ -12,7 +12,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -43,19 +42,11 @@ public class RecipePageController {
 
   @FXML private ComboBox<Unit> foodItemUnitComboBox;
 
-  @FXML private Button addFoodItemButton;
-
   @FXML private ListView<String> ingredientsList;
 
   @FXML private TextField stepsField;
 
-  @FXML private Button addStepButton;
-
   @FXML private ListView<String> stepsList;
-
-  @FXML private Button backButton;
-
-  @FXML private Button addRecipeButton;
 
   /**
    * Stores the ingredients added to the recipe together with their corresponding quantities and
@@ -82,7 +73,7 @@ public class RecipePageController {
    * is selected as the default unit.
    */
   @FXML
-  private void initialize() {
+  public void initialize() {
     foodItemAmountSpinner.setValueFactory(
         new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 1000.0, 1.0, 0.1));
 
@@ -96,6 +87,16 @@ public class RecipePageController {
                 super.updateItem(unit, empty);
                 setText(empty || unit == null ? null : unit.getSymbol());
                 setStyle(empty ? "" : "-fx-cursor: hand;");
+              }
+            });
+
+    stepsList.setCellFactory(
+        listView ->
+            new ListCell<>() {
+              @Override
+              protected void updateItem(String step, boolean empty) {
+                super.updateItem(step, empty);
+                setText(empty || step == null ? null : (getIndex() + 1) + ". " + step);
               }
             });
 
@@ -143,7 +144,7 @@ public class RecipePageController {
    * @param event the action event triggered by the add button
    */
   @FXML
-  private void addFoodItem(ActionEvent event) {
+  public void addFoodItem(ActionEvent event) {
     try {
       String foodName = foodItemField.getText();
 
@@ -168,7 +169,7 @@ public class RecipePageController {
 
       ingredients.put(newFoodItem, amount);
 
-      ingredientsList.getItems().add(foodName + " - " + quantity + " " + unit.getSymbol());
+      ingredientsList.getItems().add(foodName + " : " + quantity + " " + unit.getSymbol());
 
       foodItemField.clear();
       foodItemAmountSpinner.getValueFactory().setValue(1.0);
@@ -205,7 +206,7 @@ public class RecipePageController {
    * @param event the action event triggered by the add button
    */
   @FXML
-  private void addStep(ActionEvent event) {
+  public void addStep(ActionEvent event) {
     String step = stepsField.getText();
 
     if (step != null && !step.isBlank()) {
@@ -221,7 +222,7 @@ public class RecipePageController {
    * @param event the action event triggered by the add recipe button
    */
   @FXML
-  private void addRecipe(ActionEvent event) {
+  public void addRecipe(ActionEvent event) {
     String recipeName = nameField.getText();
 
     if (recipeName == null || recipeName.isBlank()) {
@@ -279,7 +280,7 @@ public class RecipePageController {
    * @throws IOException if the home page FXML file cannot be loaded
    */
   @FXML
-  private void backToHomePage(ActionEvent event) throws IOException {
+  public void backToHomePage(ActionEvent event) throws IOException {
     Parent root = FXMLLoader.load(getClass().getResource("HomePage.fxml"));
 
     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
