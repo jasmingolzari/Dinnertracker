@@ -20,7 +20,7 @@ public final class Recipe {
    * @param name the name of the recipe
    * @param ingredients map from food item to the amount required
    * @param steps the list of steps describing how to prepare the recipe
-   * @param user the current user to connect a recipe to
+   * @param userName the current user to connect a recipe to
    */
   public Recipe(String name, User userName, Map<FoodItem, Amount> ingredients, List<String> steps) {
     this(name, userName);
@@ -32,7 +32,7 @@ public final class Recipe {
    * Creates a new, empty recipe with the given name. Used when a user wants to build up a recipe
    * themselves, by adding ingredients and steps afterwards.
    *
-   * @param name
+   * @param name the name of the recipe
    * @param userName the user associated with the recipe
    * @throws IllegalArgumentException if the name is null or blank.
    */

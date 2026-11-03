@@ -150,13 +150,13 @@ public class RecipeBookTest {
   void useRecipeShouldConsumeIngredientsAndPreserveRecipe() {
     FoodItem milk = new FoodItem("Milk");
     FoodItem eggs = new FoodItem("Eggs");
-    FoodItem flour = new FoodItem("Flour");
+    final FoodItem flour = new FoodItem("Flour");
     Recipe recipe = new Recipe("Pancakes", user);
     recipe.addIngredient(milk, new Amount(0.25, Unit.LITRE));
     recipe.addIngredient(eggs, new Amount(1.25, Unit.PIECE));
     recipe.addStep("Mix the ingredients");
     recipeBook.addRecipe(recipe);
-    Map<FoodItem, Amount> ingredients = Map.copyOf(recipe.getIngredients());
+    final Map<FoodItem, Amount> ingredients = Map.copyOf(recipe.getIngredients());
     fridge.addFoodItem(milk, new Amount(1.5, Unit.LITRE));
     fridge.addFoodItem(eggs, new Amount(5.5, Unit.PIECE));
     fridge.addFoodItem(flour, new Amount(500, Unit.GRAM));

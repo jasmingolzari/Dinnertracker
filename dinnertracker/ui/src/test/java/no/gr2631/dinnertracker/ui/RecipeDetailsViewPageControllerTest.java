@@ -64,7 +64,7 @@ class RecipeDetailsViewPageControllerTest {
 
   @Test
   void controllerCanBeCreated() {
-    RecipeDetailsViewPageController controller = new RecipeDetailsViewPageController();
+    final RecipeDetailsViewPageController controller = new RecipeDetailsViewPageController();
 
     assertNotNull(controller);
   }
@@ -74,13 +74,14 @@ class RecipeDetailsViewPageControllerTest {
     runOnFxThread(
         () -> {
           try {
-            RecipeDetailsViewPageController controller = new RecipeDetailsViewPageController();
+            final RecipeDetailsViewPageController controller =
+                new RecipeDetailsViewPageController();
 
-            Recipe recipe = new Recipe("Pasta", null);
+            final Recipe recipe = new Recipe("Pasta", null);
 
             Label nameLabel = new Label();
-            VBox ingredientList = new VBox();
-            VBox stepsList = new VBox();
+            final VBox ingredientList = new VBox();
+            final VBox stepsList = new VBox();
 
             Field nameField =
                 RecipeDetailsViewPageController.class.getDeclaredField("recipeNameLabel");
@@ -88,12 +89,12 @@ class RecipeDetailsViewPageControllerTest {
             nameField.set(controller, nameLabel);
 
             Field ingredientsField =
-                RecipeDetailsViewPageController.class.getDeclaredField("ingredientListVBox");
+                RecipeDetailsViewPageController.class.getDeclaredField("ingredientListBox");
             ingredientsField.setAccessible(true);
             ingredientsField.set(controller, ingredientList);
 
             Field stepsField =
-                RecipeDetailsViewPageController.class.getDeclaredField("stepsListVBox");
+                RecipeDetailsViewPageController.class.getDeclaredField("stepsListBox");
             stepsField.setAccessible(true);
             stepsField.set(controller, stepsList);
 
@@ -111,9 +112,10 @@ class RecipeDetailsViewPageControllerTest {
     runOnFxThread(
         () -> {
           try {
-            RecipeDetailsViewPageController controller = new RecipeDetailsViewPageController();
+            final RecipeDetailsViewPageController controller =
+                new RecipeDetailsViewPageController();
 
-            Recipe recipe =
+            final Recipe recipe =
                 new Recipe(
                     "Tomatsalat",
                     null,
@@ -128,8 +130,8 @@ class RecipeDetailsViewPageControllerTest {
             App.setFridge(fridge);
 
             Label nameLabel = new Label();
-            VBox ingredientList = new VBox();
-            VBox stepsList = new VBox();
+            final VBox ingredientList = new VBox();
+            final VBox stepsList = new VBox();
 
             Field nameField =
                 RecipeDetailsViewPageController.class.getDeclaredField("recipeNameLabel");
@@ -137,12 +139,12 @@ class RecipeDetailsViewPageControllerTest {
             nameField.set(controller, nameLabel);
 
             Field ingredientsField =
-                RecipeDetailsViewPageController.class.getDeclaredField("ingredientListVBox");
+                RecipeDetailsViewPageController.class.getDeclaredField("ingredientListBox");
             ingredientsField.setAccessible(true);
             ingredientsField.set(controller, ingredientList);
 
             Field stepsField =
-                RecipeDetailsViewPageController.class.getDeclaredField("stepsListVBox");
+                RecipeDetailsViewPageController.class.getDeclaredField("stepsListBox");
             stepsField.setAccessible(true);
             stepsField.set(controller, stepsList);
 

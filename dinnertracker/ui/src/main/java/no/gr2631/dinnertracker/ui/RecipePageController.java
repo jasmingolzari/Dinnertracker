@@ -80,25 +80,27 @@ public class RecipePageController {
     foodItemUnitComboBox.getItems().setAll(Unit.values());
     foodItemUnitComboBox.setValue(Unit.GRAM);
     foodItemUnitComboBox.setCellFactory(
-        comboBox ->
-            new ListCell<>() {
-              @Override
-              protected void updateItem(Unit unit, boolean empty) {
-                super.updateItem(unit, empty);
-                setText(empty || unit == null ? null : unit.getSymbol());
-                setStyle(empty ? "" : "-fx-cursor: hand;");
-              }
-            });
+        comboBox -> {
+          return new ListCell<>() {
+            @Override
+            protected void updateItem(Unit unit, boolean empty) {
+              super.updateItem(unit, empty);
+              setText(empty || unit == null ? null : unit.getSymbol());
+              setStyle(empty ? "" : "-fx-cursor: hand;");
+            }
+          };
+        });
 
     stepsList.setCellFactory(
-        listView ->
-            new ListCell<>() {
-              @Override
-              protected void updateItem(String step, boolean empty) {
-                super.updateItem(step, empty);
-                setText(empty || step == null ? null : (getIndex() + 1) + ". " + step);
-              }
-            });
+        listView -> {
+          return new ListCell<>() {
+            @Override
+            protected void updateItem(String step, boolean empty) {
+              super.updateItem(step, empty);
+              setText(empty || step == null ? null : (getIndex() + 1) + ". " + step);
+            }
+          };
+        });
 
     foodItemUnitComboBox.setConverter(
         new StringConverter<Unit>() {

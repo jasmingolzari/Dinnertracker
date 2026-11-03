@@ -31,7 +31,7 @@ class HomePageControllerTest {
     try {
       Platform.startup(() -> {});
     } catch (IllegalStateException e) {
-
+      // JavaFX toolkit is already initialized by another test.
     }
     Platform.setImplicitExit(false);
   }
@@ -69,22 +69,22 @@ class HomePageControllerTest {
   }
 
   @Test
-  void HomePageFXMLExist() {
+  void homePageFxmlExists() {
     assertNotNull(HomePageController.class.getResource("HomePage.fxml"));
   }
 
   @Test
-  void RecipePageFXMLExist() {
+  void recipePageFxmlExists() {
     assertNotNull(HomePageController.class.getResource("RecipePage.fxml"));
   }
 
   @Test
-  void FridgePageFXMLExist() {
+  void fridgePageFxmlExists() {
     assertNotNull(HomePageController.class.getResource("FridgePage.fxml"));
   }
 
   @Test
-  void HomePageFXMLLoadsAndHandlersExist() throws Throwable {
+  void homePageFxmlLoadsAndHandlersExist() throws Throwable {
     runOnFx(
         () -> {
           Parent root;

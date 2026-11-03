@@ -37,37 +37,38 @@ public class RecipeViewPageController {
   public void initialize() {
     App.fridgeVersionProperty().addListener((observable, oldValue, newValue) -> refreshRecipes());
     recipesListView.setCellFactory(
-        listView ->
-            new ListCell<>() {
-              @Override
-              protected void updateItem(String recipeName, boolean empty) {
-                super.updateItem(recipeName, empty);
-                if (empty || recipeName == null) {
-                  setText(null);
-                  setTextFill(null);
-                  setStyle("");
-                  return;
-                }
-
-                setStyle("-fx-cursor: hand;");
-                Recipe recipe =
-                    recipes.stream()
-                        .filter(candidate -> candidate.getName().equals(recipeName))
-                        .findFirst()
-                        .orElse(null);
-                if (recipe == null) {
-                  setText(recipeName);
-                  setTextFill(Color.web("#2F6B3B"));
-                  return;
-                }
-
-                int ingredientsLeft = numberOfIngredientsLeft(recipe);
-                int needed = recipe.getIngredients().size();
-                int available = needed - ingredientsLeft;
-                setText(recipeName + " (" + available + "/" + needed + " ingredients)");
-                setTextFill(available == needed ? Color.web("#2F6B3B") : Color.web("#6B8F71"));
+        listView -> {
+          return new ListCell<>() {
+            @Override
+            protected void updateItem(String recipeName, boolean empty) {
+              super.updateItem(recipeName, empty);
+              if (empty || recipeName == null) {
+                setText(null);
+                setTextFill(null);
+                setStyle("");
+                return;
               }
-            });
+
+              setStyle("-fx-cursor: hand;");
+              Recipe recipe =
+                  recipes.stream()
+                      .filter(candidate -> candidate.getName().equals(recipeName))
+                      .findFirst()
+                      .orElse(null);
+              if (recipe == null) {
+                setText(recipeName);
+                setTextFill(Color.web("#2F6B3B"));
+                return;
+              }
+
+              int ingredientsLeft = numberOfIngredientsLeft(recipe);
+              int needed = recipe.getIngredients().size();
+              int available = needed - ingredientsLeft;
+              setText(recipeName + " (" + available + "/" + needed + " ingredients)");
+              setTextFill(available == needed ? Color.web("#2F6B3B") : Color.web("#6B8F71"));
+            }
+          };
+        });
     refreshRecipes();
     // Catches a click on wanted recipe to load its details
     recipesListView.setOnMouseClicked(event -> openRecipeDetails());

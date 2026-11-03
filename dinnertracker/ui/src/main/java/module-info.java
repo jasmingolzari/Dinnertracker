@@ -1,3 +1,4 @@
+// The module name follows the project group ID.
 module no.gr2631.dinnertracker.ui {
   requires static com.github.spotbugs.annotations;
   requires javafx.controls;

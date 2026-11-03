@@ -111,12 +111,9 @@ class FridgeFileHandlerTest {
   @ParameterizedTest
   @ValueSource(
       strings = {
-        """
-        [{"userName":"other-user","foodItems":[],"note":"keep me"}]
-        """,
-        """
-        {"fridges":[{"userName":"other-user","foodItems":[],"note":"keep me"}],"version":1}
-        """
+        "[{\"userName\":\"other-user\",\"foodItems\":[],\"note\":\"keep me\"}]",
+        "{\"fridges\":[{\"userName\":\"other-user\",\"foodItems\":[],"
+            + "\"note\":\"keep me\"}],\"version\":1}"
       })
   void saveShouldAddFridgeWithoutRemovingExistingData(String json) throws IOException {
     Path path = createFile("fridges.json", json);

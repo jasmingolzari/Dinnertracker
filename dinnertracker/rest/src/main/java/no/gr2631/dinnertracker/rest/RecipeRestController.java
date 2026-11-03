@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+/** REST endpoints for reading and creating recipes. */
 @RestController
 public class RecipeRestController {
   private final ObjectMapper objectMapper = new ObjectMapper();
@@ -35,11 +36,18 @@ public class RecipeRestController {
 
   private final RecipeFileHandler recipeFileHandler = new RecipeFileHandler();
 
+  /** Returns a basic service health message. */
   @GetMapping("/health")
   public String health() {
     return "Dinnertracker REST API is running";
   }
 
+  /**
+   * Returns recipes belonging to the requested user.
+   *
+   * @param userName the user whose recipes should be returned
+   * @return the user's recipes as JSON
+   */
   @GetMapping(value = "/recipes", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getRecipes(@RequestParam(name = "userName", required = false) String userName) {
     if (userName == null || userName.isBlank()) {
@@ -80,6 +88,12 @@ public class RecipeRestController {
     }
   }
 
+  /**
+   * Validates and stores a recipe submitted as JSON.
+   *
+   * @param requestBody the recipe payload
+   * @return the result of creating the recipe
+   */
   @PostMapping("/recipes")
   public ResponseEntity<String> createRecipe(@RequestBody String requestBody) {
     JsonNode requestJson;

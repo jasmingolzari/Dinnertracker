@@ -83,15 +83,16 @@ public class FridgePageController {
     unitComboBox.getItems().setAll(Unit.values());
     unitComboBox.setValue(Unit.GRAM);
     unitComboBox.setCellFactory(
-        comboBox ->
-            new ListCell<>() {
-              @Override
-              protected void updateItem(Unit unit, boolean empty) {
-                super.updateItem(unit, empty);
-                setText(empty || unit == null ? null : unit.getSymbol());
-                setStyle(empty ? "" : "-fx-cursor: hand;");
-              }
-            });
+        comboBox -> {
+          return new ListCell<>() {
+            @Override
+            protected void updateItem(Unit unit, boolean empty) {
+              super.updateItem(unit, empty);
+              setText(empty || unit == null ? null : unit.getSymbol());
+              setStyle(empty ? "" : "-fx-cursor: hand;");
+            }
+          };
+        });
     unitComboBox.setConverter(
         new StringConverter<Unit>() {
           @Override

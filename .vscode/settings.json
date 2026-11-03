@@ -1,7 +1,4 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.debug.settings.onBuildFailureProceed": true,
-    "java.compile.problem.unusedPrivateMember": "ignore",
-    "java.compile.problem.unusedMethod": "ignore",
-    "java.compile.problem.moduleName": "ignore"
 }

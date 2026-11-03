@@ -25,10 +25,10 @@ public class RecipeDetailsViewPageController {
   @FXML private Label recipeNameLabel;
 
   /** Container for the selected recipe's ingredients. */
-  @FXML private VBox ingredientListVBox;
+  @FXML private VBox ingredientListBox;
 
   /** Container for the selected recipe's numbered preparation steps. */
-  @FXML private VBox stepsListVBox;
+  @FXML private VBox stepsListBox;
 
   private Recipe recipe;
 
@@ -75,7 +75,7 @@ public class RecipeDetailsViewPageController {
         availableIngredients == requiredIngredients
             ? "-fx-text-fill: #2F6B3B; -fx-font-weight: bold;"
             : "-fx-text-fill: #6B8F71;");
-    ingredientListVBox.getChildren().add(availabilityLabel);
+    ingredientListBox.getChildren().add(availabilityLabel);
   }
 
   private boolean isIngredientAvailable(
@@ -109,7 +109,7 @@ public class RecipeDetailsViewPageController {
 
     for (int i = 0; i < recipeSteps.size(); i++) {
       Label label = new Label((i + 1) + ". " + recipeSteps.get(i));
-      stepsListVBox.getChildren().add(label);
+      stepsListBox.getChildren().add(label);
     }
   }
 
@@ -137,7 +137,7 @@ public class RecipeDetailsViewPageController {
               ? "-fx-background-color: #E8F5E9; -fx-cursor: hand;"
               : "-fx-background-color: #FFFFFF; -fx-cursor: hand;");
 
-      ingredientListVBox.getChildren().add(checkBox);
+      ingredientListBox.getChildren().add(checkBox);
     }
   }
 
@@ -188,7 +188,7 @@ public class RecipeDetailsViewPageController {
   /** Marks all displayed ingredient checkboxes as selected after a recipe is used. */
   @FXML
   private void checkAllIngredients() {
-    for (Node node : ingredientListVBox.getChildren()) {
+    for (Node node : ingredientListBox.getChildren()) {
       if (node instanceof CheckBox checkBox) {
         checkBox.setSelected(true);
       }
