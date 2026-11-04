@@ -56,7 +56,7 @@ commands:
   - id: build
     exec:
       component: dinnertracker
-      workingDir: ${PROJECT_SOURCE}
+      workingDir: ${PROJECT_SOURCE}/dinnertracker
       commandLine: mvn clean install
       group:
         kind: build
@@ -65,8 +65,17 @@ commands:
   - id: test
     exec:
       component: dinnertracker
-      workingDir: ${PROJECT_SOURCE}
+      workingDir: ${PROJECT_SOURCE}/dinnertracker
       commandLine: mvn test
       group:
         kind: test
+        isDefault: true
+
+  - id: run-ui
+    exec:
+      component: dinnertracker
+      workingDir: ${PROJECT_SOURCE}/dinnertracker/ui
+      commandLine: mvn javafx:run
+      group:
+        kind: run
         isDefault: true

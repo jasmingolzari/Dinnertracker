@@ -25,6 +25,7 @@ class FridgeRestControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @BeforeEach
+  @SuppressWarnings("unused")
   void setUp() throws Exception {
     Path testFile = Path.of("target/fridges-spring-automated-test.json");
     Files.createDirectories(testFile.getParent());
