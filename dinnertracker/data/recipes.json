@@ -1,0 +1,36 @@
+[ {
+  "userName" : "Rumyana",
+  "name" : "Pannekaker",
+  "ingredients" : [ {
+    "name" : "Egg",
+    "quantity" : 1.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "Melk",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  }, {
+    "name" : "Mel",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  } ],
+  "steps" : [ "Bland sammen" ]
+}, {
+
+  "userName" : "Eira",
+  "name" : "Horn",
+  "ingredients" : [ {
+    "name" : "Ost",
+    "quantity" : 200.0,
+    "unit" : "GRAM"
+  }, {
+    "name" : "Egg",
+    "quantity" : 2.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "Mel",
+    "quantity" : 500.0,
+    "unit" : "GRAM"
+  } ],
+  "steps" : [ "Bland sammen", "La det heve", "Stek" ] }
+ ]
