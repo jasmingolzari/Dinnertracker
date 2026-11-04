@@ -28,6 +28,7 @@ class UserRestControllerTest {
   private Path testFile;
 
   @BeforeEach
+  @SuppressWarnings("unused")
   void setUp() throws Exception {
     testFile = Path.of("target/users-spring-automated-test.json");
 
@@ -46,7 +47,7 @@ class UserRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(post("/users").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isCreated())
         .andExpect(content().string("User created successfully"));
 
@@ -94,7 +95,7 @@ class UserRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(post("/users").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Valid userName is required"));
   }
@@ -120,7 +121,7 @@ class UserRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(post("/users").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isConflict())
         .andExpect(content().string("User already exists"));
   }
