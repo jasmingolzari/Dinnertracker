@@ -1,5 +1,8 @@
 # Dinnertracker
 
+[Open Dinnertracker in Eclipse Che](https://che.iaas.ntnu.no/#https://git.ntnu.no/IT1901-2026-groups/gr2631)
+
+
 This repository contains the source code and documentation for the Dinnertracker project, developed as part of the IT1901 course at NTNU.
 
 Dinnertracker is a dinner planning application that helps users manage recipes and keep track of the ingredients available in their fridge.
@@ -37,12 +40,11 @@ The modules have the following responsibilities:
 
 - **`core/`** – contains the application's domain classes, core logic, and their tests.
 - **`persistence/`** – handles loading and saving application data.
-- **`rest/`** – provides the REST API through which the client accesses application functionality.
+- **`rest/`** – provides REST API endpoints using Spring Boot.
 - **`ui/`** – contains the JavaFX graphical user interface.
-- **`data/`** – contains application data files.
 
-Project documentation is located in the [`docs/`](docs/) directory.
 
+The repository also contains application data, screenshots and project documentation located in the [`docs/`](docs/) directory.
 
 
 ## Architecture
@@ -55,7 +57,7 @@ Dinnertracker uses a client-server architecture. The JavaFX client communicates 
 flowchart TD
     USER[User]
     UI[JavaFX client<br/>UI module]
-    REST[REST server<br/>Javalin]
+    REST[REST server<br/>Spring Boot]
     CORE[Core module<br/>Domain logic]
     PERSISTENCE[Persistence module]
     JSON[(JSON data files)]
@@ -64,7 +66,7 @@ flowchart TD
     UI <-->|HTTP requests and JSON responses| REST
     REST --> CORE
     REST --> PERSISTENCE
-    PERSISTENCE --> JSON
+    PERSISTENCE <--> JSON
     PERSISTENCE --> CORE
 ```
 
@@ -80,11 +82,12 @@ The project uses the following technologies and tools:
 - Java 17
 - Apache Maven 3.9.x
 - JavaFX 21.0.2
-- Javalin for the REST server
+- Spring Boot 3.5.7
 - Jackson for JSON processing
 - JUnit 5 for automated testing
 - JaCoCo for test coverage
-- Checkstyle and SpotBugs for code quality checks
+- Checkstyle for code style checks
+- SpotBugs for static analysis
 - Spotless for Java formatting
 
 The project dependencies and module configuration are defined in the Maven `pom.xml` files.
@@ -110,6 +113,11 @@ To compile the project and run the tests:
 
 ```bash
 mvn test
+```
+
+### Build the project
+```bash
+mvn package
 ```
 
 ### Run verification and code quality checks
@@ -139,7 +147,7 @@ Open a terminal from the repository root and run:
 
 ```bash
 cd dinnertracker/rest
-mvn exec:java
+mvn spring-boot:run
 ```
 
 The server is configured to start on port `7070`. The `/health` endpoint can be used to check whether the server is running. 
@@ -150,7 +158,7 @@ The server is configured to start on port `7070`. The `/health` endpoint can be 
 Keep the REST server running and open a second terminal from the repository root:
 
 ```bash
-cd ui
+cd dinnertracker/ui
 mvn javafx:run
 ```
 
