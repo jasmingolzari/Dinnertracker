@@ -23,7 +23,7 @@ public class HomePageController {
    * @throws IOException if recipe page FXML cannot be loaded.
    */
   @FXML
-  private void openRecipePage(ActionEvent event) throws IOException {
+  public void openRecipePage(ActionEvent event) throws IOException {
     Parent root = FXMLLoader.load(getClass().getResource("RecipeViewPage.fxml"));
 
     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -39,7 +39,7 @@ public class HomePageController {
    * @throws IOException if fridge page FXML cannot be loaded.
    */
   @FXML
-  private void openFridgePage(ActionEvent event) throws IOException {
+  public void openFridgePage(ActionEvent event) throws IOException {
     Parent root = FXMLLoader.load(getClass().getResource("FridgePage.fxml"));
 
     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

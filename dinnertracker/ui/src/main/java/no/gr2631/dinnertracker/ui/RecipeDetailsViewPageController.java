@@ -19,47 +19,110 @@ import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Recipe;
 
+/** Controller for displaying a selected recipe's name, ingredients, and preparation steps. */
 public class RecipeDetailsViewPageController {
-  /** Fields that are needeed to get information from recipe.json */
+  /** Label that displays the selected recipe's name. */
   @FXML private Label recipeNameLabel;
 
-  @FXML private VBox ingredientListVBox;
+  /** Container for the selected recipe's ingredients. */
+  @FXML private VBox ingredientListBox;
 
-  @FXML private VBox stepsListVBox;
+  /** Container for the selected recipe's numbered preparation steps. */
+  @FXML private VBox stepsListBox;
 
   private Recipe recipe;
 
+  /**
+   * Sets the selected recipe and populates the name, ingredients, and preparation steps.
+   *
+   * @param recipe the recipe to display
+   */
   @SuppressFBWarnings(
       value = "EI_EXPOSE_REP2",
       justification = "The controller intentionally shares the selected recipe.")
   public void setRecipe(Recipe recipe) {
     this.recipe = recipe;
     setRecipeName(recipe);
+    setIngredientAvailability(recipe);
     setRecipeSteps(recipe);
     setRecipeIngredients(recipe);
   }
 
-  /** Method to get recipe name from json file loads to its label recipeNameLabel */
+  /**
+   * Displays how many of the recipe's ingredients are currently available in the fridge.
+   *
+   * <p>Fully available recipes use the application's dark green accent color, while incomplete
+   * recipes use a softer green.
+   *
+   * @param recipe the recipe whose ingredient availability should be displayed
+   */
+  private void setIngredientAvailability(Recipe recipe) {
+    Fridge fridge = App.getFridge();
+    Map<FoodItem, Amount> fridgeContents = fridge == null ? Map.of() : fridge.getFoodItems();
+    int availableIngredients = 0;
+
+    for (Map.Entry<FoodItem, Amount> ingredient : recipe.getIngredients().entrySet()) {
+      if (isIngredientAvailable(ingredient, fridgeContents)) {
+        availableIngredients++;
+      }
+    }
+
+    int requiredIngredients = recipe.getIngredients().size();
+    Label availabilityLabel =
+        new Label(
+            "Du har " + availableIngredients + " av " + requiredIngredients + " ingredienser");
+    availabilityLabel.setStyle(
+        availableIngredients == requiredIngredients
+            ? "-fx-text-fill: #2F6B3B; -fx-font-weight: bold;"
+            : "-fx-text-fill: #6B8F71;");
+    ingredientListBox.getChildren().add(availabilityLabel);
+  }
+
+  private boolean isIngredientAvailable(
+      Map.Entry<FoodItem, Amount> ingredient, Map<FoodItem, Amount> fridgeContents) {
+    Amount available = fridgeContents.get(ingredient.getKey());
+    Amount required = ingredient.getValue();
+    return available != null
+        && available.unit() == required.unit()
+        && available.quantity() >= required.quantity();
+  }
+
+  /**
+   * Displays the recipe name in the recipe name label.
+   *
+   * @param recipe the recipe whose name should be displayed
+   */
   private void setRecipeName(Recipe recipe) {
     recipeNameLabel.setText(recipe.getName());
   }
 
   /**
-   * Method to get ingridient list from json for every new line: make new checkbox for every other
-   * checkbox, change color to white/light green
+   * Displays the recipe's preparation steps in the steps container.
+   *
+   * <p>Each step is displayed as a separate label and numbered according to its position in the
+   * recipe.
+   *
+   * @param recipe the recipe whose preparation steps should be displayed
    */
   private void setRecipeSteps(Recipe recipe) {
     List<String> recipeSteps = recipe.getSteps();
-    for (String recipeStep : recipeSteps) {
-      Label label = new Label("   - " + recipeStep);
-      stepsListVBox.getChildren().add(label);
+
+    for (int i = 0; i < recipeSteps.size(); i++) {
+      Label label = new Label((i + 1) + ". " + recipeSteps.get(i));
+      stepsListBox.getChildren().add(label);
     }
   }
 
-  /** TODO: Method to get steps from json for every new step line: start line with - */
+  /**
+   * Displays each recipe ingredient as a checkbox, highlighting ingredients available in the
+   * fridge.
+   *
+   * @param recipe the recipe whose ingredients should be displayed
+   */
   private void setRecipeIngredients(Recipe recipe) {
     Map<FoodItem, Amount> ingredients = recipe.getIngredients();
-    int index = 0;
+    Fridge fridge = App.getFridge();
+    Map<FoodItem, Amount> fridgeContents = fridge == null ? Map.of() : fridge.getFoodItems();
 
     for (Map.Entry<FoodItem, Amount> entry : ingredients.entrySet()) {
       FoodItem foodItem = entry.getKey();
@@ -69,25 +132,21 @@ public class RecipeDetailsViewPageController {
       CheckBox checkBox = new CheckBox(text);
       checkBox.setMaxWidth(Double.MAX_VALUE);
 
-      if (index % 2 == 0) {
-        checkBox.setStyle("-fx-background-color: #FFFFFF");
-      } else {
-        checkBox.setStyle("-fx-background-color: #E8F5E9");
-      }
+      checkBox.setStyle(
+          isIngredientAvailable(entry, fridgeContents)
+              ? "-fx-background-color: #E8F5E9; -fx-cursor: hand;"
+              : "-fx-background-color: #FFFFFF; -fx-cursor: hand;");
 
-      ingredientListVBox.getChildren().add(checkBox);
-      index++;
+      ingredientListBox.getChildren().add(checkBox);
     }
   }
 
   /**
-   * Method to "use recipe" and connect fridge to this recipe recipe can only be used if fridge
-   * contains all listed ingredients - goes through all ingredients in ingredientListVBox and
-   * compares it to what is in fridge - if an ingredient is not in fridge, error, cannot use this
-   * recipe - updates what is in the fridge (removes what is in the recipe)
+   * Uses the selected recipe, removes its ingredients from the current fridge, and saves the
+   * updated fridge.
    */
   @FXML
-  private void handleUseRecipe() {
+  public void handleUseRecipe() {
     if (recipe == null) {
       return;
     }
@@ -116,16 +175,9 @@ public class RecipeDetailsViewPageController {
     }
   }
 
-  /**
-   * Method for when use recipe has been clicked and passed all checkboxes get checked, becuase all
-   * ingredients are in fridge
-   */
-
-  /** Method for checking off all checkboxes if use recipe can if use recipe can be used */
-
-  /** Brings user back to list view page */
+  /** Returns the user to the recipe list page. */
   @FXML
-  private void backToViewPage(ActionEvent event) throws IOException {
+  public void backToViewPage(ActionEvent event) throws IOException {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("RecipeViewPage.fxml"));
     Parent root = loader.load();
 
@@ -133,10 +185,10 @@ public class RecipeDetailsViewPageController {
     stage.getScene().setRoot(root);
   }
 
-  /** Method for checking of checkboxes if use recipe button is used */
+  /** Marks all displayed ingredient checkboxes as selected after a recipe is used. */
   @FXML
   private void checkAllIngredients() {
-    for (Node node : ingredientListVBox.getChildren()) {
+    for (Node node : ingredientListBox.getChildren()) {
       if (node instanceof CheckBox checkBox) {
         checkBox.setSelected(true);
       }

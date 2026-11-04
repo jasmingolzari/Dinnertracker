@@ -34,7 +34,7 @@
                         </Label>
                      </children>
                   </HBox>
-                  <Button mnemonicParsing="false" onAction="#backToHomePage" style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-cursor: hand;" text="Tilbake" StackPane.alignment="CENTER_LEFT">
+                  <Button mnemonicParsing="false" onAction="#backToHomePage" style="-fx-font-weight: bold; -fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-cursor: hand;" text="Tilbake" StackPane.alignment="CENTER_LEFT">
                      <graphic>
                         <FontIcon iconColor="white" iconLiteral="mdi2a-arrow-left" iconSize="18" />
                      </graphic>

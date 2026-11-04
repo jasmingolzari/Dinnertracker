@@ -26,7 +26,11 @@
                   <Insets right="25.0" />
                </HBox.margin>
             </TextField>
-            <Button mnemonicParsing="false" defaultButton="true" style="-fx-background-color: #2F6B3B; -fx-text-fill: white; -fx-cursor: hand;"  text="Logg inn" onAction="#handleLoginButtonAction"/>
+            <Button mnemonicParsing="false" defaultButton="true" contentDisplay="RIGHT" style="-fx-background-color: #2F6B3B; -fx-font-weight: bold; -fx-text-fill: white; -fx-cursor: hand;" text="Logg inn" onAction="#handleLoginButtonAction">
+               <graphic>
+                  <FontIcon iconColor="white" iconLiteral="mdi2l-login-variant" iconSize="18" />
+               </graphic>
+            </Button>
          </children>
       </HBox>
    </center>

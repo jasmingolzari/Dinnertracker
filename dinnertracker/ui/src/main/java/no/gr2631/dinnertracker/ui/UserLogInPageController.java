@@ -51,7 +51,7 @@ public class UserLogInPageController {
    * @param event the login button action
    */
   @FXML
-  private void handleLoginButtonAction(ActionEvent event) {
+  public void handleLoginButtonAction(ActionEvent event) {
     String username = usernameTextField.getText();
 
     if (username == null || username.trim().isEmpty()) {

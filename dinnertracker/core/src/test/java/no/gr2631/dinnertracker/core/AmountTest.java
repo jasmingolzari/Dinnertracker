@@ -49,7 +49,7 @@ class AmountTest {
 
   /** Tests that NaN is not accepted as a quantity. */
   @Test
-  void shouldRejectNaNQuantity() {
+  void shouldRejectNanQuantity() {
     assertThrows(IllegalArgumentException.class, () -> new Amount(Double.NaN, Unit.GRAM));
   }
 

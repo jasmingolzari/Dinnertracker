@@ -170,7 +170,7 @@ class UserLogInPageControllerTest {
     runOnFxThread(
         () -> {
           usernameTextField.setText(username);
-          Scene loginScene = stage.getScene();
+          final Scene loginScene = stage.getScene();
 
           try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
             loginButton.fire();
@@ -224,7 +224,7 @@ class UserLogInPageControllerTest {
   void loginShouldLoadExistingUserDataWithoutRegisteringAgain() throws Exception {
     User user = new User("existing-user");
     App.usersFileHandler.save(usersPath, user);
-    String registeredUsers = Files.readString(usersPath);
+    final String registeredUsers = Files.readString(usersPath);
     Fridge fridge = new Fridge(user);
     FoodItem ingredient = new FoodItem("Tomato");
     Amount amount = new Amount(3.0, Unit.PIECE);
@@ -240,7 +240,7 @@ class UserLogInPageControllerTest {
     runOnFxThread(
         () -> {
           usernameTextField.setText("  existing-user  ");
-          Scene loginScene = stage.getScene();
+          final Scene loginScene = stage.getScene();
 
           try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
             loginButton.fire();

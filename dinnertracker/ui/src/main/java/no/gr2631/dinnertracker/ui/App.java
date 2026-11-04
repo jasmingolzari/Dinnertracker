@@ -2,6 +2,8 @@ package no.gr2631.dinnertracker.ui;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javafx.application.Application;
+import javafx.beans.property.ReadOnlyLongProperty;
+import javafx.beans.property.ReadOnlyLongWrapper;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -31,6 +33,8 @@ public class App extends Application {
    * usage.
    */
   private static RecipeBook recipeBook;
+
+  private static final ReadOnlyLongWrapper fridgeVersion = new ReadOnlyLongWrapper();
 
   /** Shared handler for loading and saving fridge data. */
   public static final FridgeFileHandler fridgeFileHandler = new FridgeFileHandler();
@@ -103,6 +107,17 @@ public class App extends Application {
       justification = "Controllers intentionally share the assigned mutable fridge.")
   public static void setFridge(Fridge fridge) {
     App.fridge = fridge;
+    fridgeVersion.set(fridgeVersion.get() + 1);
+  }
+
+  /** Notifies UI controllers that the contents of the current fridge have changed. */
+  public static void notifyFridgeChanged() {
+    fridgeVersion.set(fridgeVersion.get() + 1);
+  }
+
+  /** Returns a read-only property that changes whenever the current fridge changes. */
+  public static ReadOnlyLongProperty fridgeVersionProperty() {
+    return fridgeVersion.getReadOnlyProperty();
   }
 
   /**

@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+/** Integration tests for the recipe REST endpoints. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -24,6 +25,7 @@ class RecipeRestControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
+  /** Resets the test recipe file before each test. */
   @BeforeEach
   void setUp() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -32,6 +34,7 @@ class RecipeRestControllerTest {
     Files.writeString(testFile, "[]");
   }
 
+  /** Verifies that the health endpoint responds successfully. */
   @Test
   void testHealthEndpoint() throws Exception {
     mockMvc
@@ -40,27 +43,28 @@ class RecipeRestControllerTest {
         .andExpect(content().string("Dinnertracker REST API is running"));
   }
 
+  /** Verifies that recipes are filtered by user name. */
   @Test
   void testGetRecipesEndpoint() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
 
     String testData =
         """
-    [
-      {
-        "userName": "Testbruker",
-        "name": "Testpannekaker",
-        "ingredients": [],
-        "steps": []
-      },
-      {
-        "userName": "AnnenBruker",
-        "name": "Testpizza",
-        "ingredients": [],
-        "steps": []
-      }
-    ]
-    """;
+        [
+          {
+            "userName": "Testbruker",
+            "name": "Testpannekaker",
+            "ingredients": [],
+            "steps": []
+          },
+          {
+            "userName": "AnnenBruker",
+            "name": "Testpizza",
+            "ingredients": [],
+            "steps": []
+          }
+        ]
+        """;
 
     Files.writeString(testFile, testData);
 
@@ -73,16 +77,19 @@ class RecipeRestControllerTest {
         .andExpect(jsonPath("$.length()").value(1));
   }
 
+  /** Verifies that a missing user name is rejected. */
   @Test
   void testGetRecipesWithoutUserNameReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/recipes")).andExpect(status().isBadRequest());
   }
 
+  /** Verifies that an empty user name is rejected. */
   @Test
   void testGetRecipesWithEmptyUserNameReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/recipes").param("userName", "")).andExpect(status().isBadRequest());
   }
 
+  /** Verifies that a valid recipe can be created. */
   @Test
   void testCreateRecipeSuccessfully() throws Exception {
     String requestBody =
@@ -96,7 +103,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isCreated())
         .andExpect(content().string("Recipe created successfully"));
 
@@ -113,6 +121,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertTrue(savedData.contains("Lag middagen"));
   }
 
+  /** Verifies that a recipe without a name is rejected. */
   @Test
   void testCreateRecipeWithoutNameReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -129,7 +138,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -137,6 +147,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
 
+  /** Verifies that a recipe with a blank step is rejected. */
   @Test
   void testCreateRecipeWithBlankStepReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -154,7 +165,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -162,6 +174,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
 
+  /** Verifies that a recipe without a user name is rejected. */
   @Test
   void testCreateRecipeWithoutUserNameReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -178,7 +191,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -186,6 +200,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
 
+  /** Verifies that a recipe with an empty user name is rejected. */
   @Test
   void testCreateRecipeWithEmptyUserNameReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -203,7 +218,8 @@ class RecipeRestControllerTest {
         """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest());
 
     String savedData = Files.readString(testFile);
@@ -211,6 +227,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
 
+  /** Verifies that an ingredient without a quantity is rejected. */
   @Test
   void testCreateRecipeWithMissingIngredientQuantityReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -232,7 +249,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Ingredient name, quantity and unit are required"));
 
@@ -241,6 +259,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
 
+  /** Verifies that a non-numeric ingredient quantity is rejected. */
   @Test
   void testCreateRecipeWithInvalidIngredientQuantityTypeReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -263,7 +282,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("Invalid ingredient field types"));
 
@@ -272,6 +292,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
 
+  /** Verifies that a recipe with a valid ingredient can be created. */
   @Test
   void testCreateRecipeWithValidIngredientSuccessfully() throws Exception {
     String requestBody =
@@ -291,7 +312,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isCreated())
         .andExpect(content().string("Recipe created successfully"));
 
@@ -305,13 +327,14 @@ class RecipeRestControllerTest {
         .andExpect(jsonPath("$[0].steps[0]").value("Bland ingrediensene"));
   }
 
+  /** Verifies that a JSON array request is rejected. */
   @Test
   void testCreateRecipeWithJsonArrayReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
     String originalData = Files.readString(testFile);
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content("[]"))
+        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content("[]"))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("JSON object is required"));
 
@@ -320,6 +343,7 @@ class RecipeRestControllerTest {
     org.junit.jupiter.api.Assertions.assertEquals(originalData, savedData);
   }
 
+  /** Verifies that a non-text recipe name is rejected. */
   @Test
   void testCreateRecipeWithNumericNameReturnsBadRequest() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
@@ -336,7 +360,8 @@ class RecipeRestControllerTest {
             """;
 
     mockMvc
-        .perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        .perform(
+            post("/recipes").contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("userName and name must be strings"));
 

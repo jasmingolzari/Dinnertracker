@@ -1,15 +1,27 @@
 [ {
-  "userName" : "Rumyana",
-  "foodItems" : [ {
-    "name" : "Epler",
-    "quantity" : 4.0,
-    "unit" : "PIECE"
-  } ]
-}, {
   "userName" : "Eira",
   "foodItems" : [ {
     "name" : "Jordbær",
     "quantity" : 1.0,
     "unit" : "KILOGRAM"
+  } ]
+}, {
+  "userName" : "Rumyana",
+  "foodItems" : [ {
+    "name" : "Ost",
+    "quantity" : 100.0,
+    "unit" : "GRAM"
+  }, {
+    "name" : "Jordbær",
+    "quantity" : 1.0,
+    "unit" : "KILOGRAM"
+  }, {
+    "name" : "Egg",
+    "quantity" : 1.0,
+    "unit" : "PIECE"
+  }, {
+    "name" : "Epler",
+    "quantity" : 4.0,
+    "unit" : "PIECE"
   } ]
 } ]
