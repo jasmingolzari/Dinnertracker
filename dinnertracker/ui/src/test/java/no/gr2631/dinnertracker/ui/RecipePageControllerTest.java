@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -15,7 +16,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -38,16 +38,16 @@ import no.gr2631.dinnertracker.core.Recipe;
 import no.gr2631.dinnertracker.core.RecipeBook;
 import no.gr2631.dinnertracker.core.Unit;
 import no.gr2631.dinnertracker.core.User;
-import no.gr2631.dinnertracker.persistence.RecipeFileHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 /**
  * Simple tests for the methods in {@link RecipePageController}. The private fields and methods are
- * reached with reflection.
+ * reached with reflection, and the REST client is replaced by a mock.
  *
  * <p>The name validation tests do not need JavaFX. The tests that use controls are skipped if the
  * JavaFX toolkit cannot start.
@@ -57,7 +57,7 @@ public class RecipePageControllerTest {
   private static boolean toolkitStarted;
 
   private RecipePageController controller;
-  private RecipeFileHandler recipeFileHandler;
+  private DinnertrackerRestClient restClient;
   private TextField nameField;
   private TextField foodItemField;
   private Spinner<Double> amountSpinner;
@@ -88,10 +88,10 @@ public class RecipePageControllerTest {
   public void setUp() throws Exception {
     previousUser = App.getCurrentUser();
     previousRecipeBook = App.getRecipeBook();
-    recipeFileHandler = mock(RecipeFileHandler.class);
+    restClient = mock(DinnertrackerRestClient.class);
     App.setCurrentUser(new User("testuser"));
     App.setRecipeBook(new RecipeBook(App.getCurrentUser()));
-    controller = new RecipePageController(recipeFileHandler);
+    controller = new RecipePageController(restClient);
     if (!toolkitStarted) {
       return;
     }
@@ -371,7 +371,7 @@ public class RecipePageControllerTest {
                         "Ugyldig input", null, "Oppskriften må ha et navn."));
           }
           assertTrue(App.getRecipeBook().getRecipes().isEmpty());
-          verifyNoInteractions(recipeFileHandler);
+          verifyNoInteractions(restClient);
         });
   }
 
@@ -390,7 +390,7 @@ public class RecipePageControllerTest {
                         "Ugyldig input", null, "Legg til minst en ingrediens."));
           }
           assertTrue(App.getRecipeBook().getRecipes().isEmpty());
-          verifyNoInteractions(recipeFileHandler);
+          verifyNoInteractions(restClient);
         });
   }
 
@@ -410,11 +410,11 @@ public class RecipePageControllerTest {
                         "Ugyldig input", null, "Legg til minst ett steg."));
           }
           assertTrue(App.getRecipeBook().getRecipes().isEmpty());
-          verifyNoInteractions(recipeFileHandler);
+          verifyNoInteractions(restClient);
         });
   }
 
-  /** A complete recipe should be saved and the form should then be cleared. */
+  /** A complete recipe should be sent to the server, added locally and the form cleared. */
   @Test
   public void completeRecipeShouldBeSavedAndClearForm() throws Exception {
     requireToolkit();
@@ -428,25 +428,28 @@ public class RecipePageControllerTest {
             call("addRecipe", ActionEvent.class, null);
             alerts.verify(
                 () -> ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til"));
-            verify(recipeFileHandler)
-                .save(Path.of("..", "data", "recipes.json"), App.getRecipeBook());
-            assertEquals(1, App.getRecipeBook().getRecipes().size());
-            Recipe recipe = App.getRecipeBook().getRecipes().get(0);
-            assertEquals("Testoppskrift", recipe.getName());
-            assertSame(App.getCurrentUser(), recipe.getUserName());
-            assertEquals(
-                new Amount(1.0, Unit.GRAM), recipe.getIngredients().get(new FoodItem("Tomat")));
-            assertEquals(List.of("Kutt tomat"), recipe.getSteps());
-            alerts.verify(
-                () -> ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til"));
-            assertEquals("", nameField.getText());
-            assertTrue(ingredientsList.getItems().isEmpty());
-            assertTrue(stepsList.getItems().isEmpty());
           }
+
+          ArgumentCaptor<Recipe> sent = ArgumentCaptor.forClass(Recipe.class);
+          verify(restClient).createRecipe(sent.capture());
+          Recipe recipe = sent.getValue();
+          assertEquals("Testoppskrift", recipe.getName());
+          assertSame(App.getCurrentUser(), recipe.getUserName());
+          assertEquals(
+              new Amount(1.0, Unit.GRAM), recipe.getIngredients().get(new FoodItem("Tomat")));
+          assertEquals(List.of("Kutt tomat"), recipe.getSteps());
+
+          assertEquals(List.of(recipe), App.getRecipeBook().getRecipes());
+          assertEquals("", nameField.getText());
+          assertTrue(ingredientsList.getItems().isEmpty());
+          assertTrue(stepsList.getItems().isEmpty());
         });
   }
 
-  /** A failed save should report the error and keep the completed form available. */
+  /**
+   * A failed request should report the error, keep the completed form available, and not add the
+   * unsaved recipe to the local recipe book.
+   */
   @Test
   public void failedSaveShouldShowAlertAndKeepForm() throws Exception {
     requireToolkit();
@@ -455,9 +458,7 @@ public class RecipePageControllerTest {
           nameField.setText("Testoppskrift");
           addIngredient("Tomat");
           addStep("Kutt tomat");
-          doThrow(new IOException("test failure"))
-              .when(recipeFileHandler)
-              .save(Path.of("..", "data", "recipes.json"), App.getRecipeBook());
+          doThrow(new IOException("test failure")).when(restClient).createRecipe(any(Recipe.class));
 
           try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
             call("addRecipe", ActionEvent.class, null);
@@ -467,6 +468,7 @@ public class RecipePageControllerTest {
                         "Klarte ikke å lagre oppskriften", null, "Feilen er: test failure"));
             alerts.verifyNoMoreInteractions();
           }
+          assertTrue(App.getRecipeBook().getRecipes().isEmpty());
           assertEquals("Testoppskrift", nameField.getText());
           assertEquals(List.of("Tomat : 1.0 " + Unit.GRAM.getSymbol()), ingredientsList.getItems());
           assertEquals(List.of("Kutt tomat"), stepsList.getItems());

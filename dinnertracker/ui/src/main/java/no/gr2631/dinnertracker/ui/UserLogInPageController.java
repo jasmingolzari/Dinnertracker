@@ -1,7 +1,6 @@
 package no.gr2631.dinnertracker.ui;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,44 +8,40 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import no.gr2631.dinnertracker.core.Fridge;
+import no.gr2631.dinnertracker.core.RecipeBook;
 import no.gr2631.dinnertracker.core.User;
 
 /**
- * Controls the login page, selects or creates the current user, and loads the user's fridge and
- * recipes before opening the home page.
+ * Controls the login page, selects or creates the current user through the REST API, and loads the
+ * user's fridge and recipes before opening the home page.
  */
 public class UserLogInPageController {
 
   /** Text field containing the username entered on the login page. */
   @FXML private TextField usernameTextField;
 
-  private final Path usersPath;
-  private final Path fridgesPath;
-  private final Path recipesPath;
+  private final DinnertrackerRestClient restClient;
 
-  /** Creates the login controller using the application data files. */
+  /** Creates the login controller using the application's shared REST client. */
   public UserLogInPageController() {
-    this(
-        Path.of("..", "data", "users.json"),
-        Path.of("..", "data", "fridges.json"),
-        Path.of("..", "data", "recipes.json"));
+    this(App.restClient);
   }
 
   /**
-   * Creates a login controller with custom persistence paths.
+   * Creates a login controller that uses the given REST client.
    *
-   * @param usersPath path to the registered users file
-   * @param fridgesPath path to the fridge data file
-   * @param recipesPath path to the recipe data file
+   * @param restClient the client used to look up users and load their data
    */
-  UserLogInPageController(Path usersPath, Path fridgesPath, Path recipesPath) {
-    this.usersPath = usersPath;
-    this.fridgesPath = fridgesPath;
-    this.recipesPath = recipesPath;
+  UserLogInPageController(DinnertrackerRestClient restClient) {
+    this.restClient = restClient;
   }
 
   /**
    * Validates the username and logs in an existing user or registers a new user.
+   *
+   * <p>Everything is fetched from the server before the shared application state is changed, so a
+   * failed request leaves the previous user and data untouched.
    *
    * @param event the login button action
    */
@@ -61,20 +56,22 @@ public class UserLogInPageController {
     }
 
     username = username.trim();
-    User requestedUser = new User(username);
 
     try {
-      User existingUser = App.usersFileHandler.load(usersPath, requestedUser);
+      User existingUser = restClient.getUser(username);
       boolean isNewUser = existingUser == null;
-      User user = isNewUser ? requestedUser : existingUser;
+      User user = isNewUser ? new User(username) : existingUser;
 
-      loadData(user);
-      System.out.println("Fridge after login: " + App.getFridge());
-      App.setCurrentUser(user);
+      Fridge fridge = restClient.getFridge(user);
+      RecipeBook recipeBook = restClient.getRecipeBook(user);
 
       if (isNewUser) {
-        App.usersFileHandler.save(usersPath, user);
+        restClient.createUser(user);
       }
+
+      App.setCurrentUser(user);
+      App.setFridge(fridge);
+      App.setRecipeBook(recipeBook);
 
       continueToHomePage(event);
 
@@ -90,18 +87,6 @@ public class UserLogInPageController {
       ShowAlertMessage.showErrorAlert(
           "Feil", "Kunne ikke logge inn", "En feil oppstod: " + e.getMessage());
     }
-  }
-
-  /**
-   * Loads the given user's fridge and recipe book into the application's shared state.
-   *
-   * @param userName the user whose data should be loaded
-   * @throws IOException if the fridge or recipes cannot be loaded
-   */
-  private void loadData(User userName) throws IOException {
-    App.setFridge(App.fridgeFileHandler.load(fridgesPath, userName));
-
-    App.setRecipeBook(App.recipeFileHandler.load(recipesPath, userName));
   }
 
   /**

@@ -11,13 +11,10 @@ import javafx.stage.Stage;
 import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.RecipeBook;
 import no.gr2631.dinnertracker.core.User;
-import no.gr2631.dinnertracker.persistence.FridgeFileHandler;
-import no.gr2631.dinnertracker.persistence.RecipeFileHandler;
-import no.gr2631.dinnertracker.persistence.UsersFileHandler;
 
 /**
- * Entry point for the Dinnertracker JavaFX application. Holds the shared user, fridge, recipe book,
- * and persistence handlers used by the application's controllers.
+ * Entry point for the Dinnertracker JavaFX application. Holds the shared user, fridge and recipe
+ * book, and the REST client the controllers use to load and save data on the server.
  */
 public class App extends Application {
   /** Currently selected user, or {@code null} before a user is selected. only for package usage. */
@@ -36,13 +33,11 @@ public class App extends Application {
 
   private static final ReadOnlyLongWrapper fridgeVersion = new ReadOnlyLongWrapper();
 
-  /** Shared handler for loading and saving fridge data. */
-  public static final FridgeFileHandler fridgeFileHandler = new FridgeFileHandler();
-
-  /** Shared handler for loading and saving recipe data. */
-  public static final RecipeFileHandler recipeFileHandler = new RecipeFileHandler();
-
-  public static final UsersFileHandler usersFileHandler = new UsersFileHandler();
+  /**
+   * Shared client for the REST API. All loading and saving of users, fridges and recipes goes
+   * through the server; the UI no longer reads or writes the JSON files itself.
+   */
+  public static final DinnertrackerRestClient restClient = new DinnertrackerRestClient();
 
   /**
    * Loads the home page and displays the main application window.

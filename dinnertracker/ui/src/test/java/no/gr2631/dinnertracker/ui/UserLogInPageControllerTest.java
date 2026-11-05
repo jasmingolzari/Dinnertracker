@@ -1,19 +1,25 @@
 package no.gr2631.dinnertracker.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
@@ -36,20 +42,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
-/** Tests login validation, user persistence, data loading, and navigation through the FXML form. */
+/**
+ * Tests login validation, the calls made to the REST API, how the loaded data is stored in {@link
+ * App}, and navigation through the FXML form. The REST client is replaced by a Mockito mock, so no
+ * server needs to run.
+ */
 class UserLogInPageControllerTest {
 
-  @TempDir Path tempDir;
-
-  private Path usersPath;
-  private Path fridgesPath;
-  private Path recipesPath;
+  private DinnertrackerRestClient restClient;
   private Stage stage;
   private Parent loginRoot;
   private TextField usernameTextField;
@@ -73,13 +79,16 @@ class UserLogInPageControllerTest {
   }
 
   /**
-   * Loads the real login form with temporary persistence paths and an existing application user.
+   * Loads the real login form with a mocked REST client. By default the mock answers like a server
+   * where nobody is registered yet: no user, an empty fridge and no recipes.
    */
   @BeforeEach
   void setUp() throws Exception {
-    usersPath = tempDir.resolve("users.json");
-    fridgesPath = tempDir.resolve("fridges.json");
-    recipesPath = tempDir.resolve("recipes.json");
+    restClient = mock(DinnertrackerRestClient.class);
+    when(restClient.getFridge(any(User.class)))
+        .thenAnswer(invocation -> new Fridge(invocation.getArgument(0)));
+    when(restClient.getRecipeBook(any(User.class)))
+        .thenAnswer(invocation -> new RecipeBook(invocation.getArgument(0)));
 
     runOnFxThread(
         () -> {
@@ -96,7 +105,15 @@ class UserLogInPageControllerTest {
           App.setRecipeBook(initialRecipeBook);
 
           stage = new Stage();
-          loadLoginPage(usersPath);
+          FXMLLoader loader =
+              new FXMLLoader(UserLogInPageController.class.getResource("UserLogInPage.fxml"));
+          loader.setControllerFactory(type -> new UserLogInPageController(restClient));
+          loginRoot = loader.load();
+          stage.setScene(new Scene(loginRoot));
+          usernameTextField = (TextField) loginRoot.lookup("#usernameTextField");
+          loginButton = (Button) loginRoot.lookup(".button");
+          assertNotNull(usernameTextField);
+          assertNotNull(loginButton);
         });
   }
 
@@ -133,7 +150,7 @@ class UserLogInPageControllerTest {
         });
   }
 
-  /** Missing usernames leave the active user, loaded data, and login form unchanged. */
+  /** Missing usernames are rejected without contacting the server or changing any state. */
   @ParameterizedTest
   @NullAndEmptySource
   @ValueSource(strings = {"   ", "\t"})
@@ -153,17 +170,12 @@ class UserLogInPageControllerTest {
                         "Vennligst skriv inn et gyldig brukernavn."));
             alerts.verifyNoMoreInteractions();
           }
-          assertSame(loginRoot, stage.getScene().getRoot());
-          assertSame(initialUser, App.getCurrentUser());
-          assertSame(initialFridge, App.getFridge());
-          assertSame(initialRecipeBook, App.getRecipeBook());
-          assertFalse(Files.exists(usersPath));
-          assertFalse(Files.exists(fridgesPath));
-          assertFalse(Files.exists(recipesPath));
+          verifyNoInteractions(restClient);
+          assertLoginStateUnchanged();
         });
   }
 
-  /** New users are registered with a trimmed name and receive their own empty application data. */
+  /** New users are registered on the server with a trimmed name and get their own empty data. */
   @ParameterizedTest
   @ValueSource(strings = {"new-user", "  new-user  "})
   void loginShouldRegisterNewUserAndOpenHomePage(String username) throws Exception {
@@ -181,61 +193,39 @@ class UserLogInPageControllerTest {
                         "Bruker opprettet", null, "Ny bruker opprettet. Velkommen, new-user!"));
             alerts.verifyNoMoreInteractions();
           }
+          verify(restClient).getUser("new-user");
+          ArgumentCaptor<User> created = ArgumentCaptor.forClass(User.class);
+          verify(restClient).createUser(created.capture());
+          assertEquals("new-user", created.getValue().getUserName());
+
           User user = App.getCurrentUser();
-          assertEquals("new-user", user.getUserName());
-          assertEquals("new-user", App.usersFileHandler.load(usersPath, user).getUserName());
-          assertNull(App.usersFileHandler.load(usersPath, new User("  new-user  ")));
+          assertSame(created.getValue(), user);
           assertSame(user, App.getFridge().getUserName());
           assertSame(user, App.getRecipeBook().getUserName());
           assertTrue(App.getFridge().getFoodItems().isEmpty());
           assertTrue(App.getRecipeBook().getRecipes().isEmpty());
-          assertFalse(Files.exists(fridgesPath));
-          assertFalse(Files.exists(recipesPath));
           assertSame(loginScene, stage.getScene());
           assertHomePageIsOpen();
         });
   }
 
-  /** Registering another user preserves users that were already registered. */
-  @Test
-  void loginShouldPreserveOtherRegisteredUsers() throws Exception {
-    App.usersFileHandler.save(usersPath, new User("existing-user"));
-
-    runOnFxThread(
-        () -> {
-          usernameTextField.setText("new-user");
-          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-            loginButton.fire();
-            alerts.verify(
-                () ->
-                    ShowAlertMessage.showInfoAlert(
-                        "Bruker opprettet", null, "Ny bruker opprettet. Velkommen, new-user!"));
-            alerts.verifyNoMoreInteractions();
-          }
-
-          assertNotNull(App.usersFileHandler.load(usersPath, new User("existing-user")));
-          assertNotNull(App.usersFileHandler.load(usersPath, new User("new-user")));
-          assertHomePageIsOpen();
-        });
-  }
-
-  /** Returning users load their saved fridge and recipes without rewriting the user registry. */
+  /** Returning users get their fridge and recipes from the server and are not registered again. */
   @Test
   void loginShouldLoadExistingUserDataWithoutRegisteringAgain() throws Exception {
     User user = new User("existing-user");
-    App.usersFileHandler.save(usersPath, user);
-    final String registeredUsers = Files.readString(usersPath);
-    Fridge fridge = new Fridge(user);
     FoodItem ingredient = new FoodItem("Tomato");
     Amount amount = new Amount(3.0, Unit.PIECE);
+    Fridge fridge = new Fridge(user);
     fridge.addFoodItem(ingredient, amount);
-    App.fridgeFileHandler.save(fridgesPath, fridge);
     Recipe recipe = new Recipe("Tomato soup", user);
     recipe.addIngredient(ingredient, amount);
     recipe.addStep("Cook the tomatoes.");
     RecipeBook recipeBook = new RecipeBook(user);
     recipeBook.addRecipe(recipe);
-    App.recipeFileHandler.save(recipesPath, recipeBook);
+
+    when(restClient.getUser("existing-user")).thenReturn(user);
+    when(restClient.getFridge(user)).thenReturn(fridge);
+    when(restClient.getRecipeBook(user)).thenReturn(recipeBook);
 
     runOnFxThread(
         () -> {
@@ -251,28 +241,32 @@ class UserLogInPageControllerTest {
                         "Login Suksessfull", null, "Velkommen tilbake, existing-user!"));
             alerts.verifyNoMoreInteractions();
           }
-          User loggedInUser = App.getCurrentUser();
-          assertEquals("existing-user", loggedInUser.getUserName());
-          assertSame(loggedInUser, App.getFridge().getUserName());
-          assertSame(loggedInUser, App.getRecipeBook().getUserName());
+          verify(restClient, never()).createUser(any(User.class));
+          assertSame(user, App.getCurrentUser());
+          assertSame(fridge, App.getFridge());
+          assertSame(recipeBook, App.getRecipeBook());
           assertEquals(Map.of(ingredient, amount), App.getFridge().getFoodItems());
-          assertEquals(1, App.getRecipeBook().getRecipes().size());
           Recipe loadedRecipe = App.getRecipeBook().getRecipeByName("Tomato soup");
-          assertEquals("existing-user", loadedRecipe.getUserName().getUserName());
-          assertEquals(Map.of(ingredient, amount), loadedRecipe.getIngredients());
           assertEquals(List.of("Cook the tomatoes."), loadedRecipe.getSteps());
-          assertEquals(registeredUsers, Files.readString(usersPath));
           assertSame(loginScene, stage.getScene());
           assertHomePageIsOpen();
         });
   }
 
-  /** An unreadable data file shows an error before registering a user or opening the home page. */
+  /**
+   * If any request fails (for example because the server is not running), an error is shown, the
+   * login page stays open and the previous user and data are kept.
+   */
   @ParameterizedTest
-  @ValueSource(strings = {"users", "fridges", "recipes"})
-  void loginShouldHandleDataLoadFailure(String fileName) throws Exception {
-    Path invalidFile = tempDir.resolve(fileName + ".json");
-    Files.writeString(invalidFile, "[");
+  @ValueSource(strings = {"getUser", "getFridge", "getRecipeBook", "createUser"})
+  void loginShouldHandleServerFailure(String failingCall) throws Exception {
+    IOException failure = new IOException("Får ikke kontakt med serveren");
+    switch (failingCall) {
+      case "getUser" -> when(restClient.getUser(anyString())).thenThrow(failure);
+      case "getFridge" -> when(restClient.getFridge(any(User.class))).thenThrow(failure);
+      case "getRecipeBook" -> when(restClient.getRecipeBook(any(User.class))).thenThrow(failure);
+      default -> doThrow(failure).when(restClient).createUser(any(User.class));
+    }
 
     runOnFxThread(
         () -> {
@@ -281,48 +275,21 @@ class UserLogInPageControllerTest {
           try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
             loginButton.fire();
 
-            verifyLoginError(alerts);
+            alerts.verify(
+                () ->
+                    ShowAlertMessage.showErrorAlert(
+                        eq("Feil"), eq("Kunne ikke logge inn"), startsWith("En feil oppstod: ")));
+            alerts.verifyNoMoreInteractions();
           }
-          assertSame(loginRoot, stage.getScene().getRoot());
-          assertSame(initialUser, App.getCurrentUser());
-          assertEquals("[", Files.readString(invalidFile));
-          if (!invalidFile.equals(usersPath)) {
-            assertFalse(Files.exists(usersPath));
-          }
+          assertLoginStateUnchanged();
         });
   }
 
-  /** A registration write failure leaves the login page open and reports the failure. */
-  @Test
-  void loginShouldHandleUserSaveFailure() throws Exception {
-    Path missingParentUsersPath = tempDir.resolve("missing").resolve("users.json");
-
-    runOnFxThread(
-        () -> {
-          loadLoginPage(missingParentUsersPath);
-          usernameTextField.setText("new-user");
-
-          try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
-            loginButton.fire();
-
-            verifyLoginError(alerts);
-          }
-          assertSame(loginRoot, stage.getScene().getRoot());
-          assertFalse(Files.exists(missingParentUsersPath));
-        });
-  }
-
-  private void loadLoginPage(Path userFile) throws Exception {
-    FXMLLoader loader =
-        new FXMLLoader(UserLogInPageController.class.getResource("UserLogInPage.fxml"));
-    loader.setControllerFactory(
-        type -> new UserLogInPageController(userFile, fridgesPath, recipesPath));
-    loginRoot = loader.load();
-    stage.setScene(new Scene(loginRoot));
-    usernameTextField = (TextField) loginRoot.lookup("#usernameTextField");
-    loginButton = (Button) loginRoot.lookup(".button");
-    assertNotNull(usernameTextField);
-    assertNotNull(loginButton);
+  private void assertLoginStateUnchanged() {
+    assertSame(loginRoot, stage.getScene().getRoot());
+    assertSame(initialUser, App.getCurrentUser());
+    assertSame(initialFridge, App.getFridge());
+    assertSame(initialRecipeBook, App.getRecipeBook());
   }
 
   private void assertHomePageIsOpen() {
@@ -331,14 +298,6 @@ class UserLogInPageControllerTest {
     assertNotNull(root.lookup("#fridgeButton"));
     assertNotNull(root.lookup("#recipeButton"));
     assertNull(root.lookup("#usernameTextField"));
-  }
-
-  private static void verifyLoginError(MockedStatic<ShowAlertMessage> alerts) {
-    alerts.verify(
-        () ->
-            ShowAlertMessage.showErrorAlert(
-                eq("Feil"), eq("Kunne ikke logge inn"), startsWith("En feil oppstod: ")));
-    alerts.verifyNoMoreInteractions();
   }
 
   private static void runOnFxThread(ThrowingRunnable action) throws Exception {
