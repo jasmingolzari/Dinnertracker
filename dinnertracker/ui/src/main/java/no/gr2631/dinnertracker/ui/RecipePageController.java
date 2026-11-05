@@ -1,7 +1,6 @@
 package no.gr2631.dinnertracker.ui;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,15 +23,14 @@ import no.gr2631.dinnertracker.core.Amount;
 import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Recipe;
 import no.gr2631.dinnertracker.core.Unit;
-import no.gr2631.dinnertracker.persistence.RecipeFileHandler;
 
 /**
  * Controller for the recipe creation page. Handles user input for recipe names, ingredients,
- * quantities, units and preparation steps.
+ * quantities, units and preparation steps, and saves new recipes through the REST API.
  */
 public class RecipePageController {
 
-  private final RecipeFileHandler recipeFileHandler;
+  private final DinnertrackerRestClient restClient;
 
   @FXML private TextField nameField;
 
@@ -54,18 +52,18 @@ public class RecipePageController {
    */
   private final Map<FoodItem, Amount> ingredients = new LinkedHashMap<>();
 
-  /** Creates the FXML controller with the application's shared recipe file handler. */
+  /** Creates the FXML controller with the application's shared REST client. */
   public RecipePageController() {
-    this(App.recipeFileHandler);
+    this(App.restClient);
   }
 
   /**
-   * Creates a controller with the supplied recipe file handler.
+   * Creates a controller with the supplied REST client.
    *
-   * @param recipeFileHandler the handler used to save recipes
+   * @param restClient the client used to save recipes on the server
    */
-  RecipePageController(RecipeFileHandler recipeFileHandler) {
-    this.recipeFileHandler = recipeFileHandler;
+  RecipePageController(DinnertrackerRestClient restClient) {
+    this.restClient = restClient;
   }
 
   /**
@@ -219,8 +217,9 @@ public class RecipePageController {
   }
 
   /**
-   * Creates and saves the recipe. Validates the recipe name, ingredients and preparation steps
-   * before writing the recipe to the JSON file.
+   * Creates and saves the recipe. Validates the recipe name, ingredients and preparation steps,
+   * sends the recipe to the server, and only adds it to the local recipe book once the server has
+   * stored it.
    *
    * @param event the action event triggered by the add recipe button
    */
@@ -249,8 +248,8 @@ public class RecipePageController {
         new Recipe(recipeName, App.getCurrentUser(), new LinkedHashMap<>(ingredients), steps);
 
     try {
+      restClient.createRecipe(newRecipe);
       App.getRecipeBook().addRecipe(newRecipe);
-      save();
 
       ShowAlertMessage.showInfoAlert("Suksess", null, "Oppskrift lagt til");
       clearForm();
@@ -290,14 +289,5 @@ public class RecipePageController {
 
     stage.setScene(new Scene(root));
     stage.show();
-  }
-
-  /**
-   * Saves the current recipe book to the JSON file. The file path is relative to the project root.
-   *
-   * @throws IOException if an error occurs while writing to the file
-   */
-  private void save() throws IOException {
-    recipeFileHandler.save(Path.of("..", "data", "recipes.json"), App.getRecipeBook());
   }
 }

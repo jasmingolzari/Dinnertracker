@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,17 +35,14 @@ import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Fridge;
 import no.gr2631.dinnertracker.core.Unit;
 import no.gr2631.dinnertracker.core.User;
-import no.gr2631.dinnertracker.persistence.FridgeFileHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-/** Tests the fridge form, table contents, persistence calls, and navigation. */
+/** Tests the fridge form, table contents, calls to the REST client, and navigation. */
 public class FridgePageControllerTest {
-
-  private static final Path FRIDGE_PATH = Path.of("..", "data", "fridges.json");
 
   private static boolean toolkitStarted;
 
@@ -58,7 +54,7 @@ public class FridgePageControllerTest {
   private TableColumn<Object, String> foodNameColumn;
   private TableColumn<Object, String> amountColumn;
 
-  private FridgeFileHandler mockFileHandler;
+  private DinnertrackerRestClient restClient;
   private User testUser;
   private Fridge testFridge;
 
@@ -81,7 +77,7 @@ public class FridgePageControllerTest {
     }
   }
 
-  /** Creates a populated fridge, injects a mock file handler, and initializes the controller. */
+  /** Creates a populated fridge, injects a mock REST client, and initializes the controller. */
   @BeforeEach
   public void setUp() throws Exception {
     assumeTrue(toolkitStarted, "JavaFX toolkit is not available");
@@ -94,14 +90,14 @@ public class FridgePageControllerTest {
     testFridge.addFoodItem(new FoodItem("Jordbær"), new Amount(3.0, Unit.KILOGRAM));
     testFridge.addFoodItem(new FoodItem("Eple"), new Amount(5.0, Unit.PIECE));
 
-    mockFileHandler = mock(FridgeFileHandler.class);
+    restClient = mock(DinnertrackerRestClient.class);
 
     App.setCurrentUser(testUser);
     App.setFridge(testFridge);
 
     runOnFxThread(
         () -> {
-          controller = new FridgePageController(mockFileHandler);
+          controller = new FridgePageController(restClient);
           foodItemField = new TextField();
           quantitySpinner = new Spinner<>();
           unitComboBox = new ComboBox<>();
@@ -277,7 +273,7 @@ public class FridgePageControllerTest {
         });
   }
 
-  /** A valid addition saves the current fridge, refreshes its rows, and resets the inputs. */
+  /** A valid addition sends the fridge to the server, refreshes its rows, and resets the inputs. */
   @Test
   public void addFoodItemShouldAddValidFoodItem() throws Exception {
     runOnFxThread(
@@ -289,7 +285,7 @@ public class FridgePageControllerTest {
           assertEquals(
               new Amount(2.0, Unit.KILOGRAM),
               testFridge.getFoodItems().get(new FoodItem("Testmat")));
-          verify(mockFileHandler).save(FRIDGE_PATH, testFridge);
+          verify(restClient).updateFridge(testFridge);
           assertEquals(3, fridgeTable.getItems().size());
           assertNotNull(rowNamed("Testmat"));
           assertEquals("Testmat", highlightedFoodName());
@@ -312,11 +308,11 @@ public class FridgePageControllerTest {
               new Amount(7.0, Unit.PIECE), testFridge.getFoodItems().get(new FoodItem("Eple")));
           assertEquals(2, fridgeTable.getItems().size());
           assertEquals("7,0 stk", amountColumn.getCellObservableValue(rowNamed("Eple")).getValue());
-          verify(mockFileHandler).save(FRIDGE_PATH, testFridge);
+          verify(restClient).updateFridge(testFridge);
         });
   }
 
-  /** An empty food name is rejected before saving. */
+  /** An empty food name is rejected before anything is sent to the server. */
   @Test
   public void addFoodItemShouldRejectBlankName() throws Exception {
     runOnFxThread(
@@ -331,11 +327,11 @@ public class FridgePageControllerTest {
                         "Ugyldig vare", null, "Du må oppgi et navn for matvaren."));
           }
           assertEquals(2, testFridge.getFoodItems().size());
-          verifyNoInteractions(mockFileHandler);
+          verifyNoInteractions(restClient);
         });
   }
 
-  /** A zero amount is rejected before saving. */
+  /** A zero amount is rejected before anything is sent to the server. */
   @Test
   public void addFoodItemShouldRejectZeroQuantity() throws Exception {
     runOnFxThread(
@@ -349,11 +345,11 @@ public class FridgePageControllerTest {
                         "Ugyldig vare", null, "Mengden må være endelig og større enn null."));
           }
           assertEquals(2, testFridge.getFoodItems().size());
-          verifyNoInteractions(mockFileHandler);
+          verifyNoInteractions(restClient);
         });
   }
 
-  /** A missing unit is rejected before saving. */
+  /** A missing unit is rejected before anything is sent to the server. */
   @Test
   public void addFoodItemShouldRejectMissingUnit() throws Exception {
     runOnFxThread(
@@ -369,11 +365,11 @@ public class FridgePageControllerTest {
                         "Ugyldig vare", null, "Enhet kan ikke være null."));
           }
           assertEquals(2, testFridge.getFoodItems().size());
-          verifyNoInteractions(mockFileHandler);
+          verifyNoInteractions(restClient);
         });
   }
 
-  /** A failed save reports the error and leaves the form available. */
+  /** A failed request reports the error and leaves the form available. */
   @Test
   public void failedSaveShouldShowAlertAndKeepInputs() throws Exception {
     runOnFxThread(
@@ -381,9 +377,7 @@ public class FridgePageControllerTest {
           foodItemField.setText("Testmat");
           quantitySpinner.getValueFactory().setValue(2.0);
           unitComboBox.setValue(Unit.KILOGRAM);
-          doThrow(new IOException("test failure"))
-              .when(mockFileHandler)
-              .save(FRIDGE_PATH, testFridge);
+          doThrow(new IOException("test failure")).when(restClient).updateFridge(testFridge);
           try (MockedStatic<ShowAlertMessage> alerts = mockStatic(ShowAlertMessage.class)) {
             invoke("addFoodItem", ActionEvent.class, null);
             alerts.verify(

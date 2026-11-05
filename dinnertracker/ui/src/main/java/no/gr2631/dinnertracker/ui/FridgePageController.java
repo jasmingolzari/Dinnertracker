@@ -1,7 +1,6 @@
 package no.gr2631.dinnertracker.ui;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Locale;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.SimpleStringProperty;
@@ -27,17 +26,16 @@ import javafx.util.StringConverter;
 import no.gr2631.dinnertracker.core.Amount;
 import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Unit;
-import no.gr2631.dinnertracker.persistence.FridgeFileHandler;
 
 /**
  * Controller for the fridge page.
  *
- * <p>Handles initialization of the fridge form, loading the current fridge contents from the JSON
- * storage file, adding food items, and navigating back to the home page. The table view is backed
- * by a list of row objects generated from the persisted fridge data.
+ * <p>Handles initialization of the fridge form, showing the current fridge contents, adding food
+ * items, and navigating back to the home page. Changes are saved on the server through the REST
+ * API. The table view is backed by a list of row objects generated from the current fridge.
  */
 public class FridgePageController {
-  private final FridgeFileHandler fridgeFileHandler;
+  private final DinnertrackerRestClient restClient;
 
   @FXML private TextField foodItemField;
 
@@ -54,26 +52,26 @@ public class FridgePageController {
   /** Name of the row that should receive temporary visual feedback after an update. */
   private String highlightedFoodName;
 
-  /** Creates the FXML controller using the application's shared persistence handler. */
+  /** Creates the FXML controller using the application's shared REST client. */
   public FridgePageController() {
-    this(App.fridgeFileHandler);
+    this(App.restClient);
   }
 
   /**
-   * Creates a controller using the supplied persistence handler.
+   * Creates a controller using the supplied REST client.
    *
-   * @param fridgeFileHandler the handler used to save fridge data
+   * @param restClient the client used to save fridge data on the server
    */
-  FridgePageController(FridgeFileHandler fridgeFileHandler) {
-    this.fridgeFileHandler = fridgeFileHandler;
+  FridgePageController(DinnertrackerRestClient restClient) {
+    this.restClient = restClient;
   }
 
   /**
    * Initializes the quantity spinner, unit selector, and table bindings when the fridge page is
    * loaded.
    *
-   * <p>The table columns are bound to a lightweight row model and the current JSON-backed fridge
-   * data is loaded into the view immediately.
+   * <p>The table columns are bound to a lightweight row model and the current fridge is shown in
+   * the view immediately.
    */
   @FXML
   public void initialize() {
@@ -240,13 +238,12 @@ public class FridgePageController {
   }
 
   /**
-   * Saves the current fridge contents to the JSON file. The file path is relative to the project
-   * root.
+   * Saves the current fridge contents on the server ({@code PUT /fridges}).
    *
-   * @throws IOException if an error occurs while writing to the file
+   * @throws IOException if the server cannot be reached or rejects the fridge
    */
   public void save() throws IOException {
-    fridgeFileHandler.save(Path.of("..", "data", "fridges.json"), App.getFridge());
+    restClient.updateFridge(App.getFridge());
   }
 
   /**

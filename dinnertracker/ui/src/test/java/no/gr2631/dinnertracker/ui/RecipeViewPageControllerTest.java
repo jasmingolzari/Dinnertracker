@@ -1,10 +1,12 @@
 package no.gr2631.dinnertracker.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +15,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
@@ -264,6 +267,35 @@ public class RecipeViewPageControllerTest {
           App.notifyFridgeChanged();
 
           assertEquals(List.of("Missing recipe", "Available recipe"), listView.getItems());
+        });
+  }
+
+  /**
+   * Shared recipes from other users show who added them, and two recipes with the same name are
+   * still shown as separate rows.
+   */
+  @Test
+  public void sharedRecipesShouldShowOwnerAndKeepEqualNamesApart() throws Exception {
+    runOnFxThread(
+        () -> {
+          App.getRecipeBook().addRecipe(new Recipe("Pasta", App.getCurrentUser()));
+          App.getRecipeBook().addRecipe(new Recipe("Pasta", new User("kari")));
+          RecipeViewPageController controller = new RecipeViewPageController();
+          ListView<String> listView = new ListView<>();
+          setField(controller, "recipesListView", listView);
+
+          initialize(controller);
+
+          assertEquals(List.of("Pasta", "Pasta"), listView.getItems());
+          List<String> shownTexts = new ArrayList<>();
+          for (int index = 0; index < listView.getItems().size(); index++) {
+            ListCell<String> cell = listView.getCellFactory().call(listView);
+            cell.updateListView(listView);
+            cell.updateIndex(index);
+            shownTexts.add(cell.getText());
+          }
+          assertTrue(shownTexts.contains("Pasta (0/0 ingredients)"));
+          assertTrue(shownTexts.contains("Pasta (0/0 ingredients) – lagt til av kari"));
         });
   }
 

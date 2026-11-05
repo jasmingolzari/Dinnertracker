@@ -17,6 +17,7 @@ import javafx.stage.Stage;
 import no.gr2631.dinnertracker.core.Amount;
 import no.gr2631.dinnertracker.core.FoodItem;
 import no.gr2631.dinnertracker.core.Recipe;
+import no.gr2631.dinnertracker.core.User;
 
 /** Controller for loading and displaying a list of saved recipes. */
 public class RecipeViewPageController {
@@ -50,11 +51,9 @@ public class RecipeViewPageController {
               }
 
               setStyle("-fx-cursor: hand;");
-              Recipe recipe =
-                  recipes.stream()
-                      .filter(candidate -> candidate.getName().equals(recipeName))
-                      .findFirst()
-                      .orElse(null);
+              // Look the recipe up by position, not by name: shared recipes from different users
+              // can have the same name.
+              Recipe recipe = recipeAt(getIndex());
               if (recipe == null) {
                 setText(recipeName);
                 setTextFill(Color.web("#2F6B3B"));
@@ -64,7 +63,14 @@ public class RecipeViewPageController {
               int ingredientsLeft = numberOfIngredientsLeft(recipe);
               int needed = recipe.getIngredients().size();
               int available = needed - ingredientsLeft;
-              setText(recipeName + " (" + available + "/" + needed + " ingredients)");
+              setText(
+                  recipeName
+                      + " ("
+                      + available
+                      + "/"
+                      + needed
+                      + " ingredients)"
+                      + addedByText(recipe));
               setTextFill(available == needed ? Color.web("#2F6B3B") : Color.web("#6B8F71"));
             }
           };
@@ -94,21 +100,39 @@ public class RecipeViewPageController {
   }
 
   /**
-   * Checks whether all ingredients required by a recipe are available in the fridge.
+   * Returns the recipe shown at the given position in the list.
    *
-   * @param recipe the recipe to check
-   * @return {@code true} when the recipe can be made with the current fridge contents
+   * @param index the list position
+   * @return the recipe at that position, or {@code null} if there is none
    */
+  private Recipe recipeAt(int index) {
+    if (recipes == null || index < 0 || index >= recipes.size()) {
+      return null;
+    }
+    return recipes.get(index);
+  }
+
+  /**
+   * Describes who added a recipe, so shared recipes from other users can be told apart.
+   *
+   * @param recipe the recipe to describe
+   * @return {@code " – lagt til av <navn>"} for other users' recipes, otherwise an empty string
+   */
+  private static String addedByText(Recipe recipe) {
+    User owner = recipe.getUserName();
+    User currentUser = App.getCurrentUser();
+    if (owner == null
+        || owner.getUserName() == null
+        || (currentUser != null && owner.getUserName().equals(currentUser.getUserName()))) {
+      return "";
+    }
+    return " – lagt til av " + owner.getUserName();
+  }
+
   private boolean canMakeRecipe(Recipe recipe) {
     return numberOfIngredientsLeft(recipe) == 0;
   }
 
-  /**
-   * Counts the recipe ingredients that are missing or unavailable in the required amount or unit.
-   *
-   * @param recipe the recipe to check
-   * @return the number of ingredients still needed
-   */
   private int numberOfIngredientsLeft(Recipe recipe) {
     int ingredientsLeft = 0;
 
@@ -159,19 +183,8 @@ public class RecipeViewPageController {
   /** Opens the details page for the recipe selected in the list view. */
   @FXML
   private void openRecipeDetails() {
-    String clickedName = recipesListView.getSelectionModel().getSelectedItem();
-    if (clickedName == null) {
-      return;
-    }
-
-    Recipe clickedRecipe = null;
-    for (Recipe recipe : recipes) {
-      if (recipe.getName().equals(clickedName)) {
-        clickedRecipe = recipe;
-        break;
-      }
-    }
-
+    // Use the selected position, not the name: two shared recipes can have the same name.
+    Recipe clickedRecipe = recipeAt(recipesListView.getSelectionModel().getSelectedIndex());
     if (clickedRecipe == null) {
       return;
     }

@@ -2,7 +2,6 @@ package no.gr2631.dinnertracker.ui;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import javafx.event.ActionEvent;
@@ -31,6 +30,22 @@ public class RecipeDetailsViewPageController {
   @FXML private VBox stepsListBox;
 
   private Recipe recipe;
+
+  private final DinnertrackerRestClient restClient;
+
+  /** Creates the FXML controller using the application's shared REST client. */
+  public RecipeDetailsViewPageController() {
+    this(App.restClient);
+  }
+
+  /**
+   * Creates a controller using the supplied REST client.
+   *
+   * @param restClient the client used to save the fridge after a recipe is used
+   */
+  RecipeDetailsViewPageController(DinnertrackerRestClient restClient) {
+    this.restClient = restClient;
+  }
 
   /**
    * Sets the selected recipe and populates the name, ingredients, and preparation steps.
@@ -143,7 +158,7 @@ public class RecipeDetailsViewPageController {
 
   /**
    * Uses the selected recipe, removes its ingredients from the current fridge, and saves the
-   * updated fridge.
+   * updated fridge on the server.
    */
   @FXML
   public void handleUseRecipe() {
@@ -151,7 +166,6 @@ public class RecipeDetailsViewPageController {
       return;
     }
 
-    Path path = Path.of("..", "data", "fridges.json");
     Fridge fridge = App.getFridge();
     if (fridge == null) {
       ShowAlertMessage.showErrorAlert("Feil.", "Ingen kjøleskap funnet.", "");
@@ -161,7 +175,8 @@ public class RecipeDetailsViewPageController {
     try {
       App.getRecipeBook().useRecipe(recipe, fridge);
 
-      App.fridgeFileHandler.save(path, fridge);
+      restClient.updateFridge(fridge);
+      App.notifyFridgeChanged();
       checkAllIngredients();
 
       ShowAlertMessage.showInfoAlert("Oppskrift brukt", "Ingredienser fjernet fra kjøleskap.", "");
