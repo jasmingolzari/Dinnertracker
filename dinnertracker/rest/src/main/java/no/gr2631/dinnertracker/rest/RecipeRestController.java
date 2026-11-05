@@ -53,39 +53,70 @@ public class RecipeRestController {
     if (userName == null || userName.isBlank()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userName is required");
     }
-    Path filePath = Path.of(recipesPath);
-    System.out.println("Spring Boot working directory: " + System.getProperty("user.dir"));
-    RecipeBook recipeBook;
-
-    try {
-      recipeBook = recipeFileHandler.load(filePath, new User(userName));
-      List<Recipe> recipes = recipeBook.getRecipes();
-      ArrayNode recipesJson = objectMapper.createArrayNode();
-      for (Recipe recipe : recipes) {
-        if (!recipe.getUserName().getUserName().equals(userName)) {
-          continue;
-        }
-        ObjectNode recipeJson = objectMapper.createObjectNode();
-        recipeJson.put("userName", recipe.getUserName().getUserName());
-        recipeJson.put("name", recipe.getName());
-        ArrayNode ingredientsJson = recipeJson.putArray("ingredients");
-        for (Map.Entry<FoodItem, Amount> entry : recipe.getIngredients().entrySet()) {
-          ObjectNode ingredientJson = ingredientsJson.addObject();
-          ingredientJson.put("name", entry.getKey().getName());
-          ingredientJson.put("quantity", entry.getValue().quantity());
-          ingredientJson.put("unit", entry.getValue().unit().name());
-        }
-        ArrayNode stepsJson = recipeJson.putArray("steps");
-        for (String step : recipe.getSteps()) {
-          stepsJson.add(step);
-        }
-        recipesJson.add(recipeJson);
+    ArrayNode recipesJson = objectMapper.createArrayNode();
+    for (Recipe recipe : loadAllRecipes()) {
+      if (recipe.getUserName().getUserName().equals(userName)) {
+        recipesJson.add(recipeToJson(recipe));
       }
-      return recipesJson.toString();
+    }
+    return recipesJson.toString();
+  }
+
+  /**
+   * Returns every recipe, regardless of who created it. Recipes are shared between all users, so
+   * this is what the JavaFX client shows in the recipe list. Each recipe keeps its {@code userName}
+   * so the client can show who added it.
+   *
+   * @return all recipes as JSON
+   */
+  @GetMapping(value = "/recipes/all", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getAllRecipes() {
+    ArrayNode recipesJson = objectMapper.createArrayNode();
+    for (Recipe recipe : loadAllRecipes()) {
+      recipesJson.add(recipeToJson(recipe));
+    }
+    return recipesJson.toString();
+  }
+
+  /**
+   * Loads every recipe stored in the recipe file.
+   *
+   * @return all stored recipes
+   * @throws ResponseStatusException with status 500 if the file cannot be read
+   */
+  private List<Recipe> loadAllRecipes() {
+    try {
+      // The file handler loads every recipe in the file; the user only names the returned book.
+      RecipeBook recipeBook = recipeFileHandler.load(Path.of(recipesPath), new User(""));
+      return recipeBook.getRecipes();
     } catch (IOException e) {
       throw new ResponseStatusException(
           HttpStatus.INTERNAL_SERVER_ERROR, "Could not load recipes", e);
     }
+  }
+
+  /**
+   * Converts a recipe to the JSON format used by the recipe endpoints.
+   *
+   * @param recipe the recipe to convert
+   * @return the recipe as a JSON object
+   */
+  private ObjectNode recipeToJson(Recipe recipe) {
+    ObjectNode recipeJson = objectMapper.createObjectNode();
+    recipeJson.put("userName", recipe.getUserName().getUserName());
+    recipeJson.put("name", recipe.getName());
+    ArrayNode ingredientsJson = recipeJson.putArray("ingredients");
+    for (Map.Entry<FoodItem, Amount> entry : recipe.getIngredients().entrySet()) {
+      ObjectNode ingredientJson = ingredientsJson.addObject();
+      ingredientJson.put("name", entry.getKey().getName());
+      ingredientJson.put("quantity", entry.getValue().quantity());
+      ingredientJson.put("unit", entry.getValue().unit().name());
+    }
+    ArrayNode stepsJson = recipeJson.putArray("steps");
+    for (String step : recipe.getSteps()) {
+      stepsJson.add(step);
+    }
+    return recipeJson;
   }
 
   /**
