@@ -46,7 +46,7 @@ Before starting the REST API, ensure that the following software is installed:
 3. Build the REST module and its dependencies:
 
    ```bash
-   mvn -pl rest -am package -DskipTests
+   mvn -pl rest -am install -DskipTests
    ```
 
 4. Navigate to the REST module:
@@ -94,6 +94,19 @@ To stop the Spring Boot application, return to the terminal where the server is 
 
 ## 3. API Endpoints
 
+The following table provides an overview of the available REST API endpoints.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/health` | Check whether the REST API is running. |
+| GET | `/recipes` | Retrieve recipes belonging to a specified user. |
+| GET | `/recipes/all` | Retrieve recipes from all users. |
+| POST | `/recipes` | Create a new recipe. |
+| GET | `/fridges` | Retrieve fridge contents for a specified user. |
+| PUT | `/fridges` | Update fridge contents for a specified user. |
+| GET | `/users` | Retrieve user information. |
+| POST | `/users` | Create a new user. |
+
 ### 3.1 Health Check
 
 **Endpoint:** `GET /health`
@@ -106,15 +119,18 @@ The health check endpoint verifies that the Dinnertracker REST API is running an
 
 ```bash
 curl -i http://localhost:7070/health
-```
 
+```
 **Expected HTTP status:**
 
 `200 OK`
+
 **Response body:**
 
 ```text
 Dinnertracker REST API is running
+
+```
 
 **Notes:**
 
@@ -186,8 +202,77 @@ If the user has no recipes, the endpoint returns an empty JSON array:
 - Each recipe contains a username, recipe name, ingredients and preparation steps.
 - Each ingredient includes a name, quantity and unit.
 - The endpoint does not create or modify recipes.
+### 3.3 Retrieve All Recipes
 
-### 3.3 Create Recipe
+
+**Endpoint:** `GET /recipes/all`
+
+**Description:**
+
+Retrieves all recipes stored in the application, regardless of which user created them. The recipes are loaded from JSON persistence and returned as a JSON array.
+
+Unlike `GET /recipes`, this endpoint does not require a `userName` query parameter.
+
+**Request example:**
+
+```bash
+curl -i "http://localhost:7070/recipes/all"
+```
+
+**Example successful response (HTTP 200):**
+
+```json
+[
+  {
+    "userName": "TestUser",
+    "name": "Pancakes",
+    "ingredients": [
+      {
+        "name": "Flour",
+        "quantity": 200.0,
+        "unit": "GRAM"
+      }
+    ],
+    "steps": [
+      "Mix the ingredients",
+      "Cook the pancakes"
+    ]
+  },
+  {
+    "userName": "AnotherUser",
+    "name": "Pizza",
+    "ingredients": [],
+    "steps": []
+  }
+]
+```
+
+This is an illustrative example. Actual results depend on the recipes stored in the application.
+
+If no recipes are stored, the endpoint returns an empty JSON array:
+
+```json
+[]
+```
+
+**HTTP status codes:**
+
+| Status | Description |
+|---|---|
+| `200 OK` | All recipes were retrieved successfully. |
+| `500 Internal Server Error` | An error occurred while loading the recipes. |
+
+**Notes:**
+
+- The endpoint returns recipes from all users, rather than filtering by username.
+- Each recipe retains its `userName`, allowing clients to identify who created it.
+- The endpoint is used by the JavaFX client to display the shared recipe list.
+- The endpoint does not create or modify recipes.
+
+
+
+
+### 3.4 Create Recipe
 
 **Endpoint:** `POST /recipes`
 
@@ -262,7 +347,7 @@ Recipe created successfully
 - The endpoint uses `RecipeFileHandler` to load and save recipes.
 - The request modifies persistent data. Use a separate test data file when testing the endpoint manually.
 
-### 3.4 Retrieve Fridge Contents
+### 3.5 Retrieve Fridge Contents
 
 **Endpoint:** `GET /fridges`
 
@@ -291,7 +376,7 @@ curl -i "http://localhost:7070/fridges?userName=TestUser"
     {
       "name": "Milk",
       "quantity": 2.0,
-      "unit": "LITER"
+      "unit": "LITRE"
     },
     {
       "name": "Flour",
@@ -329,7 +414,7 @@ If the fridge contains no food items, the response has an empty `foodItems` arra
 - The endpoint uses `FridgeFileHandler` to retrieve the fridge data.
 - This endpoint only reads data and does not modify the fridge contents.
 
-### 3.5 Update Fridge Contents
+### 3.6 Update Fridge Contents
 
 **Endpoint:** `PUT /fridges`
 
@@ -351,7 +436,7 @@ The request must contain a JSON object with a `foodItems` array.
 |---|---|---|---|
 | `foodItems` | Array | Yes | List of food items to store in the fridge. |
 | `name` | String | Yes, per item | Name of the food item. Must not be blank. |
-| `quantity` | Number | Yes, per item | Finite, non-negative quantity. |
+| `quantity` | Number | Yes, per item | Finite, strictly positive quantity. |
 | `unit` | String | Yes, per item | Supported measurement unit. |
 
 **Example JSON request:**
@@ -362,7 +447,7 @@ The request must contain a JSON object with a `foodItems` array.
     {
       "name": "Milk",
       "quantity": 2.0,
-      "unit": "LITER"
+      "unit": "LITRE"
     },
     {
       "name": "Flour",
@@ -378,7 +463,7 @@ The request must contain a JSON object with a `foodItems` array.
 ```bash
 curl -i -X PUT "http://localhost:7070/fridges?userName=TestUser" \
   -H "Content-Type: application/json" \
-  -d '{"foodItems":[{"name":"Milk","quantity":2.0,"unit":"LITER"},{"name":"Flour","quantity":1.0,"unit":"KILOGRAM"}]}'
+  -d '{"foodItems":[{"name":"Milk","quantity":2.0,"unit":"LITRE"},{"name":"Flour","quantity":1.0,"unit":"KILOGRAM"}]}'
 ```
 
 **Successful response:**
@@ -403,12 +488,12 @@ Fridge updated successfully
 
 - The username is provided as a query parameter, not in the JSON request body.
 - The `foodItems` array may be empty.
-- Each food item must have a non-blank name, a finite non-negative quantity and a supported measurement unit.
+- Each food item must have a non-blank name, a finite strictly positive quantity and a supported measurement unit.
 - The submitted food items form the new fridge contents; this operation does not incrementally add items to the existing fridge.
 - The endpoint uses `FridgeFileHandler` to save the updated fridge.
 - This endpoint modifies persistent data. Use isolated test data when testing it manually.
 
-### 3.6 Retrieve User
+### 3.7 Retrieve User
 
 **Endpoint:** `GET /users`
 
@@ -453,7 +538,7 @@ The response body contains the username as plain text rather than a JSON object.
 - The endpoint uses `UsersFileHandler` to access stored user data.
 - This endpoint only reads data and does not modify existing users.
 
-### 3.7 Create User
+### 3.8 Create User
 
 **Endpoint:** `POST /users`
 
@@ -698,11 +783,11 @@ The test classes are located in:
 **REST test classes:**
 
 | Test class | Resource | Number of test methods |
-|---|---|---|
-| `RecipeRestControllerTest` | Recipes | 14 |
+|---|---|---:|
+| `RecipeRestControllerTest` | Recipes | 27 |
 | `FridgeRestControllerTest` | Fridges | 11 |
 | `UserRestControllerTest` | Users | 5 |
-| **Total** | | **30** |
+| **Total** | | **43** |
 
 **Spring Boot test configuration:**
 
@@ -760,19 +845,19 @@ mvn -pl rest -am test -Dtest=RecipeRestControllerTest,FridgeRestControllerTest,U
 
 **Verified test results:**
 
-The command was successfully executed on November 4, 2026.
+The command was successfully executed on November 5, 2026, using commit `c5816f9` from issue #218.
 
 | Test class | Tests executed | Failures |
 |---|---:|---:|
 | `FridgeRestControllerTest` | 11 | 0 |
-| `RecipeRestControllerTest` | 14 | 0 |
+| `RecipeRestControllerTest` | 27 | 0 |
 | `UserRestControllerTest` | 5 | 0 |
-| **Total** | **30** | **0** |
+| **Total** | **43** | **0** |
 
 Maven reported:
 
 ```text
-Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 43, Failures: 0, Errors: 0, Skipped: 0
 
 BUILD SUCCESS
 ```
