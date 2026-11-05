@@ -1,68 +1,120 @@
-
 # Release 3
 
 ## Overview
-Release 3 is the final release of Dinnertracker. It completes the application by adding a REST API, user login and a set of new features that make the app more useful in everyday cooking. It also finishes all the work that was listed as future work in Release 2.
+Release 3 is the final release of Dinnertracker. It completes the
+application by adding a REST API, user login and a set of new features that
+make the app more useful in everyday cooking. It also finishes the work that
+was listed as future work in Release 2.
 
-The main idea behind this release is to help the user cook with what they already have. The recipe list is now sorted by what is in the user's fridge, each recipe can be opened in a detailed view, and using a recipe removes the ingredients from the fridge automatically.
+The main idea behind this release is to help the user cook with what they
+already have. The recipe list is now sorted by what is in the user's fridge,
+each recipe can be opened in a detailed view, and using a recipe removes the
+ingredients from the fridge automatically.
 
-The release also focuses on code quality, with all Checkstyle and SpotBugs checks passing, consistent code formatting with Spotless, and test coverage measured with JaCoCo.
-
+The release also focuses on code quality, with all Checkstyle and SpotBugs
+checks passing, consistent code formatting with Spotless, and test coverage
+measured with JaCoCo.
 
 ## Main goals
-- Complete all future work from Release 2
-- Add a REST API using Spring Boot
-- Add user login and connect recipes and the fridge to the user
+- Complete the future work from Release 2
+- Add a REST API using Spring Boot, and let the JavaFX application
+  communicate with it
+- Add user login and connect the fridge and recipes to the user
 - Sort recipes based on the food items in the user's fridge
 - Add a detailed view for each recipe
 - Let the user "use" a recipe and update the fridge automatically
 - Build with no errors from Checkstyle and SpotBugs
-- Reach a test coverage of at least 80 % with JaCoCo
+- Reach at least 80 % line coverage and 70 % branch coverage with JaCoCo
 - Use Spotless to keep the code formatting consistent
 - Reflect on the sustainability aspects of the project
-
 
 ## New in Release 3
 
 ### REST API
-The project has a new `rest` module built with Spring Boot. It exposes the core and persistence layers over HTTP, so the data in Dinnertracker can be read and changed by other clients than the JavaFX application.
+The project has a new `rest` module built with Spring Boot. The JavaFX
+application communicates with the server through the REST API, using the
+`DinnertrackerRestClient` class in the `ui` module. The server uses the
+`core` and `persistence` modules to handle the domain logic and to read and
+write the JSON data.
 
 The API has three controllers, one for each main part of the domain:
 
-| Method | Endpoint                     | Description                              |
-|--------|------------------------------|------------------------------------------|
-| GET    | `/health`                    | Checks that the server is running        |
-| GET    | `/users?userName=...`        | Gets a user                              |
-| POST   | `/users`                     | Creates a new user                       |
-| GET    | `/recipes?userName=...`      | Gets the recipes for a user              |
-| POST   | `/recipes`                   | Adds a new recipe                        |
-| GET    | `/fridges?userName=...`      | Gets the fridge for a user               |
-| PUT    | `/fridges?userName=...`      | Updates the fridge for a user            |
+| Method | Endpoint                | Description                       |
+|--------|-------------------------|-----------------------------------|
+| GET    | `/health`               | Checks that the server is running |
+| GET    | `/users?userName=...`   | Gets a user                       |
+| POST   | `/users`                | Creates a new user                |
+| GET    | `/recipes?userName=...` | Gets the recipes for a user       |
+| GET    | `/recipes/all`          | Gets all recipes from all users   |
+| POST   | `/recipes`              | Adds a new recipe                 |
+| GET    | `/fridges?userName=...` | Gets the fridge for a user        |
+| PUT    | `/fridges?userName=...` | Updates the fridge for a user     |
 
-Every request that reads or changes data is tied to a `userName`, so a user only gets access to their own recipes and fridge. The controllers reuse the file handlers from the `persistence` module, which means the API and the JavaFX application read and write the same JSON data.
+Fridges are separated per username: `GET /fridges` only returns the fridge
+that belongs to the given `userName`. Recipes are stored with the username of
+the user who created them, but all recipes are shared between users, and the
+JavaFX application uses `GET /recipes/all` to show them. There is no
+authentication, so the username works as an identifier and not as a form of
+access control.
 
-A more detailed description of the API, including request and response formats, is found in [Rest-API](restApi.md).
+The REST server must be running before the JavaFX application is started.
+A more detailed description of the REST API, including request and response
+formats, is found in [REST API](api.md).
 
 ### User login
-When the application starts, the user is met by a login page where they enter a username. If the user does not exist, a new user is created. After login, the user's fridge and recipes are loaded, and everything the user adds or changes is saved under their username. This makes it possible for several people to use the same installation of Dinnertracker without sharing a fridge.
+When the application starts, the user is met by a login page where they
+enter a username. If the user does not exist, a new user is created through
+the REST API. After login, the user's fridge is fetched from the server, and
+changes to the fridge are saved under their username. This means that
+several people can use the same installation of Dinnertracker without
+sharing a fridge.
+
+Recipes are shared between all users. The recipe overview shows the recipes
+of every user, sorted by how well they match the logged-in user's fridge.
+This gives each user more recipes to choose from.
 
 ### Recipes sorted by the fridge
-The recipe overview is now sorted based on the content of the user's fridge. For each recipe the application counts how many of the ingredients the user is missing, and the recipes with the fewest missing ingredients appear at the top. Recipes the user can make right away are therefore shown first.
+The recipe overview is now sorted based on the content of the user's
+fridge. For each recipe, the application counts how many of the
+ingredients are missing or not available in the required amount. Recipes
+the user can make right away are shown first, followed by the recipes with
+the fewest missing ingredients. Recipes with the same number of missing
+ingredients are sorted by name.
 
-The list is updated automatically when the fridge changes, so the order always reflects what the user has at the moment. The purpose is to make it easier to use the groceries that are already at home, instead of buying
+The list is updated automatically when the fridge changes, so the order
+always reflects what the user has at the moment. The purpose is to make it
+easier to use the groceries that are already at home, instead of buying
 new ones.
 
 ### Detailed recipe view
-The user can click on a recipe in the overview to open a separate page with the full recipe. The page shows:
+The user can click on a recipe in the overview to open a separate page with
+the full recipe. The page shows:
 
 - the name of the recipe
 - all ingredients with amount and unit
 - the steps in order
 
-Each ingredient is marked based on whether the user has enough of it in the fridge, so the user can quickly see what is missing before they start cooking.
+Each ingredient is marked based on whether the user has enough of it in the
+fridge, so the user can quickly see what is missing before they start
+cooking.
 
-### Use a recipe 
-From the detailed view, the user can choose to use the recipe. If all ingredients are available in the fridge, the required amounts are removed from the fridge and the change is saved. If something is missing, the user gets a message explaining that the recipe cannot be used. This keeps the fridge up to date without the user having to remove each item by hand.
+### Use a recipe
+From the detailed view, the user can choose to use the recipe. If all
+ingredients are available in the fridge, the required amounts are removed
+from the fridge and the updated fridge is saved through the REST API. If
+something is missing, the user gets a message explaining that the recipe
+cannot be used. This keeps the fridge up to date without the user having to
+remove each item by hand.
+
+### Improvements to existing pages
+The existing pages have received some smaller visual improvements:
+
+- buttons and clickable list items show a hand cursor on hover
+- rows in the recipe overview are highlighted when the user hovers over
+  them, and the recipe names are coloured based on whether the recipe can
+  be made with the current fridge contents
+- the recipe overview is sorted and clickable, which makes the list easier
+  to use than in Release 2
 
 ## Architecture
 The project is split into four Maven modules:
@@ -70,65 +122,111 @@ The project is split into four Maven modules:
 - **core** – the domain classes (`User`, `Fridge`, `Recipe`, `RecipeBook`,
   `FoodItem`, `Amount`, `Unit`)
 - **persistence** – saving and loading users, fridges and recipes as JSON
-- **ui** – the JavaFX application
-- **rest** – the Spring Boot REST API (new in Release 3)
+- **rest** – the Spring Boot REST server (new in Release 3)
+- **ui** – the JavaFX client
 
+Dinnertracker uses a client-server architecture. The JavaFX client sends
+HTTP requests to the REST server through `DinnertrackerRestClient` and
+receives JSON responses. The REST server uses `core` for the domain logic and
+`persistence` to read and write the JSON files. The `ui` module therefore no
+longer accesses the data files directly.
 
-
-Both `ui` and `rest` depend on `core` and `persistence`, but not on each other. 
+```text
+User → JavaFX client (ui) → REST server (rest) → persistence → JSON files
+```
 
 ### Diagrams
-The architecture is described in more detail in the following diagrams:
+The architecture is described in more detail in the diagrams in
+[UML diagrams](../release2/uml.md). The diagrams are written in Mermaid and
+include:
 
 - **Package diagram** – shows the packages in the solution and how the
   modules depend on each other.
-  [Package diagram](diagrams/packageDiagram.png)
 - **Class diagram** – shows the most important classes in the system and
-  the relationships between them, with focus on the core domain
-  (`User`, `Fridge`, `Recipe`, `RecipeBook`, `FoodItem`, `Amount`, `Unit`).
-  [Class diagram](diagrams/classDiagram.png)
+  the relationships between them, with focus on the core domain.
 - **Sequence diagram** – shows an important use case from start to end,
-  and how the user's interaction in the interface connects to what happens
-  inside the system, including the REST calls.
-  [Sequence diagram](diagrams/sequenceDiagram.png)
+  and how the user's interaction in the JavaFX client connects to what
+  happens inside the system, including the REST calls to the server.
 
 ## Testing and code quality
-Testing and code quality are important parts of Release 3. The goal was to build the project without any errors from the code quality tools, and to reach a test coverage of at least 80 %.
+Testing and code quality are important parts of Release 3. The goal was to
+build the project without any errors from the code quality tools, and to
+reach the coverage limits set in JaCoCo.
 
 - **Checkstyle and SpotBugs** run as part of the build with no errors.
-- **JaCoCo** measures test coverage. We have checked and confirmed that all modules pass the check with above 80%. 
-- **Spotless** keeps the code formatting consistent across the project, and is checked as part of the Maven build / can be run with `mvn spotless:apply`.
+- **JaCoCo** measures test coverage. The build requires at least 80 % line
+  coverage and 70 % branch coverage, and all modules pass both limits.
+- **Spotless** keeps the code formatting consistent across the project. It
+  is checked as part of the Maven build, and the code can be formatted with
+  `mvn spotless:apply`.
 - New tests are added for the new functionality:
   - `UserRestControllerTest`, `RecipeRestControllerTest` and
     `FridgeRestControllerTest` for the REST API
+  - tests for `DinnertrackerRestClient`, which check the communication
+    between the JavaFX client and the server
   - `UserLogInPageControllerTest` for login
   - `RecipeViewPageControllerTest` for the sorted recipe overview
   - `RecipeDetailsViewPageControllerTest` for the detailed recipe view
 
 ### Automatic checks in pull requests
-The project has an automatic pipeline that runs every time a pull request is opened or updated. The pipeline builds the project with Maven and runs all tests together with Checkstyle, SpotBugs and JaCoCo. A pull request should not be merged before all checks pass. This makes sure that new code does not break existing functionality, and that the code quality stays the same across the whole team.
+The project has an automatic pipeline that runs every time a pull request
+is opened or updated. The pipeline builds the project with Maven and runs
+all tests together with Checkstyle, SpotBugs and JaCoCo. A pull request
+should not be merged before all checks pass. This makes sure that new code
+does not break existing functionality, and that the code quality stays the
+same across the whole team.
 
-Some pull requests in the project history show that checks have failed. This happened because new functionality was added before the tests for it were written. The test coverage then dropped below the limit, and the JaCoCo check failed. The missing tests were added in later pull requests, and all checks now pass on the main branch.
+Some pull requests in the project history show that checks have failed.
+This happened because new functionality was added before the tests for it
+were written. The test coverage then dropped below the limits, and the
+JaCoCo check failed. The missing tests were added in later pull requests,
+and all checks now pass on the main branch.
 
-
-The project uses Maven to build and test the application and to run the code quality checks.
+### Building and running
+The project uses Maven to build and test the application and to run the
+code quality checks. The REST server must be started before the JavaFX
+client. A step-by-step guide for building the project, running the tests,
+starting the REST server and starting the JavaFX client is found in the
+[README](../../README.md).
 
 ## Sustainability
-We reflect on the sustainability aspects of Dinnertracker using the Sustainability Awareness Framework (SusAF), including a sustainability awareness diagram (SusAD). The new features in this release are closely connected to this: sorting recipes by the fridge and removing used ingredients automatically both help the user reduce food waste. The full reflection is available in [Sustainability](sustainability.md). 
+We reflect on the sustainability aspects of Dinnertracker using the
+Sustainability Awareness Framework (SusAF), including a sustainability
+awareness diagram (SusAD). The new features in this release are closely
+connected to this: sorting recipes by the fridge and removing used
+ingredients automatically both help the user reduce food waste. The full
+reflection is available in [Sustainability](sustainability.md).
+
+## Use of AI tools
+The group has used AI tools as support during the project, mainly to
+understand errors and tool output, get suggestions for tests, and improve
+the language and structure of the documentation. All code and text
+suggested by AI has been reviewed and adjusted by the group before it was
+added to the project. A more detailed description is found in
+[AI Tools](../ai-tools.md).
 
 ## Completed from Release 2
-All future work listed in Release 2 is now completed:
+The future work listed in Release 2 is now completed:
 
 - User login is integrated into the project.
-- Recipes and the fridge are connected to the user.
-- The existing pages are further developed with accessibility in mind.
+- The fridge and recipes are connected to the user.
+- The existing pages are further developed with small visual improvements.
+- A hand cursor is shown when hovering over buttons and clickable items.
+- The list view on the recipe page is improved: recipes are sorted by the
+  fridge, highlighted on hover and coloured based on availability.
 - Added recipes can be clicked and shown on their own page.
 
 ## Documentation
-The following documents provide more detailed information about Release 3:
+The following documents provide more detailed information about
+Release 3:
 
-- [Teamwork](teamswork.md)
-- [Rest-API](restApi.md)
-- [Contribution](contribution.md)
-- [Sustainability](sustainability.md)
+- [AI Tools](../ai-tools.md)
 - [Challenges](challenges.md)
+- [Contribution](contribution.md)
+- [Code quality](code-quality.md)
+- [REST API](api.md)
+- [Sustainability](sustainability.md)
+- [Teamwork](teamwork.md)
+- [Work practises](work-practises.md)
+- [Workflow](workflow.md)
+
