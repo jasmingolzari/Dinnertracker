@@ -27,6 +27,7 @@ class RecipeRestControllerTest {
 
   /** Resets the test recipe file before each test. */
   @BeforeEach
+  @SuppressWarnings("unused")
   void setUp() throws Exception {
     Path testFile = Path.of("target/recipes-spring-automated-test.json");
 
