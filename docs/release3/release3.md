@@ -97,7 +97,7 @@ Testing and code quality are important parts of Release 3. The goal was to build
 
 - **Checkstyle and SpotBugs** run as part of the build with no errors.
 - **JaCoCo** measures test coverage. We have checked and confirmed that all modules pass the check with above 80%. 
-- **Spotless** keeps the code formatting consistent across the project [adjust: and is checked as part of the Maven build / can be run with `mvn spotless:apply`].
+- **Spotless** keeps the code formatting consistent across the project, and is checked as part of the Maven build / can be run with `mvn spotless:apply`.
 - New tests are added for the new functionality:
   - `UserRestControllerTest`, `RecipeRestControllerTest` and
     `FridgeRestControllerTest` for the REST API
