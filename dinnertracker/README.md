@@ -4,14 +4,16 @@
 
 Dinnertracker is a dinner planning application developed as part of the IT1901 course at NTNU. It helps users manage dinner recipes and keep track of ingredients available in their fridge. 
 
-The application supports user accounts, login, recipe management, and personal fridge management. Each user can manage their own fridge and the recipes available through the application
+The application supports user accounts, login, recipe management, and personal fridge management. Each user can manage their own fridge and the recipes available through the application.
 
 Dinnertracker is developed in Java and uses JavaFX for the graphical user interface, a REST server for communication between the client and server, and JSON-based persistence for application data.
+
+Release 1 focused mainly on recipe functionality, while Release 2 extended the application with fridge functionality, persistence, testing and a clearer separation between the different parts of the application. The application has since then, been extended with a REST API and further functionality such as sorting recipes based on available ingredients in their own fridge, and visualizing this in addition to a more detailed view of the recipes. 
 
 
 ## Application screenshot
 
-The screenshots below show the application's user interface. They will be updated soon så fort som mulig hehe. 
+The screenshots below show the application's user interface.
 
 
 ![Dinnertracker application login page](images/login.png)
@@ -28,8 +30,17 @@ The screenshots below show the application's user interface. They will be update
 
 *Screenshot of the Dinnertracker application - recipes page.*
 
+![Dinnertracker recipes page](images/pancakes.png)
 
-![Dinnertracker recipes page](images/recipeView.png)
+*Screenshot of the Dinnertracker application - pancake recipe page*
+
+![Dinnertracker recipes page](images/horn.png)
+
+*Screenshot of the Dinnertracker application - horn recipe page*
+
+
+![Dinnertracker recipes page](images/addRecipe1.png)
+![Dinnertracker recipes page](images/addRecipe2.png)
 
 *Screenshot of the Dinnertracker application - add recipe page.*
 
@@ -96,63 +107,55 @@ The intended client-server architecture is illustrated below:
 ```mermaid
 flowchart TD
     USER[User]
-    UI[JavaFX client<br/>UI module]
-    REST[REST server<br/>REST module]
-    CORE[Core module]
-    PERSISTENCE[Persistence module]
-    DATA[(JSON data files)]
+    UI["JavaFX client<br/>UI module"]
+    REST["REST server<br/>Spring Boot"]
+    CORE["Core module<br/>Domain logic"]
+    PERSISTENCE["Persistence module"]
+    JSON[("JSON data files")]
 
     USER --> UI
-    UI <-->|HTTP requests and responses| REST
+    UI <-->|HTTP requests and JSON responses| REST
     REST --> CORE
     REST --> PERSISTENCE
-    PERSISTENCE --> DATA
+    PERSISTENCE <--> JSON
+    PERSISTENCE --> CORE
 ```
 
-The JavaFX client communicates with the REST server, which connects incoming requests to the application's core logic and persistence layer.
+The application is structured so that the JavaFX user interface communicates with the REST API, while the REST module uses the core and persistence modules to handle application logic and data.
+
+This separation makes the application's domain logic independent of the user interface and the way data is stored.
 
 More detailed information about the architecture and design can be found in the [Release 3 documentation](../docs/release3/).
 
 
-
-## Building and testing
-
-Dinnertracker uses Maven to manage dependencies, build the application, and run automated tests. 
-
-From the `dinnertracker/` directory, run the following commands.
-
-### Run tests
-
-```bash
-mvn test
-```
-
-### Verify the project
-
-```bash
-mvn verify
-```
-
-The verification phase runs the configured tests and code quality checks. It also checks the configured test coverage requirements.
-
 ### Generate JaCoCo reports
 
 ```bash
+mvn verify
 mvn jacoco:report
 ```
 
-JaCoCo is used to measure test coverage. The project configuration sets minimum thresholds of:
+JaCoCo is used to measure test coverage and enforce minimum coverage thresholds during the Maven verification phase. The project configuration sets minimum thresholds of:
 
 - 80% line coverage
 - 70% branch coverage
 
-The generated reports are available in the relevant modules' `target/site/jacoco/` directories. An aggregated report may also be available under `target/site/jacoco-aggregate/`, depending on the Maven configuration.
+The generated reports are available in the relevant modules' `target/site/jacoco/` directories. An aggregated report may also be available under `target/site/jacoco-aggregate/`, depending on the Maven configuration. The aggregated report provides an overview of test coverage across the modules.
 
-## Running the application
 
-The application consists of a JavaFX client and a REST server. The server must be running and accessible to the client for REST-based functionality to work.
+## Application data
 
-The REST server is configured to use port `7070`. The exact startup commands and access to the server should be verified against the final Maven configuration and development environment.
+Application data is stored as JSON files in the `data/` directory.
+
+The project currently uses the following files:
+
+- `recipes.json` – stores recipe data.
+
+- `fridges.json` – stores fridge data.
+
+- `users.json` – stores user data.
+
+
 
 ## Development environment
 
