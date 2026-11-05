@@ -127,6 +127,9 @@ This separation makes the application's domain logic independent of the user int
 
 More detailed information about the architecture and design can be found in the [Release 3 documentation](../docs/release3/).
 
+## Coverage with Jacoco
+
+JaCoCo is used to measure test coverage and enforce minimum coverage thresholds during the Maven verification phase. 
 
 ### Generate JaCoCo reports
 
@@ -135,17 +138,37 @@ mvn verify
 mvn jacoco:report
 ```
 
-JaCoCo is used to measure test coverage and enforce minimum coverage thresholds during the Maven verification phase. The project configuration sets minimum thresholds of:
+### What this does
+
+- Runs the test suite and collects coverage data.
+- Generates an HTML coverage report for local inspection.
+- Generates an XML report for CI and tooling integration.
+- Fails the build if the configured coverage threshold is not met.
+
+### Report locations
+
+After running `mvn verify`, the reports are available in:
+
+- `dinnertracker/core/target/site/jacoco/index.html`
+- `dinnertracker/persistence/target/site/jacoco/index.html`
+- `dinnertracker/ui/target/site/jacoco/index.html`
+- `dinnertracker/target/site/jacoco-aggregate/index.html`
+
+The aggregated report in the root module gives the combined coverage across all modules. 
+
+### Coverage threshold
+
+The project configuration sets minimum thresholds of:
 
 - 80% line coverage
 - 70% branch coverage
 
-The generated reports are available in the relevant modules' `target/site/jacoco/` directories. An aggregated report may also be available under `target/site/jacoco-aggregate/`, depending on the Maven configuration. The aggregated report provides an overview of test coverage across the modules.
+If the project falls below these values, `mvn verify` will fail.
 
 
 ## Application data
 
-Application data is stored as JSON files in the `data/` directory.
+Application data is stored as JSON files in the [`data/`](data/) directory.
 
 The project currently uses the following files:
 
