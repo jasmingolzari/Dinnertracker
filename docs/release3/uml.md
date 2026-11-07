@@ -39,6 +39,7 @@ flowchart TB
   P --> C
   P <-->|"read / write"| JSON
   U -.-> FX
+  U -.-> JACKSON
   R -.-> SPRING
   R -.-> JACKSON
   P -.-> JACKSON
