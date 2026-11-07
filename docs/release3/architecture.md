@@ -1,47 +1,99 @@
 # Architecture
 
-Dinnertracker is a multi-module Maven project (Java 17). The application
-separates the domain logic, data persistence, the graphical user
-interface and the REST API into four Maven modules:
+Dinnertracker is a modular application with four layers. The domain
+logic, data persistence, graphical user interface and REST API are
+separated into four Maven modules:
 
-- **Core** – contains the domain model and application logic.
-- **Persistence** – saves and loads application data as JSON files using
-  Jackson.
-- **UI** – the JavaFX desktop client, with FXML views and controllers.
+- **UI** – the JavaFX desktop client, with FXML views, controllers and a
+  REST client.
+- **Core** – the domain model and application logic.
+- **Persistence** – saves and loads application data as JSON files
+  using Jackson.
 - **REST** – a Spring Boot server that exposes users, recipes and
   fridges through a REST API.
 
 Core, persistence and UI are Java modules with their own
 `module-info.java` (`no.gr2631.dinnertracker.core`,
 `no.gr2631.dinnertracker.persistence` and `no.gr2631.dinnertracker.ui`).
+REST is a regular Maven module without a `module-info.java`, so it runs
+on the classpath, as is usual for a Spring Boot application.
 
 ## Architecture diagram
 
-~~~mermaid
-flowchart TD
-    UI[UI module<br/>JavaFX + FXML + Controllers]
-    REST[REST module<br/>Spring Boot + RestControllers]
-    PERSISTENCE[Persistence module<br/>FileHandlers + Jackson]
-    CORE[Core module<br/>Recipe, RecipeBook, Fridge,<br/>FoodItem, Amount, Unit, User]
-    JSON[(data/<br/>users.json<br/>recipes.json<br/>fridges.json)]
+The diagram is the package diagram from [uml.md](uml.md).
 
-    UI --> CORE
-    UI --> PERSISTENCE
-    REST --> CORE
-    REST --> PERSISTENCE
-    PERSISTENCE --> CORE
-    PERSISTENCE <--> JSON
+~~~mermaid
+flowchart TB
+  subgraph UI["ui module"]
+    U["no.gr2631.dinnertracker.ui<br/>App, DinnertrackerRestClient,<br/>UserLogInPageController, HomePageController,<br/>RecipePageController, RecipeViewPageController,<br/>RecipeDetailsViewPageController,<br/>FridgePageController, ShowAlertMessage"]
+  end
+  subgraph REST["rest module"]
+    R["no.gr2631.dinnertracker.rest<br/>DinnertrackerApplication,<br/>RecipeRestController,<br/>FridgeRestController,<br/>UserRestController"]
+  end
+  subgraph PERSISTENCE["persistence module"]
+    P["no.gr2631.dinnertracker.persistence<br/>GenericRepository, RecipeFileHandler,<br/>FridgeFileHandler, UsersFileHandler"]
+  end
+  subgraph CORE["core module"]
+    C["no.gr2631.dinnertracker.core<br/>User, Recipe, RecipeBook, Fridge,<br/>FoodItem, Amount, Unit"]
+  end
+  JSON[("data/<br/>users.json, recipes.json, fridges.json")]
+  FX[["JavaFX"]]
+  JACKSON[["Jackson"]]
+  SPRING[["Spring Boot"]]
+
+  U -.->|"HTTP / JSON"| R
+  U --> C
+  R --> C
+  R --> P
+  P --> C
+  P <-->|"read / write"| JSON
+  U -.-> FX
+  U -.-> JACKSON
+  R -.-> SPRING
+  R -.-> JACKSON
+  P -.-> JACKSON
 ~~~
 
-Both the UI and the REST module depend on core and persistence. The
-persistence module depends on core because it stores and loads core
-domain objects. The core module does not depend on any of the other
-modules, and it does not depend on JavaFX, Spring or Jackson.
+Solid arrows between modules are Maven dependencies. The dashed
+`HTTP / JSON` arrow is not a Maven dependency. It shows that the UI
+talks to the REST server over HTTP at runtime. The other dashed arrows
+point to the external libraries each module uses.
 
-In the current version the JavaFX client does not communicate with the
-REST API. Both the UI and the REST server use the persistence module
-directly, and they read and write the same JSON files in the `data/`
-directory.
+The JavaFX application is a client of the REST API. The UI controllers
+never read or write the JSON files. Instead they use
+`DinnertrackerRestClient`, which sends HTTP requests to the REST server.
+The REST server then uses the persistence module to read and write the
+files in the `data/` directory:
+
+~~~text
+UI controller → DinnertrackerRestClient → (HTTP / JSON) → REST controller → file handler → JSON file
+~~~
+
+The UI depends on core because the client converts the JSON responses
+into core objects such as `Recipe`, `RecipeBook` and `Fridge`, and the
+controllers work on those objects. The UI does not depend on
+persistence. The UI and REST modules both use Jackson, but only to
+build and read JSON messages. The persistence module depends on core
+because it stores and loads core domain objects. The core module does
+not depend on any of the other modules, nor on JavaFX, Spring or
+Jackson.
+
+## UI layer
+
+The UI is built with JavaFX 21 and FXML. `App` starts the application
+and holds the current user, the fridge, the recipe book and a shared
+`DinnertrackerRestClient`. The client is the only class that talks to
+the REST API. It sends HTTP requests to `http://localhost:7070` and
+converts between JSON and core objects.
+
+| Controller                        | Responsibility |
+|-----------------------------------|----------------|
+| `UserLogInPageController`         | Logs in or registers a user, and loads the user's fridge and all recipes. |
+| `HomePageController`              | Navigates to the recipe and fridge pages. |
+| `RecipeViewPageController`        | Lists the recipes of all users, sorted by how well they match the logged-in user's fridge. |
+| `RecipeDetailsViewPageController` | Shows a recipe and lets the user use it. |
+| `RecipePageController`            | Creates a new recipe. |
+| `FridgePageController`            | Shows the fridge contents and adds food items. |
 
 ## Core layer
 
@@ -49,107 +101,69 @@ The core layer contains the domain model and application logic. The
 main classes are:
 
 - `User` – a user identified by a username.
-- `Recipe` – a recipe with a name, an owner (`User`), ingredients stored
-  as `Map<FoodItem, Amount>` and an ordered list of steps.
-- `RecipeBook` – the collection of recipes belonging to a user. It can
-  also *use* a recipe, which removes the recipe's ingredients from a
-  `Fridge`.
-- `Fridge` – the food items a user has, stored as
-  `Map<FoodItem, Amount>`. Adding an item that already exists adds the
-  quantities together, as long as the units match.
-- `FoodItem` – a food item identified by its name.
-- `Amount` – a record combining a quantity and a `Unit`. The quantity
-  must be finite and greater than zero.
-- `Unit` – an enum of supported units (`LITRE`, `GRAM`, `KILOGRAM`,
-  `PIECE`, `TABLESPOON`, `TEASPOON`), each with a short symbol such as
-  `g` or `stk`.
+- `Recipe` – a recipe with a name, an owner (`User`), ingredients and
+  an ordered list of steps.
+- `RecipeBook` – a collection of recipes. It can *use* a recipe, which
+  removes the recipe's ingredients from a `Fridge`.
+- `Fridge` – the food items a user has. Adding an item that already
+  exists adds the quantities together if the units match.
+- `FoodItem` – a food item identified by its name. Two food items are
+  equal if their names match, ignoring case and surrounding whitespace.
+  This matters because `FoodItem` is used as a map key.
+- `Amount` – a record of a quantity, which must be finite and greater
+  than zero, and a `Unit`.
+- `Unit` – an enum of supported units, such as `GRAM` and `PIECE`.
 
-Ingredients in recipes and fridges both use `Map<FoodItem, Amount>`, so
-recipes and fridge contents can be compared directly when a recipe is
-used.
+Recipes and fridges both store ingredients as `Map<FoodItem, Amount>`,
+so they can be compared directly when a recipe is used.
 
 ## Persistence layer
 
-The persistence layer handles storing and loading application data as
-JSON with the Jackson library. The conversion between domain objects
-and JSON is done manually with Jackson's tree model, because
-`Map<FoodItem, Amount>` cannot be mapped automatically in a useful way.
+The persistence layer stores data as JSON using Jackson. Only the REST
+module uses it.
 
-- `GenericRepository<T>` – a common interface with `load(Path, User)`
-  and `save(Path, T)`.
-- `RecipeFileHandler` – implements `GenericRepository<RecipeBook>` and
-  stores all recipes in `recipes.json`. Each recipe stores its
-  `userName`, `name`, `ingredients` and `steps`.
-- `FridgeFileHandler` – implements `GenericRepository<Fridge>` and
-  stores the fridges of all users in `fridges.json`. When a fridge is
-  saved, only the entry for that user is replaced.
-- `UsersFileHandler` – loads and saves registered users in
-  `users.json`. Existing users are kept, and duplicate usernames are not
-  added.
+- `RecipeFileHandler` – stores all recipes in `recipes.json`.
+- `FridgeFileHandler` – stores the fridges of all users in
+  `fridges.json`.
+- `UsersFileHandler` – stores registered users in `users.json`.
 
-Units are written by their enum name (for example `GRAM`), and can be
-read back from either the enum name or the symbol.
-
-## UI layer
-
-The UI layer is implemented with JavaFX 21 and FXML. `App` is the entry
-point and opens the login page. It also holds the state shared by the
-controllers: the current user, the user's fridge and recipe book, and
-the persistence handlers.
-
-The pages and their controllers are:
-
-| View (FXML)                  | Controller                           | Responsibility |
-|------------------------------|--------------------------------------|----------------|
-| `UserLogInPage.fxml`         | `UserLogInPageController`            | Logs in an existing user or registers a new one, and loads the user's fridge and recipe book. |
-| `HomePage.fxml`              | `HomePageController`                 | Navigation to the recipe and fridge pages. |
-| `RecipeViewPage.fxml`        | `RecipeViewPageController`           | Lists the user's recipes and opens a selected recipe. |
-| `RecipeDetailsViewPage.fxml` | `RecipeDetailsViewPageController`    | Shows ingredients and steps, and lets the user use the recipe, which removes the ingredients from the fridge. |
-| `RecipePage.fxml`            | `RecipePageController`               | Creates a new recipe with ingredients, units and steps. |
-| `FridgePage.fxml`            | `FridgePageController`               | Shows the fridge contents and adds food items. |
-
-`ShowAlertMessage` is a helper class for showing error and information
-dialogs. The controllers update the domain objects in core and save the
-changes through the persistence handlers.
+`RecipeFileHandler` and `FridgeFileHandler` implement the common
+interface `GenericRepository<T>`, which has the methods
+`load(Path, User)` and `save(Path, T)`.
 
 ## REST layer
 
-The REST module is a Spring Boot application started from
-`DinnertrackerApplication`. It runs on port 7070, and the paths to the
-data files are configured in `application.properties`.
+The REST module is a Spring Boot application that runs on port 7070. It
+is the only entry point to the JSON data, and the JavaFX application is
+its client.
 
-| Controller             | Endpoint        | Description |
-|------------------------|-----------------|-------------|
-| `RecipeRestController` | `GET /health`   | Checks that the server is running. |
-|                        | `GET /recipes?userName=…` | Returns the user's recipes. |
-|                        | `POST /recipes` | Creates a new recipe. |
-| `FridgeRestController` | `GET /fridges?userName=…` | Returns the user's fridge. |
-|                        | `PUT /fridges?userName=…` | Replaces the user's fridge contents. |
-| `UserRestController`   | `GET /users?userName=…` | Checks whether a user exists. |
-|                        | `POST /users`   | Registers a new user. |
+| Endpoint                  | Description | Status codes |
+|---------------------------|-------------|--------------|
+| `GET /health`             | Checks that the server is running. | 200 |
+| `GET /recipes?userName=…` | Returns the user's recipes. | 200, 400, 500 |
+| `GET /recipes/all`        | Returns all recipes from all users. | 200, 500 |
+| `POST /recipes`           | Creates a new recipe. | 201, 400, 500 |
+| `GET /fridges?userName=…` | Returns the user's fridge. | 200, 400, 500 |
+| `PUT /fridges?userName=…` | Replaces the contents of the user's fridge. | 200, 400, 500 |
+| `GET /users?userName=…`   | Checks whether a user exists. | 200, 400, 404, 500 |
+| `POST /users`             | Registers a new user. | 201, 400, 409, 500 |
 
-The controllers validate the JSON requests, build core objects and use
-the file handlers from the persistence module to read and write data.
-Invalid input returns `400 Bad Request`, an unknown user returns
-`404 Not Found` and an existing user returns `409 Conflict`.
+Invalid input returns `400`, and errors when reading or writing files
+return `500`. `404` (unknown user) and `409` (username already taken)
+are only used by the user endpoints. `GET /recipes` and `GET /fridges`
+return empty content for unknown users.
 
 ## Module dependencies
 
-The module dependencies are:
-
 ~~~text
 UI
-├── Core
-└── Persistence
-    └── Core
-
+└── Core
 REST
 ├── Core
 └── Persistence
     └── Core
 ~~~
 
-The `core` module is independent of the other application modules. The
-`persistence` module depends on `core`, while both `ui` and `rest`
-depend on `core` and `persistence`. The UI and REST modules do not
-depend on each other.
+Core does not depend on any other module. Of the project's modules, UI
+depends only on core, and it talks to REST over HTTP. REST depends on
+core and persistence.
