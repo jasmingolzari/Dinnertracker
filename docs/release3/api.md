@@ -74,7 +74,7 @@ curl -i 'http://localhost:7070/recipes?userName=TestUser'
 
 ### GET /recipes/all
 
-Returns recipes across all users; no query parameter is required. An empty database produces `[]`.
+Returns recipes across all users; no query parameter is required. The JavaFX client uses this endpoint to retrieve the shared recipe list. An empty database produces `[]`.
 
 ```bash
 curl -i http://localhost:7070/recipes/all
