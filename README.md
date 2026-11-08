@@ -17,7 +17,7 @@ For more information about the application and its functionality, see the [Dinne
 
 The actual Dinnertracker application is located in the
 [`dinnertracker/`](dinnertracker/) directory. It is organized as a
-multi-module Maven project consisting of three architectural layers:
+multi-module Maven project consisting of four architectural modules:
 
     gr2631/
     ├── dinnertracker/
@@ -70,7 +70,7 @@ flowchart TD
     PERSISTENCE --> CORE
 ```
 
-This separation allows the client to interact with application functionality through the REST API instead of directly handling server-side operations. The `core` module contains the domain logic, while the `persistence` module is responsible for storing and retrieving data. The `core` module is independent of the `UI` and `persistence` modules. This separation keeps the domain logic independent of the graphical interface and file handling.
+This separation allows the client to interact with application functionality through the REST API instead of directly handling server-side operations. The `core` module contains the domain logic, while the `persistence` module is responsible for storing and retrieving data. The `core` module is independent of the `UI` and `persistence` modules. This separation keeps the domain logic independent of the graphical interface and file handling. The JavaFX client uses the `DinnertrackerRestClient` class to send HTTP requests to the server, and does not read or write the data files directly.
 
 More detailed information about the architecture and design can be found in the [Release 3 documentation](docs/release3/).
 
@@ -138,11 +138,14 @@ The available reports depend on the modules and their JaCoCo configuration. The 
 
 The configuration and requirements for testing and code quality are documented in [code-quality.md](docs/release3/code-quality.md).
 
-### Running the application
+
+
+
+## Running the application
 
 The REST server must be running before the JavaFX client can communicate with it.
 
-#### Start the REST server
+### Start the REST server
 Open a terminal from the repository root and run:
 
 ```bash
