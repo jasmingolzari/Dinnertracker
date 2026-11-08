@@ -137,16 +137,12 @@ User → JavaFX client (ui) → REST server (rest) → persistence → JSON file
 
 ### Diagrams
 The architecture is described in more detail in the diagrams in
-[UML diagrams](../release2/uml.md). The diagrams are written in Mermaid and
+[UML diagrams](uml.md). The diagrams are written in Mermaid and
 include:
 
-- **Package diagram** – shows the packages in the solution and how the
-  modules depend on each other.
-- **Class diagram** – shows the most important classes in the system and
-  the relationships between them, with focus on the core domain.
-- **Sequence diagram** – shows an important use case from start to end,
-  and how the user's interaction in the JavaFX client connects to what
-  happens inside the system, including the REST calls to the server.
+- **Package diagram** – shows the modules and packages in the solution and how they depend on each other. The arrow from `ui` to `rest` is HTTP communication, not a Java dependency.
+- **Class diagram** – shows the central domain model in the `core` module and the relationships between the classes.
+- **Sequence diagram** – shows the use case "Create a recipe", from the user's input in the JavaFX client, through `DinnertrackerRestClient` and the REST server, to the recipe being saved in `recipes.json`.
 
 ## Testing and code quality
 Testing and code quality are important parts of Release 3. The goal was to
@@ -162,7 +158,7 @@ reach the coverage limits set in JaCoCo.
 - New tests are added for the new functionality:
   - `UserRestControllerTest`, `RecipeRestControllerTest` and
     `FridgeRestControllerTest` for the REST API
-  - tests for `DinnertrackerRestClient`, which check the communication
+  - tests for `DinnertrackerRestClient`, called `DinnertrackerRestClientTest`, which check the communication
     between the JavaFX client and the server
   - `UserLogInPageControllerTest` for login
   - `RecipeViewPageControllerTest` for the sorted recipe overview
@@ -213,7 +209,7 @@ The future work listed in Release 2 is now completed:
 - The existing pages are further developed with small visual improvements.
 - A hand cursor is shown when hovering over buttons and clickable items.
 - The list view on the recipe page is improved: recipes are sorted by the
-  fridge, highlighted on hover and coloured based on availability.
+fridge, highlighted on hover and coloured based on availability.
 - Added recipes can be clicked and shown on their own page.
 
 ## Documentation
@@ -227,6 +223,6 @@ Release 3:
 - [REST API](api.md)
 - [Sustainability](sustainability.md)
 - [Teamwork](teamwork.md)
-- [Work practises](work-practises.md)
+- [Work practices](work-practices.md)
 - [Workflow](workflow.md)
 
