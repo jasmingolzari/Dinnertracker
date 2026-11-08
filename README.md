@@ -70,7 +70,7 @@ More detailed information about the architecture can be found in [architecture.m
 The project requires:
 
 - Java 17
-- Apache Maven 3.9.x
+- Apache Maven 3.9.12
 - JavaFX 21.0.2
 
 The project also uses the following main libraries and tools:
