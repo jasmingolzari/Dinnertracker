@@ -18,7 +18,7 @@ describing a task and makes it easier for other group members to
 understand what needs to be done.
  
 The issues are connected to milestones so that the group can organize
-work according to the different releases. We distribute the issues on our first meeting for the release we're working on. If new problems come up where a new issue is made consecutively. It is then distributed to the member it suits bests.  
+work according to the different releases. We distribute the issues on our first meeting for the release we're working on. If new problems come up where a new issue needed, it is made consecutively. It is then distributed to the member it suits bests.  
  
 ## Branches
  
