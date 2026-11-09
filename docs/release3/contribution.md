@@ -38,34 +38,10 @@ In this project, I have tried to contribute to all modules.
 
 ## Rumyana Zhizhovska
 
-Throughout the project, my primary responsibilities have included developing the fridge and login pages, implementing backend functionality, and writing corresponding tests. My contributions across the three releases include:
+Throughout the project, I have contributed across all three modules—core, persistence, and UI—with a focus on code quality, maintainability, and teamwork.
 
-Release 1:
-- Fridge.java
-- FoodItem.java
-- Add continuous integration
-Release 2:
-- Refactoring and generalizing existing code to reduce duplication and improve maintainability.
-module-info.java in all 3 modules
-- GenericRepository.java
-- FridgeFileHandler.java
-- FridgePageController.java and its corresponding FXML file.
-- ShowAlertMessages.java
-- Implemented the Ikons using the Ikonli dependency
-- Added tests using Mockito instead of TestFX
-- Proposed implementing: Unit.java and Amount.java
-Release 3:
-- User.java
-- RecipeBook.java
-- UsersFileHandler.java
-- UserLogInPageController.java and its corresponding FXML file.
+- Release 1: I implemented Fridge.java and FoodItem.java with corresponding tests and introduced continuous integration (CI) to the project.
+- Release 2: I focused on refactoring and reducing code duplication. I worked on module-info.java across all three modules, GenericRepository.java, FridgeFileHandler.java, FridgePageController.java and its FXML file, and ShowAlertMessages.java. I also integrated Ikonli icons, introduced Mockito for controller testing instead of TestFX, and proposed the Unit and Amount classes.
+- Release 3: I implemented User.java, RecipeBook.java, UsersFileHandler.java, and UserLogInPageController.java with its corresponding FXML file.
 
-My main objective was to contribute across all three modules—core, persistence, and UI—while focusing on three key areas:
-Code quality: I prioritized maintainability by refactoring redundant code, applying the DRY principle, and improving reusability. I also helped standardize the user interface to ensure consistency across pages developed by different team members.
-Workflow: I improved our development process by introducing pull request and issue templates, helping establish clearer and more structured GitHub workflows.
-Teamwork: I actively contributed to planning, communication, and coordination within the team. We had weekly meetings, shared Git conventions, and clear expectations, we maintained an organized development process. I also encouraged open discussions about challenges and opportunities for improvement.
-Overall, I aimed to contribute not only through implementation but also by improving the project's overall quality and team collaboration.
- 
- 
-
-
+Beyond implementation, I worked on improving code quality by applying the DRY principle, generalizing reusable functionality, and ensuring consistent UI design across pages. I also improved our workflow by introducing GitHub pull request and issue templates and establishing clearer development conventions. Regarding teamwork, I actively participated in planning, weekly meetings, and discussions, helping maintain clear expectations, effective communication, and collaboration throughout the project.
