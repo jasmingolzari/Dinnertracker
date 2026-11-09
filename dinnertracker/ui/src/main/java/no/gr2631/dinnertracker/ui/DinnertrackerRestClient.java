@@ -171,7 +171,6 @@ public class DinnertrackerRestClient {
    * @param userName the username to put in the query; it is URL-encoded
    * @return the full URI, for example {@code http://localhost:7070/fridges?userName=ola}
    */
-
   private URI uriWithUser(String path, String userName) {
     // URLEncoder turns spaces into '+'; '%20' is understood the same way by every server.
     String encoded = URLEncoder.encode(userName, StandardCharsets.UTF_8).replace("+", "%20");
@@ -184,7 +183,6 @@ public class DinnertrackerRestClient {
    * @param uri the address to send the request to
    * @return the finished request
    */
-
   private HttpRequest get(URI uri) {
     return HttpRequest.newBuilder(uri)
         .timeout(TIMEOUT)
@@ -201,7 +199,6 @@ public class DinnertrackerRestClient {
    * @return the finished request
    * @throws IOException if the body cannot be converted to a JSON string
    */
-
   private HttpRequest post(URI uri, JsonNode body) throws IOException {
     return HttpRequest.newBuilder(uri)
         .timeout(TIMEOUT)
@@ -218,7 +215,6 @@ public class DinnertrackerRestClient {
    * @return the finished request
    * @throws IOException if the body cannot be converted to a JSON string
    */
-
   private HttpRequest put(URI uri, JsonNode body) throws IOException {
     return HttpRequest.newBuilder(uri)
         .timeout(TIMEOUT)
@@ -237,7 +233,6 @@ public class DinnertrackerRestClient {
    * @return the response from the server
    * @throws IOException if the server cannot be reached or the request is interrupted
    */
-
   private HttpResponse<String> send(HttpRequest request) throws IOException {
     try {
       return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -258,7 +253,6 @@ public class DinnertrackerRestClient {
    * @throws IOException if the status code is different; the message contains the status and the
    *     response body
    */
-
   private static void requireStatus(HttpResponse<String> response, int expectedStatus)
       throws IOException {
     if (response.statusCode() != expectedStatus) {
@@ -275,7 +269,6 @@ public class DinnertrackerRestClient {
    * @param fridge the fridge to convert
    * @return a JSON object with {@code userName} and a {@code foodItems} array
    */
-
   private ObjectNode fridgeToJson(Fridge fridge) {
     ObjectNode node = objectMapper.createObjectNode();
     node.put("userName", fridge.getUserName().getUserName());
@@ -291,7 +284,6 @@ public class DinnertrackerRestClient {
    * @return a fridge that holds the food items from the JSON
    * @throws IllegalArgumentException if a food item is missing a name, a valid quantity or a unit
    */
-
   private static Fridge fridgeFromJson(JsonNode node, User user) {
     Fridge fridge = new Fridge(user);
     for (JsonNode itemNode : node.path("foodItems")) {
@@ -304,10 +296,9 @@ public class DinnertrackerRestClient {
    * Converts a recipe to the JSON format the REST server expects.
    *
    * @param recipe the recipe to convert
-   * @return a JSON object with {@code userName}, {@code name}, {@code ingredients} and
-   *     {@code steps}
+   * @return a JSON object with {@code userName}, {@code name}, {@code ingredients} and {@code
+   *     steps}
    */
-
   private ObjectNode recipeToJson(Recipe recipe) {
     ObjectNode node = objectMapper.createObjectNode();
     node.put("userName", recipe.getUserName().getUserName());
@@ -321,15 +312,14 @@ public class DinnertrackerRestClient {
   /**
    * Builds a recipe from the JSON the REST server sends.
    *
-   * <p>If the recipe belongs to the logged-in user, it is linked to {@code currentUser}. Otherwise a
-   * new {@link User} is created for the owner.
+   * <p>If the recipe belongs to the logged-in user, it is linked to {@code currentUser}. Otherwise
+   * a new {@link User} is created for the owner.
    *
    * @param node the JSON object for the recipe
    * @param currentUser the logged-in user
    * @return the recipe with its ingredients and steps
    * @throws IllegalArgumentException if a required field is missing or has the wrong type
    */
-
   private static Recipe recipeFromJson(JsonNode node, User currentUser) {
     String ownerName = requiredText(node, "userName");
     User owner = ownerName.equals(currentUser.getUserName()) ? currentUser : new User(ownerName);
@@ -351,7 +341,6 @@ public class DinnertrackerRestClient {
    * @param array the JSON array to add the items to
    * @param amounts the food items mapped to their amounts
    */
-
   private static void writeAmounts(ArrayNode array, Map<FoodItem, Amount> amounts) {
     for (Map.Entry<FoodItem, Amount> entry : amounts.entrySet()) {
       ObjectNode itemNode = array.addObject();
@@ -369,7 +358,6 @@ public class DinnertrackerRestClient {
    * @throws IllegalArgumentException if {@code quantity} is not a number, or if {@code unit} is
    *     missing or not a known unit
    */
-
   private static Amount readAmount(JsonNode node) {
     JsonNode quantity = node.path("quantity");
     if (!quantity.isNumber()) {
@@ -386,7 +374,6 @@ public class DinnertrackerRestClient {
    * @return the field's value
    * @throws IllegalArgumentException if the field is missing or does not hold text
    */
-
   private static String requiredText(JsonNode node, String field) {
     JsonNode value = node.path(field);
     if (!value.isTextual()) {

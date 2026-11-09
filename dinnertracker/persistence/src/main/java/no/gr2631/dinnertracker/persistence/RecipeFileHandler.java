@@ -28,8 +28,7 @@ public class RecipeFileHandler implements GenericRepository<RecipeBook> {
   /**
    * Creates a new file handler for recipes. The handler uses its own {@link ObjectMapper} that is
    * configured to write indented JSON, so the saved file is easy to read.
-   */ 
-  
+   */
   public RecipeFileHandler() {
     this.objectMapper = new ObjectMapper();
     this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

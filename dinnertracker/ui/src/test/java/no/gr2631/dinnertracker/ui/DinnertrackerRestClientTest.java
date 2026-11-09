@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
@@ -144,8 +145,8 @@ class DinnertrackerRestClientTest {
   }
 
   /**
-   * Verifies that the default constructor can be created when the server address is set as a
-   * system property. The previous value of the property is restored afterwards.
+   * Verifies that the default constructor can be created when the server address is set as a system
+   * property. The previous value of the property is restored afterwards.
    */
   @Test
   void defaultConstructorShouldReadServerAddressProperty() {
@@ -256,8 +257,8 @@ class DinnertrackerRestClientTest {
   }
 
   /**
-   * Verifies that updating a fridge sends a PUT with the owner's username and every food item,
-   * with units written as enum names.
+   * Verifies that updating a fridge sends a PUT with the owner's username and every food item, with
+   * units written as enum names.
    */
   @Test
   void updateFridgeShouldPutAllFoodItems() throws Exception {
@@ -373,8 +374,8 @@ class DinnertrackerRestClientTest {
   }
 
   /**
-   * Verifies that a failed connection gives an error message with the server address and a hint
-   * to start the REST server.
+   * Verifies that a failed connection gives an error message with the server address and a hint to
+   * start the REST server.
    */
   @Test
   void unreachableServerShouldGiveHelpfulMessage() throws Exception {

@@ -21,7 +21,6 @@ public enum Unit {
    *
    * @param symbol the short symbol used to represent this unit in the UI and in persistence
    */
-
   Unit(String symbol) {
     this.symbol = symbol;
   }
@@ -31,7 +30,6 @@ public enum Unit {
    *
    * @return the symbol of this unit, for example "g" for {@link #GRAM}
    */
-  
   public String getSymbol() {
     return symbol;
   }
