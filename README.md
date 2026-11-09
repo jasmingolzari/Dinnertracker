@@ -169,6 +169,33 @@ The JavaFX client communicates with the REST server to access application functi
 
 
 
+## Running the shippable product
+
+Users who only want to run the application do not need to build the
+project or start the JavaFX client from the terminal. A ready-to-use
+Windows executable is available as a release asset.
+
+1. Go to the [Releases](https://git.ntnu.no/IT1901-2026-groups/gr2631/releases)
+   page and open the latest release (v3.0.0).
+2. Under **Assets**, download `DinnerTracker-1.0.exe`.
+3. Start the REST server first. The application cannot work without it:
+
+   ```bash
+   cd dinnertracker/rest
+   mvn spring-boot:run
+   ```
+
+4. Keep the server running, then double-click `DinnerTracker-1.0.exe`
+   to open the application. Download it and open from desktop. 
+
+
+Opening the executable replaces `mvn javafx:run` from the section above.
+The REST server must still be started separately.
+
+Windows may show a security warning because the file is not signed.
+Choose "More info" and then "Run anyway" to open it.
+
+
 
 ## Eclipse Che
 
