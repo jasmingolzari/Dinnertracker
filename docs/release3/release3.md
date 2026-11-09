@@ -3,8 +3,8 @@
 ## Overview
 Release 3 is the final release of Dinnertracker. It completes the
 application by adding a REST API, user login and a set of new features that
-make the app more useful in everyday cooking. It also finishes the work that
-was listed as future work in Release 2.
+make the app more useful in everyday cooking. The application can also be
+packaged as a shippable product with jlink and jpackage. It also finishes the work that was listed as future work in Release 2.
 
 The main idea behind this release is to help the user cook with what they
 already have. The recipe list is now sorted by what is in the user's fridge,
@@ -17,8 +17,8 @@ measured with JaCoCo.
 
 ## Main goals
 - Complete the future work from Release 2
-- Add a REST API using Spring Boot, and let the JavaFX application
-  communicate with it
+- Add a REST API using Spring Boot, and let the JavaFX application communicate with it
+- Package the application as a shippable product with jlink and jpackage
 - Add user login and connect the fridge and recipes to the user
 - Sort recipes based on the food items in the user's fridge
 - Add a detailed view for each recipe
@@ -110,11 +110,43 @@ remove each item by hand.
 The existing pages have received some smaller visual improvements:
 
 - buttons and clickable list items show a hand cursor on hover
-- rows in the recipe overview are highlighted when the user hovers over
-  them, and the recipe names are coloured based on whether the recipe can
+- the recipe names are coloured based on whether the recipe can
   be made with the current fridge contents
 - the recipe overview is sorted and clickable, which makes the list easier
   to use than in Release 2
+
+### Shippable product
+The JavaFX client is packaged as a shippable product, so users can install
+and run Dinnertracker without Maven, an IDE or a separate Java
+installation. Only the client is packaged, since it is the part that is
+distributed to users. The REST server is not distributed and is started
+as described in the [README](../../README.md).
+
+The client is packaged in two steps:
+
+- **jlink** creates a small, custom Java runtime that only contains the
+  modules the client needs (Java, JavaFX, Jackson, `core` and `ui`). This
+  is possible because the modules have a `module-info.java`.
+- **jpackage** wraps this runtime and the application into a native
+  application for the user's operating system:
+  - **Windows:** an installer (`.exe`). The user runs the installer, and
+    Dinnertracker is installed like any other program.
+  - **macOS:** an application (`.app`) that can be moved to the
+    Applications folder and opened like any other Mac app.
+
+The application is built from the `ui` directory with:
+
+~~~bash
+mvn javafx:jlink
+mvn jpackage:jpackage
+~~~
+
+The result is created in `ui/target/dist/`. jpackage can only create a
+package for the operating system it runs on, so the `.exe` must be built
+on Windows and the `.app` on macOS.
+
+The REST server must be running before the installed application is
+started.
 
 ## Architecture
 The project is split into four Maven modules:
@@ -165,12 +197,13 @@ reach the coverage limits set in JaCoCo.
   - `RecipeDetailsViewPageControllerTest` for the detailed recipe view
 
 ### Automatic checks in pull requests
-The project has an automatic pipeline that runs every time a pull request
-is opened or updated. The pipeline builds the project with Maven and runs
-all tests together with Checkstyle, SpotBugs and JaCoCo. A pull request
-should not be merged before all checks pass. This makes sure that new code
-does not break existing functionality, and that the code quality stays the
-same across the whole team.
+The project has an automatic pipeline (GitHub Actions) that runs every time
+a pull request is opened or updated. The pipeline builds the project with
+Maven and runs all tests together with Checkstyle, SpotBugs, Spotless and
+JaCoCo. The JavaFX tests run with a virtual display (Xvfb), since the build
+server has no screen. A pull request should not be merged before all checks
+pass. This makes sure that new code does not break existing functionality,
+and that the code quality stays the same across the whole team.
 
 Some pull requests in the project history show that checks have failed.
 This happened because new functionality was added before the tests for it
@@ -209,7 +242,7 @@ The future work listed in Release 2 is now completed:
 - The existing pages are further developed with small visual improvements.
 - A hand cursor is shown when hovering over buttons and clickable items.
 - The list view on the recipe page is improved: recipes are sorted by the
-fridge, highlighted on hover and coloured based on availability.
+  fridge and coloured based on availability.
 - Added recipes can be clicked and shown on their own page.
 
 ## Documentation
@@ -217,12 +250,14 @@ The following documents provide more detailed information about
 Release 3:
 
 - [AI Tools](../ai-tools.md)
+- [Architecture](architecture.md)
 - [Challenges](challenges.md)
 - [Contribution](contribution.md)
 - [Code quality](code-quality.md)
 - [REST API](api.md)
 - [Sustainability](sustainability.md)
 - [Teamwork](teamwork.md)
+- [UML diagrams](uml.md)
 - [Work practices](work-practices.md)
 - [Workflow](workflow.md)
 
