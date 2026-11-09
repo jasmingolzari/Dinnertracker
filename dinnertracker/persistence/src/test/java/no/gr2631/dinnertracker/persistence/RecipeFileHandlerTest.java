@@ -23,26 +23,42 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** Tests reading and writing recipes with {@link RecipeFileHandler}. */
 class RecipeFileHandlerTest {
 
+  /** The file handler being tested. */
   private RecipeFileHandler handler;
+
+  /** The user who owns the recipes in the tests. */
   private User user;
 
+  /** Temporary directory for test files, deleted by JUnit after each test. */
   @TempDir Path tempDir;
 
-  /** Creates a fresh file handler before each test. */
+  /** Creates a fresh file handler and test user before each test. */
   @BeforeEach
   void setUp() {
     handler = new RecipeFileHandler();
     user = new User("testuser");
   }
 
-  /** Creates a file in the temporary test directory with the given content. */
+  /**
+   * Creates a file in the temporary test directory with the given content.
+   *
+   * @param fileName the name of the file
+   * @param content the text to write to the file
+   * @return the path to the new file
+   * @throws IOException if the file cannot be written
+   */
   private Path createFile(String fileName, String content) throws IOException {
     Path path = tempDir.resolve(fileName);
     Files.writeString(path, content);
     return path;
   }
 
-  /** Creates a recipe book containing the given recipes. */
+  /**
+   * Creates a recipe book for the test user containing the given recipes.
+   *
+   * @param recipes the recipes to add
+   * @return the new recipe book
+   */
   private RecipeBook createRecipeBook(Recipe... recipes) {
     RecipeBook book = new RecipeBook(user);
     for (Recipe recipe : recipes) {
@@ -51,7 +67,12 @@ class RecipeFileHandlerTest {
     return book;
   }
 
-  /** Creates a recipe containing one ingredient and two preparation steps. */
+  /**
+   * Creates a recipe containing one ingredient (500 g flour) and two preparation steps.
+   *
+   * @param name the name of the recipe
+   * @return the new recipe
+   */
   private Recipe createRecipe(String name) {
     Recipe recipe = new Recipe(name, user);
     recipe.addIngredient(new FoodItem("Mel"), new Amount(500, Unit.GRAM));
@@ -160,6 +181,13 @@ class RecipeFileHandlerTest {
     assertThrows(IOException.class, () -> handler.load(path, user));
   }
 
+  /**
+   * Verifies that a file with JSON {@code null}, an empty array or an array with only {@code null}
+   * gives an empty recipe book.
+   *
+   * @param json the file content to load
+   * @throws IOException if the file cannot be written or read
+   */
   @ParameterizedTest
   @ValueSource(strings = {"null", "[]", "[null]"})
   void loadShouldHandleEmptyJsonData(String json) throws IOException {
@@ -168,6 +196,7 @@ class RecipeFileHandlerTest {
     assertTrue(handler.load(path, user).getRecipes().isEmpty());
   }
 
+  /** Verifies that saving an empty recipe book removes the recipes that were stored before. */
   @Test
   void saveShouldAllowClearingRecipeBook() throws IOException {
     Path path = tempDir.resolve("recipes.json");
@@ -178,6 +207,13 @@ class RecipeFileHandlerTest {
     assertTrue(handler.load(path, user).getRecipes().isEmpty());
   }
 
+  /**
+   * Verifies that units can be stored as enum names, in any case, or as symbols. The test also
+   * checks that {@code null} ingredients and steps in the file are skipped.
+   *
+   * @param unit the unit text to put in the file
+   * @throws IOException if the file cannot be written or read
+   */
   @ParameterizedTest
   @ValueSource(strings = {"GRAM", "gram", "g"})
   void loadShouldAcceptUnitNamesAndSymbols(String unit) throws IOException {

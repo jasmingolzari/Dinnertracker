@@ -16,10 +16,20 @@ public enum Unit {
 
   private final String symbol;
 
+  /**
+   * Creates a unit with the given display symbol.
+   *
+   * @param symbol the short symbol used to represent this unit in the UI and in persistence
+   */
   Unit(String symbol) {
     this.symbol = symbol;
   }
 
+  /**
+   * Returns the short, user-facing symbol for this unit.
+   *
+   * @return the symbol of this unit, for example "g" for {@link #GRAM}
+   */
   public String getSymbol() {
     return symbol;
   }
