@@ -80,7 +80,7 @@ More detailed information about the architecture and design can be found in the 
 The project uses the following technologies and tools:
 
 - Java 17
-- Apache Maven 3.9.x
+- Apache Maven 3.9.12
 - JavaFX 21.0.2
 - Spring Boot 3.5.7
 - Jackson for JSON processing
