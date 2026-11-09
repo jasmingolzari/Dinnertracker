@@ -27,8 +27,6 @@ The Checkstyle check runs automatically during the
 Maven verify phase. The build fails if a Checkstyle
 violation is detected.
 
-
-
 ## SpotBugs
 
 SpotBugs is a static analysis tool used to detect
@@ -59,7 +57,6 @@ Maven verify phase. If source files do not match
 the required formatting, the build fails and the
 affected files are reported.
 
-
 ## Running code quality checks
 
 The project uses Maven to build, test, and run the
@@ -69,6 +66,9 @@ Run the following command from the repository root:
 
     mvn -f dinnertracker/pom.xml verify
 
+    Alternatively, run `mvn verify` directly from the
+`dinnertracker/` directory.
+
 The verify phase runs the automated tests and the
 configured Checkstyle, SpotBugs, Spotless, and
 JaCoCo checks.
@@ -76,13 +76,15 @@ JaCoCo checks.
 JaCoCo generates coverage reports and checks the
 configured coverage requirements.
 
+The JaCoCo HTML coverage reports are generated in each module's
+`target/site/jacoco/index.html` file (`core`, `persistence`, `ui`, and `rest`).
+
 If a configured quality check fails, Maven reports
 the violations and the build fails.
 
-
 ## Current verification results
 
-The code quality checks were verified on November 5, 2026, using the following command from the repository root:
+The code quality checks were verified on November 9, 2026, using Eclipse Temurin Java 17.0.20.1 and Apache Maven 3.9.16. The following command was run from the repository root:
 
 ```bash
 mvn -f dinnertracker/pom.xml verify
@@ -106,11 +108,9 @@ The following coverage results were calculated from the JaCoCo CSV reports gener
 
 | Module | Line coverage | Branch coverage |
 |---|---:|---:|
-| Core | 92.1% | 79.5% |
+| Core | 92.2% | 79.5% |
 | Persistence | 99.3% | 85.7% |
-| UI | 91.4% | 83.5% |
+| UI | 90.9% | 83.5% |
 | REST | 87.9% | 80.0% |
 
 All four modules meet the configured JaCoCo requirements of at least 80% line coverage and 70% branch coverage.
-
-Unlike the previous release, the full Maven verify build is no longer blocked by Spotless formatting violations. All configured quality checks completed successfully during this verification.
