@@ -18,8 +18,7 @@ describing a task and makes it easier for other group members to
 understand what needs to be done.
  
 The issues are connected to milestones so that the group can organize
-work according to the different releases. We distribute the issues on our first meeting for the release we're working on. "Når det oppstår problemer hvor nye issues trenger å lages lages de fortløpende hvor vi informerrer hverandre om at det lages forså å fordele issues til den det passer best"
- 
+work according to the different releases. We distribute the issues on our first meeting for the release we're working on. If new problems come up where a new issue is made consecutively. It is then distributed to the member it suits bests.  
  
 ## Branches
  
@@ -28,7 +27,7 @@ the `main` branch. A branch is created for a specific issue and is used
 while implementing and testing the changes related to that issue.
  
 This makes it possible for several group members to work on different
-tasks at the same time without directly affecting the main branch. "This avoids merge conflicts."
+tasks at the same time without directly affecting the main branch. This avoids merge conflicts.
  
 ## Pull Requests and Code Review
  
