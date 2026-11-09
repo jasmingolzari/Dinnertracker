@@ -26,7 +26,13 @@ Beyond these tasks, I actively coordinated planning and group meetings throughou
 
 ## Faustin Tamba Kebbe
 
-[Main contributions to the project.]
+- **Release 1:** I established the initial multi-module Maven project structure, configuring the core, persistence, and UI modules. I also implemented RecipeFileHandler and its unit test to support recipe persistence.
+
+- **Release 2:** I documented the project’s three-layer architecture and persistence mechanisisms. I also created and improved the code quality documentation, describing the project’s quality assurance practices.
+
+- **Release 3:** I extended the Maven architecture by creating the fourth module, rest, and implemented the initial REST API. I subsequently migrated the rest module from Javalin to Spring Boot. I implemented and tested the fridge and users REST APIs, expanded REST controller test coverage, and improved UI test coverage. I also enhanced CI verification and Jacoco reporting, aplied Spotless formating and the REST API documentation. 
+
+Finally, i updated the code-quality documentation, verified the latest Maven build, and adressed code review feedback.
 
 ## Mia Ngo Nguyen
 
