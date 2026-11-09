@@ -10,7 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -44,22 +43,45 @@ import org.mockito.MockedStatic;
 /** Tests the fridge form, table contents, calls to the REST client, and navigation. */
 public class FridgePageControllerTest {
 
+  /** Whether the JavaFX toolkit could be started; the tests are skipped if it could not. */
   private static boolean toolkitStarted;
 
+  /** The controller being tested. */
   private FridgePageController controller;
+
+  /** Text field for the name of the food item to add. */
   private TextField foodItemField;
+
+  /** Spinner for the quantity of the food item to add. */
   private Spinner<Double> quantitySpinner;
+
+  /** Combo box for the unit of the food item to add. */
   private ComboBox<Unit> unitComboBox;
+
+  /** Table that shows the contents of the fridge. */
   private TableView<Object> fridgeTable;
+
+  /** Table column that shows the name of each food item. */
   private TableColumn<Object, String> foodNameColumn;
+
+  /** Table column that shows the amount of each food item. */
   private TableColumn<Object, String> amountColumn;
 
+  /** Mocked REST client, so no requests are sent to a real server. */
   private DinnertrackerRestClient restClient;
+
+  /** The user who owns the test fridge. */
   private User testUser;
+
+  /** Fridge used by the tests, with strawberries and apples in it. */
   private Fridge testFridge;
 
   // Original App state, restored after each test
+
+  /** The logged-in user before the test, restored afterwards. */
   private User originalUser;
+
+  /** The fridge in {@link App} before the test, restored afterwards. */
   private Fridge originalFridge;
 
   /** Starts JavaFX and keeps it running when a navigation test closes its stage. */
@@ -408,24 +430,53 @@ public class FridgePageControllerTest {
         });
   }
 
+  /**
+   * Sets a private field in the controller.
+   *
+   * @param name the name of the field
+   * @param value the value to set
+   * @throws Exception if the field does not exist or cannot be set
+   */
   private void setField(String name, Object value) throws Exception {
     Field field = FridgePageController.class.getDeclaredField(name);
     field.setAccessible(true);
     field.set(controller, value);
   }
 
+  /**
+   * Calls a private controller method that takes one argument.
+   *
+   * @param name the name of the method
+   * @param argumentType the type of the method's parameter
+   * @param argument the value to pass to the method
+   * @throws Exception if the method does not exist or throws an exception
+   */
   private void invoke(String name, Class<?> argumentType, Object argument) throws Exception {
     Method method = FridgePageController.class.getDeclaredMethod(name, argumentType);
     method.setAccessible(true);
     method.invoke(controller, argument);
   }
 
+  /**
+   * Reads the name of the food item the controller currently highlights.
+   *
+   * @return the highlighted food name, or {@code null} if no row is highlighted
+   * @throws Exception if the field does not exist or cannot be read
+   */
   private String highlightedFoodName() throws Exception {
     Field field = FridgePageController.class.getDeclaredField("highlightedFoodName");
     field.setAccessible(true);
     return (String) field.get(controller);
   }
 
+  /**
+   * Finds the table row for a food item, using the name column so the test does not depend on the
+   * controller's private row type.
+   *
+   * @param name the food name to look for
+   * @return the matching row
+   * @throws java.util.NoSuchElementException if no row has that name
+   */
   private Object rowNamed(String name) {
     return fridgeTable.getItems().stream()
         .filter(row -> foodNameColumn.getCellObservableValue(row).getValue().equals(name))
@@ -433,7 +484,12 @@ public class FridgePageControllerTest {
         .orElseThrow();
   }
 
-  /** Runs JavaFX work on its application thread and propagates assertion failures. */
+  /**
+   * Runs JavaFX work on its application thread and propagates assertion failures.
+   *
+   * @param action the work to run
+   * @throws Exception if the work does not finish within five seconds or fails
+   */
   private void runOnFxThread(ThrowingRunnable action) throws Exception {
     if (Platform.isFxApplicationThread()) {
       action.run();
@@ -457,8 +513,14 @@ public class FridgePageControllerTest {
     }
   }
 
+  /** A piece of work that, unlike {@link Runnable}, may throw a checked exception. */
   @FunctionalInterface
   private interface ThrowingRunnable {
+    /**
+     * Runs the work.
+     *
+     * @throws Exception if the work fails
+     */
     void run() throws Exception;
   }
 }

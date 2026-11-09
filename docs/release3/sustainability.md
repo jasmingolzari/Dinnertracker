@@ -4,7 +4,7 @@
 DinnerTracker is a Java application where users log in, register groceries in their fridge and browse recipes. Recipes are sorted by how many ingredients users already have, helping them find suitable meals. We assume the app is used regularly by a few thousand households and use the Sustainability Awareness Framework (SusAF) to assess its impacts. Numbers in parentheses refer to the SusAD diagram, where green boxes represent positive impacts and red boxes represent negative impacts.
 
 
-![SusAD diagram for DinnerTracker](susAD.jpg)
+![SusAD diagram for DinnerTracker](../../dinnertracker/images/susAD.jpg)
 
 ## Impact table
 

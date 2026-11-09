@@ -38,9 +38,19 @@ import org.mockito.MockedStatic;
 /** Tests for RecipeDetailsViewPageController. */
 class RecipeDetailsViewPageControllerTest {
 
+  /** The fridge in {@link App} before the test, restored afterwards. */
   private Fridge previousFridge;
+
+  /** The recipe book in {@link App} before the test, restored afterwards. */
   private RecipeBook previousRecipeBook;
 
+  /**
+   * Runs JavaFX work on its application thread and waits for it to finish. If the current thread
+   * already is the JavaFX thread, the work runs directly.
+   *
+   * @param action the work to run
+   * @throws Exception if the work does not finish within five seconds or fails
+   */
   private static void runOnFxThread(ThrowingRunnable action) throws Exception {
     if (Platform.isFxApplicationThread()) {
       action.run();
@@ -70,6 +80,7 @@ class RecipeDetailsViewPageControllerTest {
     }
   }
 
+  /** Starts the JavaFX toolkit, unless another test has already started it. */
   @BeforeAll
   static void initializeJavaFx() {
     try {
@@ -79,19 +90,29 @@ class RecipeDetailsViewPageControllerTest {
     }
   }
 
+  /** Saves the fridge and recipe book in {@link App}, so they can be restored after the test. */
   @BeforeEach
   void rememberAppState() {
     previousFridge = App.getFridge();
     previousRecipeBook = App.getRecipeBook();
   }
 
+  /** Restores the fridge and recipe book in {@link App} that were saved before the test. */
   @AfterEach
   void restoreAppState() {
     App.setFridge(previousFridge);
     App.setRecipeBook(previousRecipeBook);
   }
 
-  /** Injects the FXML fields that {@code setRecipe} fills in. */
+  /**
+   * Injects the FXML fields that {@code setRecipe} fills in.
+   *
+   * @param controller the controller to inject the views into
+   * @param name the label for the recipe name
+   * @param ingredients the container for the ingredients
+   * @param steps the container for the preparation steps
+   * @throws Exception if a field does not exist or cannot be set
+   */
   private static void injectViews(
       RecipeDetailsViewPageController controller, Label name, VBox ingredients, VBox steps)
       throws Exception {
@@ -100,18 +121,32 @@ class RecipeDetailsViewPageControllerTest {
     setField(controller, "stepsListBox", steps);
   }
 
+  /**
+   * Sets a private field in the controller.
+   *
+   * @param target the controller whose field should be set
+   * @param name the name of the field
+   * @param value the value to set
+   * @throws Exception if the field does not exist or cannot be set
+   */
   private static void setField(Object target, String name, Object value) throws Exception {
     Field field = RecipeDetailsViewPageController.class.getDeclaredField(name);
     field.setAccessible(true);
     field.set(target, value);
   }
 
-  /** A recipe that needs two tomatoes. */
+  /**
+   * Creates a salad recipe that needs two tomatoes and has no steps.
+   *
+   * @param user the owner of the recipe
+   * @return the new recipe
+   */
   private static Recipe saladRecipe(User user) {
     return new Recipe(
         "Salat", user, Map.of(new FoodItem("Tomat"), new Amount(2, Unit.PIECE)), List.of());
   }
 
+  /** Tests that the controller can be created with the default constructor that FXML uses. */
   @Test
   void controllerCanBeCreated() {
     final RecipeDetailsViewPageController controller = new RecipeDetailsViewPageController();
@@ -119,6 +154,7 @@ class RecipeDetailsViewPageControllerTest {
     assertNotNull(controller);
   }
 
+  /** Tests that setting a recipe shows its name in the name label. */
   @Test
   void setRecipeDisplaysRecipeName() throws Exception {
     runOnFxThread(
@@ -133,6 +169,10 @@ class RecipeDetailsViewPageControllerTest {
         });
   }
 
+  /**
+   * Tests that setting a recipe shows how many ingredients are in the fridge, highlights the
+   * ingredients that are available, and shows the steps numbered in order.
+   */
   @Test
   void setRecipeHighlightsAvailableIngredients() throws Exception {
     runOnFxThread(
@@ -269,8 +309,14 @@ class RecipeDetailsViewPageControllerTest {
         });
   }
 
+  /** A piece of work that, unlike {@link Runnable}, may throw a checked exception. */
   @FunctionalInterface
   private interface ThrowingRunnable {
+    /**
+     * Runs the work.
+     *
+     * @throws Exception if the work fails
+     */
     void run() throws Exception;
   }
 }

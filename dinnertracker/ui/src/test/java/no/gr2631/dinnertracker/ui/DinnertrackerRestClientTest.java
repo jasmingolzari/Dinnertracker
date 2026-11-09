@@ -12,7 +12,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
@@ -47,13 +46,22 @@ import org.mockito.ArgumentCaptor;
  */
 class DinnertrackerRestClientTest {
 
+  /** Used to read the JSON bodies of the requests the client sends. */
   private static final ObjectMapper JSON = new ObjectMapper();
 
+  /** Mocked HTTP client that records the requests instead of sending them. */
   private HttpClient httpClient;
+
+  /** Mocked response that the HTTP client returns for every request. */
   private HttpResponse<String> response;
+
+  /** The client being tested, pointed at the mocked HTTP client. */
   private DinnertrackerRestClient client;
+
+  /** Test user whose name contains a space, to check that usernames are URL-encoded. */
   private final User user = new User("ola nordmann");
 
+  /** Creates a client that sends every request to a mocked HTTP client. */
   @BeforeEach
   @SuppressWarnings("unchecked")
   void setUp() throws Exception {
@@ -63,24 +71,44 @@ class DinnertrackerRestClientTest {
     client = new DinnertrackerRestClient(URI.create("http://localhost:7070/"), httpClient);
   }
 
+  /** Clears the interrupt flag on the current thread after each test. */
   @AfterEach
   void clearInterruptFlag() {
     // A test below interrupts the current thread on purpose; do not leak that to other tests.
     Thread.interrupted();
   }
 
+  /**
+   * Sets the status code and body that the mocked server answers with.
+   *
+   * @param status the HTTP status code to return
+   * @param body the response body to return
+   */
   private void answer(int status, String body) {
     when(response.statusCode()).thenReturn(status);
     when(response.body()).thenReturn(body);
   }
 
+  /**
+   * Returns the request that the client sent, and checks that exactly one request was sent.
+   *
+   * @return the request passed to the mocked HTTP client
+   * @throws Exception if the request cannot be captured
+   */
   private HttpRequest sentRequest() throws Exception {
     ArgumentCaptor<HttpRequest> request = ArgumentCaptor.forClass(HttpRequest.class);
     verify(httpClient).send(request.capture(), any());
     return request.getValue();
   }
 
-  /** Reads the body of a request by subscribing to its body publisher. */
+  /**
+   * Reads the body of a request by subscribing to its body publisher.
+   *
+   * @param request the request whose body should be read
+   * @return the body parsed as JSON
+   * @throws Exception if the request has no body, the body cannot be read within five seconds, or
+   *     the body is not valid JSON
+   */
   private static JsonNode bodyOf(HttpRequest request) throws Exception {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     CompletableFuture<Void> done = new CompletableFuture<>();
@@ -115,6 +143,10 @@ class DinnertrackerRestClientTest {
     return JSON.readTree(bytes.toString(StandardCharsets.UTF_8));
   }
 
+  /**
+   * Verifies that the default constructor can be created when the server address is set as a
+   * system property. The previous value of the property is restored afterwards.
+   */
   @Test
   void defaultConstructorShouldReadServerAddressProperty() {
     String previous = System.getProperty(DinnertrackerRestClient.BASE_URL_PROPERTY);
@@ -130,6 +162,10 @@ class DinnertrackerRestClientTest {
     }
   }
 
+  /**
+   * Verifies that a registered user is returned, and that the request is a GET with the username
+   * URL-encoded in the query.
+   */
   @Test
   void getUserShouldReturnRegisteredUser() throws Exception {
     answer(200, "ola nordmann");
@@ -142,6 +178,7 @@ class DinnertrackerRestClientTest {
     assertEquals(URI.create("http://localhost:7070/users?userName=ola%20nordmann"), request.uri());
   }
 
+  /** Verifies that {@code null} is returned when the server answers 404 Not Found. */
   @Test
   void getUserShouldReturnNullForUnknownUser() throws Exception {
     answer(404, "User not found");
@@ -149,6 +186,7 @@ class DinnertrackerRestClientTest {
     assertNull(client.getUser("ukjent"));
   }
 
+  /** Verifies that creating a user sends a POST to {@code /users} with the username as JSON. */
   @Test
   void createUserShouldPostUserName() throws Exception {
     answer(201, "User created successfully");
@@ -161,6 +199,10 @@ class DinnertrackerRestClientTest {
     assertEquals("ola nordmann", bodyOf(request).get("userName").asText());
   }
 
+  /**
+   * Verifies that an {@link IOException} containing the status code is thrown when the server
+   * answers 409 Conflict because the user already exists.
+   */
   @Test
   void createUserShouldFailWhenUserAlreadyExists() {
     answer(409, "User already exists");
@@ -169,6 +211,10 @@ class DinnertrackerRestClientTest {
     assertTrue(error.getMessage().contains("409"));
   }
 
+  /**
+   * Verifies that the food items in the server's answer are read into a fridge linked to the given
+   * user. Units can be given both as enum names and as symbols.
+   */
   @Test
   void getFridgeShouldReadFoodItems() throws Exception {
     answer(
@@ -193,6 +239,7 @@ class DinnertrackerRestClientTest {
         URI.create("http://localhost:7070/fridges?userName=ola%20nordmann"), sentRequest().uri());
   }
 
+  /** Verifies that an {@link IOException} is thrown when a food item is missing its quantity. */
   @Test
   void getFridgeShouldRejectInvalidData() {
     answer(200, "{\"foodItems\": [{\"name\": \"Melk\", \"unit\": \"LITRE\"}]}");
@@ -200,6 +247,7 @@ class DinnertrackerRestClientTest {
     assertThrows(IOException.class, () -> client.getFridge(user));
   }
 
+  /** Verifies that an {@link IOException} is thrown when a food item has an unknown unit. */
   @Test
   void getFridgeShouldRejectUnknownUnit() {
     answer(200, "{\"foodItems\": [{\"name\": \"Melk\", \"quantity\": 1, \"unit\": \"kopp\"}]}");
@@ -207,6 +255,10 @@ class DinnertrackerRestClientTest {
     assertThrows(IOException.class, () -> client.getFridge(user));
   }
 
+  /**
+   * Verifies that updating a fridge sends a PUT with the owner's username and every food item,
+   * with units written as enum names.
+   */
   @Test
   void updateFridgeShouldPutAllFoodItems() throws Exception {
     answer(200, "Fridge updated successfully");
@@ -227,6 +279,7 @@ class DinnertrackerRestClientTest {
     assertEquals("GRAM", item.get("unit").asText());
   }
 
+  /** Verifies that an {@link IOException} is thrown when the server rejects the fridge. */
   @Test
   void updateFridgeShouldFailOnBadRequest() {
     answer(400, "Invalid food item");
@@ -234,6 +287,10 @@ class DinnertrackerRestClientTest {
     assertThrows(IOException.class, () -> client.updateFridge(new Fridge(user)));
   }
 
+  /**
+   * Verifies that recipes from all users are read into one recipe book. The logged-in user's own
+   * recipes are linked to the given user object, and other users' recipes keep their owner's name.
+   */
   @Test
   void getRecipeBookShouldReadSharedRecipesFromAllUsers() throws Exception {
     answer(
@@ -261,6 +318,7 @@ class DinnertrackerRestClientTest {
     assertEquals(List.of("Bak"), shared.getSteps());
   }
 
+  /** Verifies that an {@link IOException} is thrown when a recipe from the server has no name. */
   @Test
   void getRecipeBookShouldRejectRecipeWithoutName() {
     answer(200, "[{\"userName\": \"kari\", \"ingredients\": [], \"steps\": []}]");
@@ -268,6 +326,7 @@ class DinnertrackerRestClientTest {
     assertThrows(IOException.class, () -> client.getRecipeBook(user));
   }
 
+  /** Verifies that an {@link IOException} is thrown when the server answers with an error. */
   @Test
   void getRecipeBookShouldFailOnServerError() {
     answer(500, "Could not load recipes");
@@ -275,6 +334,10 @@ class DinnertrackerRestClientTest {
     assertThrows(IOException.class, () -> client.getRecipeBook(user));
   }
 
+  /**
+   * Verifies that creating a recipe sends a POST to {@code /recipes} with the owner, name,
+   * ingredients and steps as JSON.
+   */
   @Test
   void createRecipeShouldPostRecipe() throws Exception {
     answer(201, "Recipe created successfully");
@@ -301,6 +364,7 @@ class DinnertrackerRestClientTest {
     assertEquals("Stek", body.get("steps").get(1).asText());
   }
 
+  /** Verifies that an {@link IOException} is thrown when the server rejects the recipe. */
   @Test
   void createRecipeShouldFailWhenRejected() {
     answer(400, "userName and name are required");
@@ -308,6 +372,10 @@ class DinnertrackerRestClientTest {
     assertThrows(IOException.class, () -> client.createRecipe(new Recipe("Tom", user)));
   }
 
+  /**
+   * Verifies that a failed connection gives an error message with the server address and a hint
+   * to start the REST server.
+   */
   @Test
   void unreachableServerShouldGiveHelpfulMessage() throws Exception {
     doThrow(new ConnectException()).when(httpClient).send(any(HttpRequest.class), any());
@@ -318,6 +386,10 @@ class DinnertrackerRestClientTest {
     assertTrue(error.getMessage().contains("REST-serveren"));
   }
 
+  /**
+   * Verifies that an interrupted request throws an {@link IOException} and sets the thread's
+   * interrupt flag again.
+   */
   @Test
   void interruptedRequestShouldKeepInterruptFlag() throws Exception {
     doThrow(new InterruptedException()).when(httpClient).send(any(HttpRequest.class), any());

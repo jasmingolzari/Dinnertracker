@@ -164,11 +164,26 @@ public class DinnertrackerRestClient {
 
   // HTTP helpers
 
+  /**
+   * Builds a URI for the given path with the username as the {@code userName} query parameter.
+   *
+   * @param path the API path, for example {@code /fridges}
+   * @param userName the username to put in the query; it is URL-encoded
+   * @return the full URI, for example {@code http://localhost:7070/fridges?userName=ola}
+   */
+
   private URI uriWithUser(String path, String userName) {
     // URLEncoder turns spaces into '+'; '%20' is understood the same way by every server.
     String encoded = URLEncoder.encode(userName, StandardCharsets.UTF_8).replace("+", "%20");
     return URI.create(baseUrl + path + "?userName=" + encoded);
   }
+
+  /**
+   * Builds a GET request that asks for JSON.
+   *
+   * @param uri the address to send the request to
+   * @return the finished request
+   */
 
   private HttpRequest get(URI uri) {
     return HttpRequest.newBuilder(uri)
@@ -178,6 +193,15 @@ public class DinnertrackerRestClient {
         .build();
   }
 
+  /**
+   * Builds a POST request with the given JSON body.
+   *
+   * @param uri the address to send the request to
+   * @param body the JSON to send as the request body
+   * @return the finished request
+   * @throws IOException if the body cannot be converted to a JSON string
+   */
+
   private HttpRequest post(URI uri, JsonNode body) throws IOException {
     return HttpRequest.newBuilder(uri)
         .timeout(TIMEOUT)
@@ -186,6 +210,15 @@ public class DinnertrackerRestClient {
         .build();
   }
 
+  /**
+   * Builds a PUT request with the given JSON body.
+   *
+   * @param uri the address to send the request to
+   * @param body the JSON to send as the request body
+   * @return the finished request
+   * @throws IOException if the body cannot be converted to a JSON string
+   */
+
   private HttpRequest put(URI uri, JsonNode body) throws IOException {
     return HttpRequest.newBuilder(uri)
         .timeout(TIMEOUT)
@@ -193,6 +226,17 @@ public class DinnertrackerRestClient {
         .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
         .build();
   }
+
+  /**
+   * Sends a request and returns the response with the body as a string.
+   *
+   * <p>A failed connection or an interrupted request is turned into an {@link IOException} with a
+   * readable message. If the thread is interrupted, its interrupt flag is set again.
+   *
+   * @param request the request to send
+   * @return the response from the server
+   * @throws IOException if the server cannot be reached or the request is interrupted
+   */
 
   private HttpResponse<String> send(HttpRequest request) throws IOException {
     try {
@@ -206,6 +250,15 @@ public class DinnertrackerRestClient {
     }
   }
 
+  /**
+   * Checks that the server answered with the expected status code.
+   *
+   * @param response the response to check
+   * @param expectedStatus the status code that counts as success, for example {@code 200}
+   * @throws IOException if the status code is different; the message contains the status and the
+   *     response body
+   */
+
   private static void requireStatus(HttpResponse<String> response, int expectedStatus)
       throws IOException {
     if (response.statusCode() != expectedStatus) {
@@ -216,12 +269,28 @@ public class DinnertrackerRestClient {
 
   // JSON conversion. The format matches the REST controllers: units are sent as enum names.
 
+  /**
+   * Converts a fridge to the JSON format the REST server expects.
+   *
+   * @param fridge the fridge to convert
+   * @return a JSON object with {@code userName} and a {@code foodItems} array
+   */
+
   private ObjectNode fridgeToJson(Fridge fridge) {
     ObjectNode node = objectMapper.createObjectNode();
     node.put("userName", fridge.getUserName().getUserName());
     writeAmounts(node.putArray("foodItems"), fridge.getFoodItems());
     return node;
   }
+
+  /**
+   * Builds a fridge from the JSON the REST server sends.
+   *
+   * @param node the JSON object for the fridge
+   * @param user the owner of the fridge; the returned fridge is linked to this object
+   * @return a fridge that holds the food items from the JSON
+   * @throws IllegalArgumentException if a food item is missing a name, a valid quantity or a unit
+   */
 
   private static Fridge fridgeFromJson(JsonNode node, User user) {
     Fridge fridge = new Fridge(user);
@@ -230,6 +299,14 @@ public class DinnertrackerRestClient {
     }
     return fridge;
   }
+
+  /**
+   * Converts a recipe to the JSON format the REST server expects.
+   *
+   * @param recipe the recipe to convert
+   * @return a JSON object with {@code userName}, {@code name}, {@code ingredients} and
+   *     {@code steps}
+   */
 
   private ObjectNode recipeToJson(Recipe recipe) {
     ObjectNode node = objectMapper.createObjectNode();
@@ -240,6 +317,18 @@ public class DinnertrackerRestClient {
     recipe.getSteps().forEach(steps::add);
     return node;
   }
+
+  /**
+   * Builds a recipe from the JSON the REST server sends.
+   *
+   * <p>If the recipe belongs to the logged-in user, it is linked to {@code currentUser}. Otherwise a
+   * new {@link User} is created for the owner.
+   *
+   * @param node the JSON object for the recipe
+   * @param currentUser the logged-in user
+   * @return the recipe with its ingredients and steps
+   * @throws IllegalArgumentException if a required field is missing or has the wrong type
+   */
 
   private static Recipe recipeFromJson(JsonNode node, User currentUser) {
     String ownerName = requiredText(node, "userName");
@@ -255,6 +344,14 @@ public class DinnertrackerRestClient {
     return recipe;
   }
 
+  /**
+   * Writes food items and their amounts to a JSON array. Each item is written as an object with
+   * {@code name}, {@code quantity} and {@code unit}, and the unit is written as its enum name.
+   *
+   * @param array the JSON array to add the items to
+   * @param amounts the food items mapped to their amounts
+   */
+
   private static void writeAmounts(ArrayNode array, Map<FoodItem, Amount> amounts) {
     for (Map.Entry<FoodItem, Amount> entry : amounts.entrySet()) {
       ObjectNode itemNode = array.addObject();
@@ -264,6 +361,15 @@ public class DinnertrackerRestClient {
     }
   }
 
+  /**
+   * Reads an amount from the {@code quantity} and {@code unit} fields of a JSON object.
+   *
+   * @param node the JSON object to read from
+   * @return the amount described by the object
+   * @throws IllegalArgumentException if {@code quantity} is not a number, or if {@code unit} is
+   *     missing or not a known unit
+   */
+
   private static Amount readAmount(JsonNode node) {
     JsonNode quantity = node.path("quantity");
     if (!quantity.isNumber()) {
@@ -271,6 +377,15 @@ public class DinnertrackerRestClient {
     }
     return new Amount(quantity.asDouble(), Unit.parseUnit(requiredText(node, "unit")));
   }
+
+  /**
+   * Reads a text field that must be present.
+   *
+   * @param node the JSON object to read from
+   * @param field the name of the field
+   * @return the field's value
+   * @throws IllegalArgumentException if the field is missing or does not hold text
+   */
 
   private static String requiredText(JsonNode node, String field) {
     JsonNode value = node.path(field);
