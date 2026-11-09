@@ -27,7 +27,7 @@ the `main` branch. A branch is created for a specific issue and is used
 while implementing and testing the changes related to that issue.
  
 This makes it possible for several group members to work on different
-tasks at the same time without directly affecting the main branch. This avoids merge conflicts.
+tasks at the same time without directly affecting the main branch. This keeps main stable and makes sure all changes are reviewed before they are merged.
  
 ## Pull Requests and Code Review
  
@@ -99,7 +99,7 @@ development instead of relying only on scheduled meetings.
 
 ## Testing
 
-To make sure that the code works as expected and new code does not make problems with existing code we make tests written and run in JUnit. Tests are made for different parts of the application to make sure it works as expected. We also use JaCoCo to measure test coverage and identify which areas need additional tests. We aim to have at least 80% test coverage for each class that needs testing. 
+To make sure that the code works as expected and that new code does not break existing functionality, we write tests with JUnit. Tests are made for different parts of the application to make sure it works as expected. We also use JaCoCo to measure test coverage and identify which areas need additional tests. We aim to have at least 80 % line coverage and 70 % branch coverage for each test. 
 
 The project is built using maven which run the tests. By running mvn verify we can identify problems during development or verify that the application still works as new functionality is implemented. 
 
