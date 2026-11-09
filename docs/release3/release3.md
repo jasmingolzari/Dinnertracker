@@ -134,19 +134,8 @@ The client is packaged in two steps:
   - **macOS:** an application (`.app`) that can be moved to the
     Applications folder and opened like any other Mac app.
 
-The application is built from the `ui` directory with:
-
-~~~bash
-mvn javafx:jlink
-mvn jpackage:jpackage
-~~~
-
-The result is created in `ui/target/dist/`. jpackage can only create a
-package for the operating system it runs on, so the `.exe` must be built
-on Windows and the `.app` on macOS.
-
-The REST server must be running before the installed application is
-started.
+How to build and install the application is described in the
+[README](../../README.md).
 
 ## Architecture
 The project is split into four Maven modules:
