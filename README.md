@@ -177,7 +177,8 @@ Windows executable is available as a release asset.
 
 1. Go to the [Releases](https://git.ntnu.no/IT1901-2026-groups/gr2631/releases)
    page and open the latest release (v3.0.0).
-2. Under **Assets**, download `DinnerTracker-1.0.exe`.
+2. Under **Assets**, download `DinnerTracker-1.0.exe`. Note that if you use MacOS, you should download `DinnerTracker-1.0.dmg` instead. 
+
 3. Start the REST server first. The application cannot work without it:
 
    ```bash
@@ -185,7 +186,7 @@ Windows executable is available as a release asset.
    mvn spring-boot:run
    ```
 
-4. Keep the server running, then double-click `DinnerTracker-1.0.exe`
+4. Keep the server running, then double-click `DinnerTracker-1.0.exe` / `DinnerTracker-1.0.dmg`
    to open the application. Download it and open from desktop. 
 
 
