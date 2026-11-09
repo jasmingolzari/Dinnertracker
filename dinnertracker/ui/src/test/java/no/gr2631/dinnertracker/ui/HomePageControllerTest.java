@@ -23,9 +23,10 @@ import no.gr2631.dinnertracker.core.User;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+/** Tests that the home page loads and that its buttons open the fridge and recipe pages. */
 class HomePageControllerTest {
 
-  /** Initialized the JavaFX runtime and keeps it running between tests when stages are closed. */
+  /** Initializes the JavaFX runtime and keeps it running between tests when stages are closed. */
   @BeforeAll
   public static void initJavaFx() {
     try {
@@ -63,26 +64,39 @@ class HomePageControllerTest {
     }
   }
 
+  /** A piece of work that, unlike {@link Runnable}, may throw a checked exception. */
   @FunctionalInterface
   interface ThrowingRunnable {
+    /**
+     * Runs the work.
+     *
+     * @throws Exception if the work fails
+     */
     void run() throws Exception;
   }
 
+  /** Tests that HomePage.fxml can be found as a resource. */
   @Test
   void homePageFxmlExists() {
     assertNotNull(HomePageController.class.getResource("HomePage.fxml"));
   }
 
+  /** Tests that RecipePage.fxml can be found as a resource. */
   @Test
   void recipePageFxmlExists() {
     assertNotNull(HomePageController.class.getResource("RecipePage.fxml"));
   }
 
+  /** Tests that FridgePage.fxml can be found as a resource. */
   @Test
   void fridgePageFxmlExists() {
     assertNotNull(HomePageController.class.getResource("FridgePage.fxml"));
   }
 
+  /**
+   * Tests that HomePage.fxml can be loaded. Loading fails if a button refers to a handler method
+   * that does not exist in the controller.
+   */
   @Test
   void homePageFxmlLoadsAndHandlersExist() throws Throwable {
     runOnFx(
@@ -93,7 +107,7 @@ class HomePageControllerTest {
         });
   }
 
-  /** Tests that FridgePage.fxml opens when fridge button is clicked on */
+  /** Tests that FridgePage.fxml opens when the fridge button is clicked. */
   @Test
   void fridgeButtonOpensFridgePage() throws Throwable {
     runOnFx(

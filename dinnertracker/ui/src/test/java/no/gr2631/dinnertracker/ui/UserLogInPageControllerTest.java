@@ -55,16 +55,37 @@ import org.mockito.MockedStatic;
  */
 class UserLogInPageControllerTest {
 
+  /** Mocked REST client, so no requests are sent to a real server. */
   private DinnertrackerRestClient restClient;
+
+  /** The window that shows the login form during the test. */
   private Stage stage;
+
+  /** The root node of the loaded login form. */
   private Parent loginRoot;
+
+  /** Text field where the username is typed. */
   private TextField usernameTextField;
+
+  /** The button that logs in. */
   private Button loginButton;
+
+  /** The logged-in user before the test, restored afterwards. */
   private User originalUser;
+
+  /** The fridge in {@link App} before the test, restored afterwards. */
   private Fridge originalFridge;
+
+  /** The recipe book in {@link App} before the test, restored afterwards. */
   private RecipeBook originalRecipeBook;
+
+  /** User logged in when the test starts, used to check that a failed login changes nothing. */
   private User initialUser;
+
+  /** The fridge of {@link #initialUser}, with milk in it. */
   private Fridge initialFridge;
+
+  /** The recipe book of {@link #initialUser}, with one recipe in it. */
   private RecipeBook initialRecipeBook;
 
   /** Starts JavaFX and keeps it running between tests when their stages are closed. */
@@ -150,7 +171,11 @@ class UserLogInPageControllerTest {
         });
   }
 
-  /** Missing usernames are rejected without contacting the server or changing any state. */
+  /**
+   * Missing usernames are rejected without contacting the server or changing any state.
+   *
+   * @param username the missing or blank username to type in
+   */
   @ParameterizedTest
   @NullAndEmptySource
   @ValueSource(strings = {"   ", "\t"})
@@ -175,7 +200,11 @@ class UserLogInPageControllerTest {
         });
   }
 
-  /** New users are registered on the server with a trimmed name and get their own empty data. */
+  /**
+   * New users are registered on the server with a trimmed name and get their own empty data.
+   *
+   * @param username the username to type in, with or without surrounding spaces
+   */
   @ParameterizedTest
   @ValueSource(strings = {"new-user", "  new-user  "})
   void loginShouldRegisterNewUserAndOpenHomePage(String username) throws Exception {
@@ -256,6 +285,8 @@ class UserLogInPageControllerTest {
   /**
    * If any request fails (for example because the server is not running), an error is shown, the
    * login page stays open and the previous user and data are kept.
+   *
+   * @param failingCall the name of the REST client method that fails
    */
   @ParameterizedTest
   @ValueSource(strings = {"getUser", "getFridge", "getRecipeBook", "createUser"})
@@ -285,6 +316,10 @@ class UserLogInPageControllerTest {
         });
   }
 
+  /**
+   * Checks that the login page is still shown and that the user, fridge and recipe book in {@link
+   * App} are the same as before the test.
+   */
   private void assertLoginStateUnchanged() {
     assertSame(loginRoot, stage.getScene().getRoot());
     assertSame(initialUser, App.getCurrentUser());
@@ -292,6 +327,10 @@ class UserLogInPageControllerTest {
     assertSame(initialRecipeBook, App.getRecipeBook());
   }
 
+  /**
+   * Checks that the login form has been replaced by the home page, which has the fridge and recipe
+   * buttons and no username field.
+   */
   private void assertHomePageIsOpen() {
     Parent root = stage.getScene().getRoot();
     assertNotSame(loginRoot, root);
@@ -300,6 +339,12 @@ class UserLogInPageControllerTest {
     assertNull(root.lookup("#usernameTextField"));
   }
 
+  /**
+   * Runs JavaFX work on its application thread and waits for it to finish.
+   *
+   * @param action the work to run
+   * @throws Exception if the work fails or does not finish within ten seconds
+   */
   private static void runOnFxThread(ThrowingRunnable action) throws Exception {
     FutureTask<Void> task =
         new FutureTask<>(
@@ -311,8 +356,14 @@ class UserLogInPageControllerTest {
     task.get(10, TimeUnit.SECONDS);
   }
 
+  /** A piece of work that, unlike {@link Runnable}, may throw a checked exception. */
   @FunctionalInterface
   private interface ThrowingRunnable {
+    /**
+     * Runs the work.
+     *
+     * @throws Exception if the work fails
+     */
     void run() throws Exception;
   }
 }
