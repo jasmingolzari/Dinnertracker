@@ -172,29 +172,43 @@ The JavaFX client communicates with the REST server to access application functi
 ## Running the shippable product
 
 Users who only want to run the application do not need to build the
-project or start the JavaFX client from the terminal. A ready-to-use
-Windows executable is available as a release asset.
+project or start the JavaFX client from the terminal. Ready-to-use installers for
+Windows and macOS are available as release assets.
 
 1. Go to the [Releases](https://git.ntnu.no/IT1901-2026-groups/gr2631/releases)
    page and open the latest release (v3.0.0).
-2. Under **Assets**, download `DinnerTracker-1.0.exe`. Note that if you use MacOS, you should download `DinnerTracker-1.0.dmg` instead. 
+2. Under **Assets**, download the installer for your operating system:
+   - Windows: `DinnerTracker-1.0.exe`
+   - macOS: `DinnerTracker-1.0.dmg`
+3. Install the application:
+   - **Windows:** double-click `DinnerTracker-1.0.exe` and follow the
+     installer.
+   - **macOS:** open `DinnerTracker-1.0.dmg` and drag DinnerTracker to
+     the Applications folder.
 
-3. Start the REST server first. The application cannot work without it:
+4. Start the REST server. The application cannot work without it. From
+   the `dinnertracker` directory:
 
    ```bash
-   cd dinnertracker/rest
+   mvn install -DskipTests
+   cd rest
    mvn spring-boot:run
    ```
+   Wait until the terminal shows `Started DinnertrackerApplication`.
 
-4. Keep the server running, then double-click `DinnerTracker-1.0.exe` / `DinnerTracker-1.0.dmg`
-   to open the application. Download it and open from desktop. 
+5. Keep the server running, and open DinnerTracker like any other
+   program.
 
 
-Opening the executable replaces `mvn javafx:run` from the section above.
-The REST server must still be started separately.
+Opening the installed application replaces `mvn javafx:run` from the
+section above. The REST server must still be started separately, on the
+same machine as the application.
 
-Windows may show a security warning because the file is not signed.
-Choose "More info" and then "Run anyway" to open it.
+**Security warnings:** the application is not signed, so the operating
+system may block it the first time it is opened.
+- **Windows:** choose "More info" and then "Run anyway".
+- **macOS:** open **System Settings → Privacy & Security**, scroll down
+  and click **Open Anyway**.
 
 
 

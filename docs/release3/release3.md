@@ -134,7 +134,7 @@ The client is packaged in two steps:
   - **macOS:** a disk image (`.dmg`). The user opens it and drags
     Dinnertracker to the Applications folder.
 
-How to build, install and open the application is described in the
+How to download, install and open the application is described in the
 [README](../../README.md).
 
 ## Architecture
