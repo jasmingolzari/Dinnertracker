@@ -128,13 +128,12 @@ To run the verification phase, including the configured tests, code quality chec
 mvn verify
 ```
 
-To generate JaCoCo coverage reports:
+This also generates JaCoCo coverage reports for each module. They can be opened in a browser:
 
-```bash
-mvn jacoco:report
-```
-
-The available reports depend on the modules and their JaCoCo configuration. The aggregated report, when generated, can be found under the root project's `target/site/` directory.
+- `core/target/site/jacoco/index.html`
+- `persistence/target/site/jacoco/index.html`
+- `ui/target/site/jacoco/index.html`
+- `rest/target/site/jacoco/index.html`
 
 The configuration and requirements for testing and code quality are documented in [code-quality.md](docs/release3/code-quality.md).
 
