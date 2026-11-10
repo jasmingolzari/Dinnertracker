@@ -128,13 +128,13 @@ The client is packaged in two steps:
   modules the client needs (Java, JavaFX, Jackson, `core` and `ui`). This
   is possible because the modules have a `module-info.java`.
 - **jpackage** wraps this runtime and the application into a native
-  application for the user's operating system:
+  installer for the user's operating system:
   - **Windows:** an installer (`.exe`). The user runs the installer, and
     Dinnertracker is installed like any other program.
-  - **macOS:** an application (`.app`) that can be moved to the
-    Applications folder and opened like any other Mac app.
+  - **macOS:** a disk image (`.dmg`). The user opens it and drags
+    Dinnertracker to the Applications folder.
 
-How to build and install the application is described in the
+How to download, install and open the application is described in the
 [README](../../README.md).
 
 ## Architecture
