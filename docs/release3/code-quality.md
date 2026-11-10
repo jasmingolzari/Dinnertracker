@@ -81,8 +81,6 @@ configured coverage requirements.
 The JaCoCo HTML coverage reports are generated in each module's
 `target/site/jacoco/index.html` file (`core`, `persistence`, `ui`, and `rest`).
 
-The aggregated JaCoCo HTML report is available at
-`dinnertracker/target/site/jacoco-aggregate/index.html`.
 
 If a configured quality check fails, Maven reports
 the violations and the build fails.
