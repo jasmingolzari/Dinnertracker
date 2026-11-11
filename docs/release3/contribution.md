@@ -54,9 +54,7 @@ In this project, I have tried to contribute to all modules.
  
 - **Release 2:** I refactored the Recipe class to store ingredients in a HashMap, and pair-programmed changes to RecipeFileHandler in persistence. In the UI, I continued working on the recipe pages. Together with Camilla, I implemented RecipeViewPage and developed RecipePage further, including the unit dropdown and the recipe list. I also wrote controller tests, improved the design of the recipe pages and pair-programmed ShowAlertMessage with Rumyana for error and information messages.
  
-- **Release 3:** I added the /recipes/all endpoint to the REST module, so recipes are shared between all users. I was also responsible for creating DinnertrackerRestClient and changing all UI controllers to use the REST client instead of the file handlers. In addition, I wrote sustainability.md and release3.md. 
-
-
+- **Release 3:** I added the /recipes/all endpoint to the REST module, so recipes are shared between all users. I was also responsible for creating DinnertrackerRestClient and changing all UI controllers to use the REST client instead of the file handlers. I configured the shippable product with jlink and jpackage, so the application can be installed on macOS and Windows, and opened from the desktop in Eclipse Che. In addition, I wrote sustainability.md and release3.md.
 
 ## Rumyana Zhizhovska
 
