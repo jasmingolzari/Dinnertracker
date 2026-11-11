@@ -187,6 +187,7 @@ ready-made installer from the Releases page:
    - **macOS:** open `DinnerTracker-1.0.dmg` and drag DinnerTracker to
      the Applications folder.
 4. Start the REST server from the `dinnertracker` directory:
+   Tests are skipped to reduce completion time.
 
    ```bash
    mvn clean install -DskipTests
@@ -211,6 +212,7 @@ used there. Instead, build the application in the workspace:
 
 1. Build the project and the application from the `dinnertracker`
    directory:
+   Tests are skipped to reduce completion time.
 
    ```bash
    mvn clean install -DskipTests -Pinstaller
