@@ -1,0 +1,119 @@
+# Code Quality
+
+This document describes the code quality tools and checks used in dinnertracker.
+
+## JaCoCo
+
+Dinnertracker uses JaCoCo version 0.8.13 to measure
+Java code coverage.
+
+JaCoCo is configured in the parent pom.xml file.
+
+The project has the following coverage requirements:
+
+- Minimum line coverage: 80%
+- Minimum branch coverage: 70%
+
+## Checkstyle
+
+Checkstyle is a static analysis tool used to check
+Java coding style and enforce coding conventions.
+
+Checkstyle is configured in the parent pom.xml file
+using the Maven Checkstyle Plugin and the
+google_checks.xml ruleset.
+
+The Checkstyle check runs automatically during the
+Maven verify phase. The build fails if a Checkstyle
+violation is detected.
+
+## SpotBugs
+
+SpotBugs is a static analysis tool used to detect
+potential bugs in Java code.
+
+SpotBugs is configured in the parent pom.xml file
+using the SpotBugs Maven Plugin.
+
+The analysis uses maximum effort and a medium
+reporting threshold. The SpotBugs check runs
+automatically during the Maven verify phase and
+fails the build if configured violations are found.
+
+## Spotless
+
+Spotless is used to enforce consistent formatting
+of the Java source code.
+
+Spotless is configured in the parent pom.xml file
+using the Spotless Maven Plugin. Java source files
+are formatted using Google Java Format. The
+configuration also removes unused imports, trims
+trailing whitespace, and ensures that files end
+with a newline.
+
+The Spotless check runs automatically during the
+Maven verify phase. If source files do not match
+the required formatting, the build fails and the
+affected files are reported.
+
+## Running code quality checks
+
+The project uses Maven to build, test, and run the
+configured code quality checks.
+
+Run the following command from the repository root:
+
+```bash
+mvn -f dinnertracker/pom.xml verify
+```
+
+Alternatively, run `mvn verify` directly from the
+`dinnertracker/` directory.
+
+The verify phase runs the automated tests and the
+configured Checkstyle, SpotBugs, Spotless, and
+JaCoCo checks.
+
+JaCoCo generates coverage reports and checks the
+configured coverage requirements.
+
+The JaCoCo HTML coverage reports are generated in each module's
+`target/site/jacoco/index.html` file (`core`, `persistence`, `ui`, and `rest`).
+
+
+If a configured quality check fails, Maven reports
+the violations and the build fails.
+
+## Current verification results
+
+The code quality checks were verified on November 9, 2026, using Eclipse Temurin Java 17.0.20.1 and Apache Maven 3.9.16. The following command was run from the repository root:
+
+```bash
+mvn -f dinnertracker/pom.xml verify
+```
+
+The command completed with **BUILD SUCCESS**. All four modules (`core`, `persistence`, `ui`, and `rest`) passed the Maven verify phase.
+
+The verification included automated tests and the configured Checkstyle, Spotless, JaCoCo, and SpotBugs checks.
+
+A separate Spotless check was also run:
+
+```bash
+mvn -f dinnertracker/pom.xml spotless:check
+```
+
+This check completed successfully for all four modules, with no formatting violations detected.
+
+### JaCoCo coverage results
+
+The following coverage results were calculated from the JaCoCo CSV reports generated for each module:
+
+| Module | Line coverage | Branch coverage |
+|---|---:|---:|
+| Core | 92.2% | 79.5% |
+| Persistence | 99.3% | 85.7% |
+| UI | 90.9% | 83.5% |
+| REST | 87.9% | 80.0% |
+
+All four modules meet the configured JaCoCo requirements of at least 80% line coverage and 70% branch coverage.
