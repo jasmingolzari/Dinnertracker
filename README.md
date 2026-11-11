@@ -138,8 +138,6 @@ This also generates JaCoCo coverage reports for each module. They can be opened 
 The configuration and requirements for testing and code quality are documented in [code-quality.md](docs/release3/code-quality.md).
 
 
-
-
 ## Running the application
 
 The REST server must be running before the JavaFX client can communicate with it.
@@ -166,13 +164,17 @@ mvn javafx:run
 
 The JavaFX client communicates with the REST server to access application functionality.
 
-
-
 ## Running the shippable product
 
-Users who only want to run the application do not need to build the
-project or start the JavaFX client from the terminal. Ready-to-use installers for
-Windows and macOS are available as release assets.
+The JavaFX client is available as a shippable product, so it can be
+opened like any other program instead of with `mvn javafx:run`. The REST
+server is not packaged, and must always be started separately, on the
+same machine as the application.
+
+### Option 1: On your own computer (Windows or macOS)
+
+If you have the repository on your own computer, you can download a
+ready-made installer from the Releases page:
 
 1. Go to the [Releases](https://git.ntnu.no/IT1901-2026-groups/gr2631/releases)
    page and open the latest release (v3.0.0).
@@ -184,24 +186,17 @@ Windows and macOS are available as release assets.
      installer.
    - **macOS:** open `DinnerTracker-1.0.dmg` and drag DinnerTracker to
      the Applications folder.
-
-4. Start the REST server. The application cannot work without it. From
-   the `dinnertracker` directory:
+4. Start the REST server from the `dinnertracker` directory:
 
    ```bash
-   mvn install -DskipTests
+   mvn clean install -DskipTests
    cd rest
    mvn spring-boot:run
    ```
-   Wait until the terminal shows `Started DinnertrackerApplication`.
 
+   Wait until the terminal shows `Started DinnertrackerApplication`.
 5. Keep the server running, and open DinnerTracker like any other
    program.
-
-
-Opening the installed application replaces `mvn javafx:run` from the
-section above. The REST server must still be started separately, on the
-same machine as the application.
 
 **Security warnings:** the application is not signed, so the operating
 system may block it the first time it is opened.
@@ -209,7 +204,55 @@ system may block it the first time it is opened.
 - **macOS:** open **System Settings → Privacy & Security**, scroll down
   and click **Open Anyway**.
 
+### Option 2: In Eclipse Che
 
+Eclipse Che runs Linux, so the Windows and macOS installers cannot be
+used there. Instead, build the application in the workspace:
+
+1. Build the project and the application from the `dinnertracker`
+   directory:
+
+   ```bash
+   mvn clean install -DskipTests -Pinstaller
+   ```
+
+   The build also creates a DinnerTracker icon on the virtual desktop.
+
+2. Start the REST server:
+
+   ```bash
+   cd rest
+   mvn spring-boot:run
+   ```
+
+   Wait until the terminal shows `Started DinnertrackerApplication`.
+
+3. Open the `01-desktop-ui` endpoint under **Endpoints**, and
+   double-click the DinnerTracker icon on the desktop to open the
+   application. The first time, the desktop may ask whether the launcher
+   can be trusted. Choose "Launch anyway".
+
+The application can also be started from a second terminal, from the
+`dinnertracker` directory:
+
+```bash
+./ui/target/dist/DinnerTracker/bin/DinnerTracker
+```
+
+### Building the installers yourself
+
+The installers are built with jlink and jpackage through the `installer`
+Maven profile in `ui/pom.xml`. From the `dinnertracker` directory:
+
+```bash
+mvn clean install -DskipTests -Pinstaller
+```
+
+The result is created in `ui/target/dist/`, and the package type is chosen
+from the operating system: an `.exe` on Windows, a `.dmg` on macOS and an
+application folder on Linux. jpackage can only build for the operating
+system it runs on. The icons used for the installers are in
+`ui/src/main/packaging/`.
 
 ## Eclipse Che
 
